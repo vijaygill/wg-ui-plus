@@ -8,4 +8,6 @@ RUN pip install --break-system-packages --upgrade Flask
 
 RUN apt-get install -y npm
 
+RUN npm install -g @angular/cli
+
 
