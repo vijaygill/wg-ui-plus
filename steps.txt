@@ -1,0 +1,5 @@
+Created blank angular app with following command
+    ng new wg-ui-plus
+    a.  Use SCSS
+    b.  Use SSR
+
