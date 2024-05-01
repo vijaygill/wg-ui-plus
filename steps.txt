@@ -3,3 +3,7 @@ Created blank angular app with following command
     a.  Use SCSS
     b.  Use SSR
 
+ng build
+
+In the angular app directory, installed PrimeNG
+    npm install primeng
