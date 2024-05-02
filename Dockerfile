@@ -10,6 +10,10 @@ RUN apt-get install -y npm
 
 RUN npm install -g @angular/cli
 
+RUN apt-get install -y sqlite3
+
+RUN pip install --break-system-packages --upgrade sqlalchemy 
+
 ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000

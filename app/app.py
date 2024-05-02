@@ -1,4 +1,46 @@
 from flask import Flask,send_from_directory
+import sqlalchemy
+from sqlalchemy import ForeignKey
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy import select
+
+class Base(DeclarativeBase):
+    pass
+
+class Peer(Base):
+    __tablename__ = "wg_peers"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    device_name:  Mapped[str] = mapped_column(String(255))
+
+    def __repr__(self) -> str:
+        return f"User(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
+
+class DbRepo(object):
+    def __init__(self, engine):
+        self.engine = engine
+
+    def createSampleData(self):
+        with Session(self.engine) as session:
+            for i in range(0,10):
+                peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}')
+                session.add(peer)
+                session.commit()
+
+    def getPeers(self):
+        self.createSampleData()
+        with Session(self.engine) as session:
+            res = [ { "name": c.name } for c in session.query( Peer ).all() ]
+            return res
+
+engine = create_engine("sqlite:///./data/wg-ui-plus.db", echo = True)
+Base.metadata.create_all(engine)
 
 USE_SSR = False # Will get SSR working some other time
 
@@ -26,6 +68,15 @@ def serve_static_files(path):
 def test():
     app.logger.info(f'test')
     return 'Hello, World!'
+
+@app.route('/peers')
+def peers():
+    app.logger.info(f'returning list of peers')
+    db = DbRepo(engine)
+    peers = db.getPeers()
+    app.logger.info(f'***** {peers} ')
+    return peers
+
 
 @app.route('/')
 def index():
