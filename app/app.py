@@ -41,6 +41,8 @@ class DbRepo(object):
 
 engine = create_engine("sqlite:///./data/wg-ui-plus.db", echo = True)
 Base.metadata.create_all(engine)
+#db = DbRepo(engine)
+#db.createSampleData()
 
 USE_SSR = False # Will get SSR working some other time
 
