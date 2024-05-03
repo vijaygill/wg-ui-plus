@@ -10,6 +10,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 //import { ConfirmDialogModule } from 'primeng/confirmdialog';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
 //import { ContextMenuModule } from 'primeng/contextmenu';
+import { DataViewModule } from 'primeng/dataview';
 //import { DialogModule } from 'primeng/dialog';
 //import { DividerModule } from 'primeng/divider';
 //import { DragDropModule } from 'primeng/dragdrop';
@@ -45,8 +46,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 //import { SplitButtonModule } from 'primeng/splitbutton';
 //import { StepperModule } from 'primeng/stepper';
 //import { StepsModule } from 'primeng/steps';
-//import { TabViewModule } from 'primeng/tabview';
-//import { TableModule } from 'primeng/table';
+import { TabViewModule } from 'primeng/tabview';
+import { TableModule } from 'primeng/table';
 //import { TieredMenuModule } from 'primeng/tieredmenu';
 //import { TimelineModule } from 'primeng/timeline';
 //import { ToastModule } from 'primeng/toast';
@@ -58,7 +59,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 //import { TreeTableModule } from 'primeng/treetable';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 
-let modules = [ ButtonModule, CheckboxModule, InputNumberModule, InputTextModule, InputTextareaModule ];
+let modules = [ ButtonModule, CheckboxModule, DataViewModule, InputNumberModule, InputTextModule, InputTextareaModule, TableModule, TabViewModule ];
 
 @NgModule({
     imports: modules,

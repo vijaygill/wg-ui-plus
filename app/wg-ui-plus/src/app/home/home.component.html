@@ -1,8 +1,59 @@
 <div>
 	This is home component!
-     peers:
- <div *ngFor="let peer of peers">
-     Peer: {{peer.id}} {{peer.name}}
- </div>
-   <hr/>
+    <p-tabView>
+        <p-tabPanel header="Peers">
+    <p-table [value]="peers">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Is VIP</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-peer>
+            <tr>
+                <td>{{ peer.id }}</td>
+                <td>{{ peer.name }}</td>
+                <td>{{ peer.is_vip }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+        </p-tabPanel>
+        <p-tabPanel header="IPTablesChains">
+    <p-table [value]="ipTablesChains">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-chain>
+            <tr>
+                <td>{{ chain.id }}</td>
+                <td>{{ chain.name }}</td>
+                <td>{{ chain.description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+        </p-tabPanel>
+        <p-tabPanel header="DockerContainers">
+    <p-table [value]="dockerContainers">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Id (Short)</th>
+                <th>Name</th>
+                <th>Status</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-dockerContainer>
+            <tr>
+                <td>{{ dockerContainer.short_id }}</td>
+                <td>{{ dockerContainer.name }}</td>
+                <td>{{ dockerContainer.status }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+        </p-tabPanel>
+    </p-tabView>
 </div>

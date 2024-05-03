@@ -7,19 +7,42 @@ import { Observable, of } from 'rxjs';
 })
 export class WebapiService {
 
-    private peersUrl = 'http://orangepi5-plus:13080/peers';
+    private urlListPeerList = '/api/data/peers';
+    private urlListIpTableChainList = '/api/data/iptablechains';
+    private urlDockerContainerList = '/api/docker/container/list';
 
     constructor(private http: HttpClient) {}
 
-    getPeers(): Observable<Peer[]> {
-        return this.http.get<Peer[]>(this.peersUrl);
+    getPeerList(): Observable<Peer[]> {
+        return this.http.get<Peer[]>(this.urlListPeerList);
     }
 
+    getIpTablesChainList(): Observable<IpTablesChain[]> {
+        return this.http.get<IpTablesChain[]>(this.urlListIpTableChainList);
+    }
+
+    getDockerContainerList(): Observable<DockerContainer[]> {
+        return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
+    }
 }
 
 export interface Peer{
     id: number;
     name: string;
+    device_name: string;
+    is_vip: boolean;
 }
 
 
+export interface IpTablesChain{
+    id: number;
+    name: string;
+    description: string;
+}
+
+export interface DockerContainer{
+    id: string;
+    name: string;
+    short_id: string;
+    status: string;
+}

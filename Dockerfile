@@ -12,13 +12,18 @@ RUN npm install -g @angular/cli
 
 RUN apt-get install -y sqlite3
 
-RUN pip install --break-system-packages --upgrade sqlalchemy 
+RUN pip install --break-system-packages --upgrade sqlalchemy
+
+RUN pip install --break-system-packages --upgrade docker
+
 
 ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
 
 RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
+
+RUN groupadd -g 994 -o docker && usermod -aG docker $UNAME
 
 USER $UNAME
 

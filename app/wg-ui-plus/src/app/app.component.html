@@ -2,26 +2,11 @@
 <main class="main">
   <div class="content">
       Welcome to WireGuard-UI-NG!
-      <p-button label="Click me!"></p-button>
-      <div class="flex align-items-center">
-        <p-checkbox label="Cheese" name="pizza" value="Cheese" [(ngModel)]="pizza"></p-checkbox>
-    </div>
-    <div class="flex align-items-center">
-        <p-checkbox label="Mushroom" name="pizza" value="Mushroom" [(ngModel)]="pizza"></p-checkbox>
-    </div>
-    <div class="flex align-items-center">
-        <p-checkbox label="Pepper" name="pizza" value="Pepper" [(ngModel)]="pizza"></p-checkbox>
-    </div>
-    <div class="flex align-items-center">
-        <p-checkbox label="Onion" name="pizza" value="Onion" [(ngModel)]="pizza"></p-checkbox>
-    </div>
-    Selected value = {{pizza}}
       <hr/>
-      Home component
-      <app-home></app-home>
-      <hr/>
-      About component
-      <app-about></app-about>
+      <nav>
+          <a routerLink="home">Home</a>
+          <a routerLink="about">About</a>
+      </nav>
   </div>
 </main>
 
