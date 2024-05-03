@@ -44,6 +44,7 @@
                 <th>Id (Short)</th>
                 <th>Name</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-dockerContainer>
@@ -51,9 +52,14 @@
                 <td>{{ dockerContainer.short_id }}</td>
                 <td>{{ dockerContainer.name }}</td>
                 <td>{{ dockerContainer.status }}</td>
+                <td>
+                    <p-button label="Start" (onClick)="startDockerContainer(dockerContainer.name)"></p-button>
+                    <p-button label="Stop" (onClick)="stopDockerContainer(dockerContainer.name)"></p-button>
+                </td>
             </tr>
         </ng-template>
     </p-table>
+    {{blah}}
         </p-tabPanel>
     </p-tabView>
 </div>

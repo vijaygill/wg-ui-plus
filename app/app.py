@@ -149,19 +149,20 @@ def docker_container_list():
 @app.route('/api/docker/container/start')
 @logged
 def docker_container_start(name = None):
-    #client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
-    #res = [ c.name for c in client.containers.list() ]
     name = request.args.get('name')
-    res = { 'x': name }
-    return res
+    client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
+    container = client.containers.get(name)
+    container.start()
+    return { 'status': 'ok' } #docker_container_list()
 
 @app.route('/api/docker/container/stop')
 @logged
 def docker_container_stop(name = None):
-    #client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
-    #res = [ c.name for c in client.containers.list() ]
-    res = { 'x': name }
-    return res
+    name = request.args.get('name')
+    client = docker.DockerClient(base_url = 'unix://var/run/docker.sock')
+    container = client.containers.get(name)
+    container.stop()
+    return { 'status': 'ok' } #docker_container_list()
 
 @app.route('/api/data/iptablechains')
 @logged

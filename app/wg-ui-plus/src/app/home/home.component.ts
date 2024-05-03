@@ -20,10 +20,15 @@ export class HomeComponent {
     dockerContainers: DockerContainer[] = [];
 
     selectedPeers : number[] = [];
+    blah: string = '';
 
     constructor( private webapiService: WebapiService) {}
 
     ngOnInit() {
+        this.refreshData();
+    }
+
+    refreshData(){
         this.webapiService.getPeerList().subscribe(data => {
             this.peers = data;
         });
@@ -33,6 +38,18 @@ export class HomeComponent {
         });
         this.webapiService.getDockerContainerList().subscribe(data => {
             this.dockerContainers = data;
+        });
+    }
+
+    startDockerContainer(name: string){
+        this.webapiService.startDockerContainer(name).subscribe(data => {
+            this.refreshData();
+        });
+    }
+    
+    stopDockerContainer(name: string){
+        this.webapiService.stopDockerContainer(name).subscribe(data => {
+            this.refreshData();
         });
     }
 }

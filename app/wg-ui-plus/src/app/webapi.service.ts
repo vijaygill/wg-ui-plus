@@ -9,7 +9,10 @@ export class WebapiService {
 
     private urlListPeerList = '/api/data/peers';
     private urlListIpTableChainList = '/api/data/iptablechains';
+
     private urlDockerContainerList = '/api/docker/container/list';
+    private urlDockerContainerStart = '/api/docker/container/start';
+    private urlDockerContainerStop = '/api/docker/container/stop';
 
     constructor(private http: HttpClient) {}
 
@@ -23,6 +26,14 @@ export class WebapiService {
 
     getDockerContainerList(): Observable<DockerContainer[]> {
         return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
+    }
+
+    startDockerContainer(name: string): Observable<DockerContainer[]> {
+        return this.http.get<DockerContainer[]>(this.urlDockerContainerStart + '?name=' + name);
+    }
+
+    stopDockerContainer(name: string): Observable<DockerContainer[]> {
+        return this.http.get<DockerContainer[]>(this.urlDockerContainerStop + '?name=' + name);
     }
 }
 
