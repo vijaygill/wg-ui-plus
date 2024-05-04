@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cd /wg-ui-plus/app && python app.py
+cd /wg-ui-plus/app
+python app.py
