@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ConfirmationService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 //import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
@@ -50,7 +51,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 //import { TieredMenuModule } from 'primeng/tieredmenu';
 //import { TimelineModule } from 'primeng/timeline';
-//import { ToastModule } from 'primeng/toast';
+import { ToastModule } from 'primeng/toast';
 //import { ToggleButtonModule } from 'primeng/togglebutton';
 //import { ToolbarModule } from 'primeng/toolbar';
 //import { TooltipModule } from 'primeng/tooltip';
@@ -59,11 +60,10 @@ import { TableModule } from 'primeng/table';
 //import { TreeTableModule } from 'primeng/treetable';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 
-let modules = [ ButtonModule, CheckboxModule, DataViewModule, InputNumberModule, InputTextModule, InputTextareaModule, TableModule, TabViewModule ];
+let modules = [ ButtonModule, CheckboxModule, DataViewModule, InputNumberModule, InputTextModule, InputTextareaModule, TableModule, TabViewModule, ToastModule ];
 
 @NgModule({
     imports: modules,
-    providers: [ ConfirmationService ],
     exports: modules
 })
 export class PrimeNGModule {}

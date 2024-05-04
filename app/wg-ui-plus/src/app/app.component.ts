@@ -4,8 +4,6 @@ import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { PrimeNGModule } from './primeng.module';
-
 import { AboutComponent } from './about/about.component';
 import { HomeComponent } from './home/home.component';
 
@@ -13,7 +11,7 @@ import { HomeComponent } from './home/home.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, RouterOutlet, FormsModule, HomeComponent, AboutComponent, PrimeNGModule ],
+  imports: [RouterModule, RouterOutlet, FormsModule, HomeComponent, AboutComponent ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
