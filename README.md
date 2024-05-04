@@ -1,1 +1,25 @@
-Developers: Read [devenv.md](devenv.md)
+# WireGuard UI Plus
+
+A Dockerised UI to mange a WireGuard VPN Server, intended to be used in companion with the [LinuxServe WireGuard Docker](https://github.com/linuxserver/docker-wireguard) image.
+
+## Features
+
+At this early stage, this is more of an idea of what features this managment will offer at some stage
+
+* View the live status of the WG server, what clients are connected etc.
+* Add/remove clients
+* General managment of the server
+* Configure per client iptable rules - allowing limitting not only what IPs a client can reach, but what ports/protocols can be used
+* Hot reload WG with config changes (ideally without impacting currrently connected clients)
+* User/Group management, letting people login to get their client configs (especially via QR code)
+
+## Usage
+
+In short, you do you.
+Our recommneded approach is to use Docker compose such that you have one container for the WG server itself, and another for this managment tool.
+The web UI is only using `HTTP`, and thus not secured; to run this securly you should use a reverse proxy to handle `HTTPS`.
+If you have the reverse proxy and the managment UI using the same Docker Network, then you should not need to expose the unsecure `HTTP` ports, and the reverse proxy can connect via the container name, thus saving you from worrying about what IP the Web IP is using within Docker.
+
+## Development guide
+
+This repository comes with a Docker based development environment, for more details, see [devenv.md](devenv.md).
