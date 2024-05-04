@@ -20,10 +20,11 @@ RUN pip install --break-system-packages --upgrade docker
 ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
+ARG ARG_GID_DOCKER=999
 
 RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
 
-RUN groupadd -g 994 -o docker && usermod -aG docker $UNAME
+RUN groupadd -g $ARG_GID_DOCKER -o docker && usermod -aG docker $UNAME
 
 USER $UNAME
 
