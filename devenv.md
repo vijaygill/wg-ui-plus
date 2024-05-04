@@ -22,14 +22,14 @@
   ./build-dev-run-app-serve.sh
   ```
 
-* Now in third terminal, use your favourite editor to edit the files! I use vim. If you are using GUI (KDE/Gnome), you don't need third terminal and you can use any GUI editor.
+* Now in third terminal, use your favorite editor to edit the files! I use vim. If you are using GUI (KDE/Gnome), you don't need third terminal and you can use any GUI editor.
 
-## Branching Stratergy
+## Branching Strategy
 
-Always have a branch for every new feature and give it a meaningfll name.
+Always have a branch for every new feature and give it a meaningful name.
 For example, `feature/readme-updates`.
 
-When trying out more 'ad-hoc expiremnts', use the `expermintal/` pre-fix, ie `experimental/port-to-rust`.
+When trying out more 'ad-hoc experiments', use the `experimental/` pre-fix, ie `experimental/port-to-rust`.
 The experimental branches may get 'promoted' to features, or just dropped.
 Don't feel like you must use experimental branches first, use your best judgment.
 
@@ -38,7 +38,7 @@ builds on this branch are akin to 'beta versions', ideally they will be fine to 
 When merging into the `develop` branch, we shall squash merge; 
 the `feature/` branch can happily have all the messy commits you want, but when merged, a nice clean message can be provided.
 
-The `main` branch is for relese versions.
+The `main` branch is for release versions.
 In theory, these builds are perfectly stable and gone through testing.
 Merging into `main` will only be done from `develop`, then a GitHub release created to stamp a new version.
-Each versionn on `main` will have it's Docker image pushed to a repo, along with the 'latest' tagged updated to... well, the latest build.
+Each version on `main` will have it's Docker image pushed to a repo, along with the 'latest' tagged updated to... well, the latest build.
