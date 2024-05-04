@@ -9,6 +9,7 @@
                 <th>Id</th>
                 <th>Name</th>
                 <th>Is VIP</th>
+                <th>IP Address</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-peer>
@@ -16,6 +17,7 @@
                 <td>{{ peer.id }}</td>
                 <td>{{ peer.name }}</td>
                 <td>{{ peer.is_vip }}</td>
+                <td>{{ peer.ip_address }}</td>
             </tr>
         </ng-template>
     </p-table>

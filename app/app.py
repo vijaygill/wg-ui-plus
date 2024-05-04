@@ -1,4 +1,5 @@
 import os
+import ipaddress
 from functools import wraps
 from dataclasses import dataclass
 from flask import Flask, send_from_directory
@@ -7,6 +8,7 @@ import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
 from sqlalchemy import Boolean
+from sqlalchemy import Integer
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -14,6 +16,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy import select
+from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 
 import docker
 
@@ -65,6 +69,21 @@ class Peer(Base):
     name: Mapped[str] = mapped_column(String(255))
     device_name:  Mapped[str] = mapped_column(String(255))
     is_vip:  Mapped[bool] = mapped_column(Boolean, nullable = True)
+    ip_address_num: Mapped[int] = mapped_column(Integer)
+
+    @hybrid_property
+    def ip_address(self):
+        # TODO: don't like this. Review later
+        try:
+            return str(ipaddress.ip_address(self.ip_address_num))
+        except:
+            pass
+
+        return None
+
+    @ip_address.setter
+    def ip_address(self, value):
+        self.ip_address_num = int(ipaddress.ip_address(value))
 
     def __repr__(self) -> str:
         return f"Peer(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
@@ -109,9 +128,10 @@ class DbRepo(object):
         if not peers:
             with Session(self.engine) as session:
                 for i in range(0,10):
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}')
+                    ip_address_num = 323223552 + 2 + i
+                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address_num = ip_address_num )
                     if i % 4 == 0:
-                        peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', is_vip = True)
+                        peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', is_vip = True, ip_address_num = ip_address_num)
                     session.add(peer)
                     session.commit()
 
@@ -144,6 +164,7 @@ def docker_container_list():
             "status": c.status,
             "short_id": c.short_id,
         } for c in client.containers.list( all = True, ignore_removed = True) ]
+    res.sort(key = lambda x : x['name'] )
     return res
 
 @app.route('/api/docker/container/start')
@@ -175,7 +196,14 @@ def iptablechain():
 @logged
 def peers():
     db = DbRepo()
-    res = db.getPeers()
+    res = [ {
+        'id': x.id,
+        'name': x.name,
+        'device_name': x.device_name,
+        'is_vip': x.is_vip,
+        'ip_address_num': x.ip_address_num,
+        'ip_address': x.ip_address,
+        } for x in db.getPeers()]
     return res
 
 @app.route('/<path:path>', methods=['GET'])

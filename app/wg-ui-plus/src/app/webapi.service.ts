@@ -42,6 +42,7 @@ export interface Peer{
     name: string;
     device_name: string;
     is_vip: boolean;
+    ip_address: string;
 }
 
 
