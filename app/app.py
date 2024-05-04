@@ -129,9 +129,9 @@ class DbRepo(object):
             with Session(self.engine) as session:
                 for i in range(0,10):
                     ip_address_num = 323223552 + 2 + i
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address_num = ip_address_num )
+                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address = ip_address_num )
                     if i % 4 == 0:
-                        peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', is_vip = True, ip_address_num = ip_address_num)
+                        peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', is_vip = True, ip_address = ip_address_num)
                     session.add(peer)
                     session.commit()
 
