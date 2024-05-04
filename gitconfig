@@ -1,7 +1,0 @@
-[user]
-	email = Vijay.Gill@hotmail.com
-	name = Vijay Gill
-[pull]
-	ff = only
-[safe]
-	directory = /wg-ui-plus
