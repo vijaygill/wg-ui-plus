@@ -6,26 +6,26 @@ import { FormsModule } from '@angular/forms';
 import { PrimeNGModule } from '../primeng.module';
 
 @Component({
-  selector: 'app-peergroup',
+  selector: 'app-manage-peer-groups',
   standalone: true,
-  imports: [ CommonModule, FormsModule, PrimeNGModule ],
-  providers: [ MessageService ],
-  templateUrl: './peergroup.component.html',
-  styleUrl: './peergroup.component.scss'
+  imports: [CommonModule, FormsModule, PrimeNGModule],
+  providers: [MessageService],
+  templateUrl: './manage-peer-groups.component.html',
+  styleUrl: './manage-peer-groups.component.scss'
 })
-export class PeergroupComponent {
+export class ManagePeerGroupsComponent {
 
   peerGroups: PeerGroup[] = [];
 
-  constructor (private messageService: MessageService, private webapiService: WebapiService){}
+  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
   ngOnInit() {
     this.refreshData();
-}
+  }
 
-refreshData(){
+  refreshData() {
     this.webapiService.getPeerGroupList().subscribe(data => {
-        this.peerGroups = data;
+      this.peerGroups = data;
     });
-}
+  }
 }
