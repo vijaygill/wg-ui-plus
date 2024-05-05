@@ -6,16 +6,22 @@ In first terminal, execute following command.
 This will build the Angular app for the first time and keep "ng" running in watch mode for any more changes.
 That's a lazy way of "ng build" :).
 ```
-./build-dev-run-ng-build.sh
+./run-ng
 ```
 
 In the second terminal, run following command.
 This will start the `python-flask` app which can be accessed from the browser (see the port in the following script file).
 ```
-./build-dev-run-app-server.sh
+./run-app-server
 ```
 
-Now in third terminal, use your favorite editor to edit the files! I use `vim`. If you are using GUI (KDE/Gnome), you don't need third terminal and you can use any GUI editor.
+Now in third terminal, use your favorite editor to edit the files!
+I use `vim`.
+If you are using GUI (KDE/Gnome), you don't need third terminal and you can use any GUI editor.
+To facilitate easier access to `ng` commands, and ensure you've any other tools/packages for development, you probably want to run
+```
+./run-dev-sh
+```
 
 ## Branching Strategy
 
