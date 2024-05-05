@@ -18,7 +18,9 @@ from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.ext.hybrid import hybrid_property
-
+from sqlalchemy.orm import joinedload
+from sqlalchemy import select
+from typing import List
 import docker
 
 DB_FILE = './data/wg-ui-plus.db'
@@ -59,8 +61,22 @@ def logged(func):
 
     return logger_func
 
+def row2dict(row):
+    d = {}
+    for column in row.__table__.columns:
+        d[column.name] = str(getattr(row, column.name))
+
+    return d
+
 class Base(DeclarativeBase):
     pass
+
+@dataclass
+class PeerGroup(Base):
+    __tablename__ = "wg_peer_groups"
+    id: Mapped[int] = mapped_column(primary_key = True)
+    name: Mapped[str] = mapped_column(String(255))
+    peers: Mapped[List["Peer"]] = relationship(back_populates = "peer_group", lazy = 'joined')
 
 @dataclass
 class Peer(Base):
@@ -68,12 +84,13 @@ class Peer(Base):
     id: Mapped[int] = mapped_column(primary_key = True)
     name: Mapped[str] = mapped_column(String(255))
     device_name:  Mapped[str] = mapped_column(String(255))
-    is_vip:  Mapped[bool] = mapped_column(Boolean, nullable = True)
     ip_address_num: Mapped[int] = mapped_column(Integer)
+    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_groups.id"))
+    peer_group: Mapped["PeerGroup"] = relationship(back_populates = "peers", lazy = 'joined')
 
     @hybrid_property
     def ip_address(self):
-        # TODO: don't like this. Review later
+        # TODO: I don't like this. Review later
         try:
             return str(ipaddress.ip_address(self.ip_address_num))
         except:
@@ -127,18 +144,30 @@ class DbRepo(object):
         peers = self.getPeers()
         if not peers:
             with Session(self.engine) as session:
-                for i in range(0,10):
+                max_peer_groups = 3
+                for i in range(0,max_peer_groups):
+                    peer_group = PeerGroup(name = f'Peer Group - {i}' )
+                    session.add(peer_group)
+                    session.commit()
+                peer_groups = [x for x in session.query( PeerGroup ).all()]
+                for i in range(0, 10):
                     ip_address_num = 323223552 + 2 + i
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address = ip_address_num )
-                    if i % 4 == 0:
-                        peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', is_vip = True, ip_address = ip_address_num)
+                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address = ip_address_num, peer_group = peer_groups[i % max_peer_groups] )
                     session.add(peer)
                     session.commit()
 
     @logged
     def getPeers(self):
         with Session(self.engine) as session:
-            res = session.query( Peer ).all()
+            stmt = select(Peer)
+            res = session.scalars(stmt).unique().all()
+            return res
+        
+    @logged
+    def getPeerGroups(self):
+        with Session(self.engine) as session:
+            stmt = select(PeerGroup)
+            res = session.scalars(stmt).unique().all()
             return res
 
     @logged
@@ -200,11 +229,24 @@ def peers():
         'id': x.id,
         'name': x.name,
         'device_name': x.device_name,
-        'is_vip': x.is_vip,
+        'peer_group_id': x.peer_group_id,
+        'peer_group': row2dict(x.peer_group),
         'ip_address_num': x.ip_address_num,
         'ip_address': x.ip_address,
         } for x in db.getPeers()]
     return res
+
+@app.route('/api/data/peer_groups')
+@logged
+def peers_groups():
+    db = DbRepo()
+    res = [ {
+        'id': x.id,
+        'name': x.name,
+        'peers': [ row2dict(p) for p in x.peers ],
+        } for x in db.getPeerGroups()]
+    return res
+
 
 @app.route('/<path:path>', methods=['GET'])
 @logged

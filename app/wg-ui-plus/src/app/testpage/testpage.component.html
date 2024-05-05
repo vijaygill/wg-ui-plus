@@ -8,7 +8,7 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
-                <th>Is VIP</th>
+                <th>Group Name</th>
                 <th>IP Address</th>
             </tr>
         </ng-template>
@@ -16,7 +16,7 @@
             <tr>
                 <td>{{ peer.id }}</td>
                 <td>{{ peer.name }}</td>
-                <td>{{ peer.is_vip }}</td>
+                <td>{{ peer.peer_group.name }}</td>
                 <td>{{ peer.ip_address }}</td>
             </tr>
         </ng-template>

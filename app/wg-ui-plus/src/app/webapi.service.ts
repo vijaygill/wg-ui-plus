@@ -41,10 +41,14 @@ export interface Peer{
     id: number;
     name: string;
     device_name: string;
-    is_vip: boolean;
+    peer_group: PeerGroup;
     ip_address: string;
 }
 
+export interface PeerGroup{
+    id: number;
+    name: string;
+}
 
 export interface IpTablesChain{
     id: number;
