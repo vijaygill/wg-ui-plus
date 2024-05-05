@@ -1,1 +1,4 @@
 app/data
+app/.coverage
+__pycache__/
+junit/

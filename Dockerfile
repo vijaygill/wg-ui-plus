@@ -27,6 +27,7 @@ RUN pip install --break-system-packages --upgrade \
 	docker \
 	Flask \
 	pytest \
+	pytest-cov \
 	sqlalchemy
 
 USER $UNAME

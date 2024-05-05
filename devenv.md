@@ -23,6 +23,9 @@ To facilitate easier access to `ng` commands, and ensure you've any other tools/
 ./run-dev-sh
 ```
 
+If using the 'run-dev-sh' script to have the development container, to run the Python tests in the same way as CI, you can run `../scripts/run-tests.sh`.
+If you're not using the dev shell container, then please ensure you running the tests in an equivalent fashion.
+
 ## Branching Strategy
 
 Always have a branch for every new feature and give it a meaningful name.

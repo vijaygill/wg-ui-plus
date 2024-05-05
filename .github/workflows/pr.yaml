@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install pytest pytest-cov
           cd app
-          pytest --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
+          ../scripts/run-tests.sh
       - name: Lint with Ruff
         run: |
           pip install ruff
