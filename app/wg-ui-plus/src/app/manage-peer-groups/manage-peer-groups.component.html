@@ -1,14 +1,4 @@
-<p-table [value]="peerGroups">
-    <ng-template pTemplate="header">
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-peerGroup>
-        <tr>
-            <td>{{ peerGroup.id }}</td>
-            <td>{{ peerGroup.name }}</td>
-        </tr>
-    </ng-template>
-</p-table>
+<app-manage-peer-groups-list *ngIf="!showEditor" (editItem)="onEditItem($event)">
+</app-manage-peer-groups-list>
+<app-manage-peer-groups-editor *ngIf="showEditor" (onFinish)="onEditFinish($event)" [editItem]="editItem">
+</app-manage-peer-groups-editor>
