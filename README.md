@@ -1,6 +1,6 @@
 # WireGuard UI Plus
 
-A Dockerised UI to mange a WireGuard VPN Server, intended to be used in companion with the [LinuxServe WireGuard Docker](https://github.com/linuxserver/docker-wireguard) image.
+A Dockerised UI to manage a WireGuard VPN Server, intended to be used in companion with the [LinuxServer WireGuard Docker](https://github.com/linuxserver/docker-wireguard) image.
 
 ## Features
 
