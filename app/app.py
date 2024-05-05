@@ -9,6 +9,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import String
 from sqlalchemy import Boolean
 from sqlalchemy import Integer
+from sqlalchemy import inspect
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -62,11 +63,9 @@ def logged(func):
     return logger_func
 
 def row2dict(row):
-    d = {}
-    for column in row.__table__.columns:
-        d[column.name] = str(getattr(row, column.name))
-
-    return d
+    #res = {c.name: getattr(row, c.name) for c in row.__table__.columns}
+    res = { c.key: getattr(row, c.key) for c in inspect(row).mapper.column_attrs}
+    return res
 
 class Base(DeclarativeBase):
     pass
