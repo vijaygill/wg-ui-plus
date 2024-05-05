@@ -1,1 +1,14 @@
-<p>peergroup works!</p>
+<p-table [value]="peerGroups">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-peerGroup>
+        <tr>
+            <td>{{ peerGroup.id }}</td>
+            <td>{{ peerGroup.name }}</td>
+        </tr>
+    </ng-template>
+</p-table>

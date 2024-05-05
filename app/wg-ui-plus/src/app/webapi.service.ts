@@ -7,6 +7,8 @@ import { Observable, of } from 'rxjs';
 })
 export class WebapiService {
 
+    private urlListPeerGroupList = '/api/data/peer_groups';
+
     private urlListPeerList = '/api/data/peers';
     private urlListIpTableChainList = '/api/data/iptablechains';
 
@@ -15,6 +17,10 @@ export class WebapiService {
     private urlDockerContainerStop = '/api/docker/container/stop';
 
     constructor(private http: HttpClient) {}
+
+    getPeerGroupList(): Observable<Peer[]> {
+        return this.http.get<Peer[]>(this.urlListPeerGroupList);
+    }
 
     getPeerList(): Observable<Peer[]> {
         return this.http.get<Peer[]>(this.urlListPeerList);
