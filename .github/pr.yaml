@@ -2,7 +2,7 @@ name: Verify PR
 
 on:
   pull_request:
-    types: [opened, reopened, unlocked]
+    types: [opened, reopened, unlocked, synchronize]
 
 jobs:
   build-python:
