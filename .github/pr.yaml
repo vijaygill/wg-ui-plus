@@ -1,6 +1,8 @@
 name: Verify PR
 
-on: [PR]
+on:
+  pull_request:
+    types: [opened, reopened, unlocked]
 
 jobs:
   build-python:
