@@ -3,7 +3,7 @@ import ipaddress
 from functools import wraps
 from dataclasses import dataclass
 from flask import Flask, send_from_directory
-from flask import request
+from flask import request, jsonify
 import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
@@ -168,6 +168,13 @@ class DbRepo(object):
             stmt = select(PeerGroup)
             res = session.scalars(stmt).unique().all()
             return res
+    @logged 
+    def savePeerGroup(self, peerGroupToSave):
+        with Session(self.engine) as session:
+            peerGroup = PeerGroup(id = peerGroupToSave['id'], name = peerGroupToSave['name'])
+            peerGroup = session.merge(peerGroup)
+            session.commit()
+            return peerGroup
 
     @logged
     def getIpTablesChains(self):
@@ -246,6 +253,17 @@ def peers_groups():
         } for x in db.getPeerGroups()]
     return res
 
+@app.route('/api/data/peer_group/save', methods = ['POST'])
+@logged
+def peers_group_save():
+    data = request.json
+    app.logger.warn(f'data: {data}')
+    #data = jsonify(data)
+    db = DbRepo()
+    res = db.savePeerGroup(data)
+    #res = row2dict(res)
+    res = {'status': 'ok'}
+    return res
 
 @app.route('/<path:path>', methods=['GET'])
 @logged

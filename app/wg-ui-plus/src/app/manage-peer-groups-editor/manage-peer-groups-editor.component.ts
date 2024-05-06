@@ -28,7 +28,9 @@ export class ManagePeerGroupsEditorComponent {
   }
 
   ok() {
-    this.onFinish.emit(true);
+    this.webapiService.savePeerGroup(this.peerGroup).subscribe(data => {
+      this.onFinish.emit(true);
+    });
   }
 
   cancel() {
