@@ -27,9 +27,8 @@ export class CrudContainerComponent<T> {
   };
 
   editControlContext = {
-    item: this.item,
+    item: () => { return this.item; },
     onFinish: (item: T) => {
-      debugger;
       this.isEditing = false;
     }
   };
