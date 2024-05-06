@@ -26,6 +26,7 @@ import docker
 
 DB_FILE = './data/wg-ui-plus.db'
 
+
 DICT_DATA_IPTABLES_CHAIN = [
         ('from-vip', 'All VIP Peers'),
         ('to-lan', 'LAN destinations'),
@@ -48,6 +49,11 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 app.config['EXPLAIN_TEMPLATE_LOADING'] = False
+
+DB_DIR = os.path.dirname(os.path.abspath(DB_FILE))
+if not os.path.exists(DB_DIR):
+    os.makedirs(DB_DIR)
+    app.logger.warning(f'DB directory was missing. Created: {DB_DIR}')
 
 def logged(func):
     @wraps(func)
