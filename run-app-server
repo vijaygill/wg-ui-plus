@@ -5,7 +5,6 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 source ${BASE_DIR}/build-dev
 
 docker run -it --rm \
-  --user ${ARG_UID}:${ARG_GID} \
   -p 13080:80 \
   -v "${BASE_DIR}":/wg-ui-plus \
   -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
