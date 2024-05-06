@@ -59,6 +59,8 @@ export interface Peer{
 export interface PeerGroup{
     id: number;
     name: string;
+    description: string;
+    disabled: boolean;
 }
 
 export interface IpTablesChain{

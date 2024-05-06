@@ -75,6 +75,8 @@ class PeerGroup(Base):
     __tablename__ = "wg_peer_groups"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
     name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(String(255))
+    disabled: Mapped[Boolean] = mapped_column(Boolean)
     peers: Mapped[List["Peer"]] = relationship(back_populates = "peer_group", lazy = 'joined')
 
 @dataclass
@@ -145,7 +147,7 @@ class DbRepo(object):
             with Session(self.engine) as session:
                 max_peer_groups = 3
                 for i in range(0,max_peer_groups):
-                    peer_group = PeerGroup(name = f'Peer Group - {i}' )
+                    peer_group = PeerGroup(name = f'Peer Group - {i}' , description = f'Description - {i}', disabled = i == 3)
                     session.add(peer_group)
                     session.commit()
                 peer_groups = [x for x in session.query( PeerGroup ).all()]
@@ -172,10 +174,15 @@ class DbRepo(object):
     def savePeerGroup(self, peerGroupToSave):
         with Session(self.engine) as session:
             if 'id' in peerGroupToSave.keys():
-                peerGroup = PeerGroup(id = peerGroupToSave['id'], name = peerGroupToSave['name'])
+                peerGroup = PeerGroup(id = peerGroupToSave['id'], 
+                                      name = peerGroupToSave['name'],
+                                      description = peerGroupToSave['description'],
+                                      disabled = peerGroupToSave['disabled'])
                 peerGroup = session.merge(peerGroup)
             else:
-                peerGroup = PeerGroup(name = peerGroupToSave['name'])
+                peerGroup = PeerGroup(name = peerGroupToSave['name'],
+                                      description = peerGroupToSave['description'],
+                                      disabled = peerGroupToSave['disabled'])
                 peerGroup = session.add(peerGroup)
             session.commit()
             return peerGroup
@@ -250,22 +257,18 @@ def peers():
 @logged
 def peers_groups():
     db = DbRepo()
-    res = [ {
-        'id': x.id,
-        'name': x.name,
-        'peers': [ row2dict(p) for p in x.peers ],
-        } for x in db.getPeerGroups()]
+    pgs = [ (row2dict(x), [row2dict(p) for p in x.peers]) for x in db.getPeerGroups()]
+    for pg, p in pgs:
+        pg['peers'] = p
+    res = [x[0] for x in pgs]
     return res
 
 @app.route('/api/data/peer_group/save', methods = ['POST'])
 @logged
 def peers_group_save():
     data = request.json
-    app.logger.warn(f'data: {data}')
-    #data = jsonify(data)
     db = DbRepo()
     res = db.savePeerGroup(data)
-    #res = row2dict(res)
     res = {'status': 'ok'}
     return res
 

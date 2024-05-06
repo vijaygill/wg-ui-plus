@@ -6,6 +6,18 @@
             Enter Peer Name.
         </small>
     </div>
+    <div class="flex flex-column gap-2">
+        <label for="peerGroupDescription">Description</label>
+        <input pInputText id="peerGroupDescription" aria-describedby="peerGroupDescription-help"
+            [(ngModel)]="editItem.description" />
+        <small id="peerGroupDescription-help">
+            Enter Peer Description.
+        </small>
+    </div>
+    <div>
+        <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled"/>
+        <label for="peerGroupDisabled">Disabled</label>
+    </div>
     <div>
         <p-button label="Ok" (onClick)="ok()"></p-button>
         <p-button label="Cancel" (onClick)="cancel()"></p-button>
