@@ -18,7 +18,7 @@ export class ManagePeerGroupsEditorComponent {
   get editItem(): PeerGroup { return this.peerGroup; }
   set editItem(value: PeerGroup) { this.peerGroup = value; }
 
-  peerGroup: PeerGroup = { id: 0, name: '' };
+  peerGroup: PeerGroup = {} as PeerGroup;
 
   @Output() onFinish = new EventEmitter<boolean>();
 

@@ -4,28 +4,33 @@ import { FormsModule } from '@angular/forms';
 import { PrimeNGModule } from '../primeng.module';
 import { ManagePeerGroupsListComponent } from '../manage-peer-groups-list/manage-peer-groups-list.component';
 import { ManagePeerGroupsEditorComponent } from '../manage-peer-groups-editor/manage-peer-groups-editor.component';
-import { PeerGroup } from '../webapi.service';
+import { PeerGroup, WebapiService } from '../webapi.service';
+import { CrudContainerComponent } from '../crud-container/crud-container.component';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-manage-peer-groups',
   standalone: true,
   imports: [CommonModule, FormsModule, PrimeNGModule,
+    CrudContainerComponent,
     ManagePeerGroupsListComponent, ManagePeerGroupsEditorComponent],
-  providers: [],
+  providers: [MessageService],
   templateUrl: './manage-peer-groups.component.html',
   styleUrl: './manage-peer-groups.component.scss'
 })
 export class ManagePeerGroupsComponent {
-  showEditor: boolean = false;
-  editItem: PeerGroup = { id: 0, name: '' };
+  listItems: PeerGroup[] = [] as PeerGroup[];
 
-  onEditItem(peerGroup: PeerGroup) {
-    this.editItem = peerGroup;
-    this.showEditor = true;
+  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+
+    ngOnInit() {
+    this.refreshData();
   }
 
-  onEditFinish(editorResult: boolean)
-  {
-    this.showEditor = false;
+  refreshData(): void {
+    this.webapiService.getPeerGroupList().subscribe(data => {
+      this.listItems = data;
+    });
   }
+
 }

@@ -1,4 +1,11 @@
-<app-manage-peer-groups-list *ngIf="!showEditor" (editItem)="onEditItem($event)">
-</app-manage-peer-groups-list>
-<app-manage-peer-groups-editor *ngIf="showEditor" (onFinish)="onEditFinish($event)" [editItem]="editItem">
-</app-manage-peer-groups-editor>
+<div>
+    List of peer-groups
+</div>
+<app-crud-container>
+    <ng-template #list let-onEdit="onEdit" let-message="message">
+        <app-manage-peer-groups-list (onEdit)="onEdit($event)"></app-manage-peer-groups-list>
+    </ng-template>
+    <ng-template #editor let-onFinish="onFinish">
+        <app-manage-peer-groups-editor (onFinish)="onFinish($event)"></app-manage-peer-groups-editor>
+    </ng-template>
+</app-crud-container>

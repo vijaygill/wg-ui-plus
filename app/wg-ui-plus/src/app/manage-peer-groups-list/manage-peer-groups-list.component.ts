@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PeerGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
@@ -28,9 +28,11 @@ export class ManagePeerGroupsListComponent {
     });
   }
 
-  @Output() editItem = new EventEmitter<PeerGroup>();
+  @Output() onEdit = new EventEmitter<PeerGroup>();
 
-  edit(peerGroup: PeerGroup): void {
-    this.editItem.emit(peerGroup);
+  editItem(peerGroup: PeerGroup): void {
+    if (this.onEdit) {
+      this.onEdit.emit(peerGroup);
+    }
   }
 }
