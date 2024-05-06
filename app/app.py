@@ -82,7 +82,7 @@ class PeerGroup(Base):
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
-    disabled: Mapped[Boolean] = mapped_column(Boolean)
+    disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peers: Mapped[List["Peer"]] = relationship(back_populates = "peer_group", lazy = 'joined')
 
 @dataclass
@@ -183,12 +183,12 @@ class DbRepo(object):
                 peerGroup = PeerGroup(id = peerGroupToSave['id'], 
                                       name = peerGroupToSave['name'],
                                       description = peerGroupToSave['description'],
-                                      disabled = peerGroupToSave['disabled'])
+                                      disabled = peerGroupToSave['disabled'] if 'disabled' in peerGroupToSave.keys() else None)
                 peerGroup = session.merge(peerGroup)
             else:
                 peerGroup = PeerGroup(name = peerGroupToSave['name'],
                                       description = peerGroupToSave['description'],
-                                      disabled = peerGroupToSave['disabled'])
+                                      disabled = peerGroupToSave['disabled']if 'disabled' in peerGroupToSave.keys() else None)
                 peerGroup = session.add(peerGroup)
             session.commit()
             return peerGroup
