@@ -73,14 +73,14 @@ class Base(DeclarativeBase):
 @dataclass
 class PeerGroup(Base):
     __tablename__ = "wg_peer_groups"
-    id: Mapped[int] = mapped_column(primary_key = True)
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
     name: Mapped[str] = mapped_column(String(255))
     peers: Mapped[List["Peer"]] = relationship(back_populates = "peer_group", lazy = 'joined')
 
 @dataclass
 class Peer(Base):
     __tablename__ = "wg_peers"
-    id: Mapped[int] = mapped_column(primary_key = True)
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     device_name:  Mapped[str] = mapped_column(String(255))
     ip_address_num: Mapped[int] = mapped_column(Integer)
@@ -107,7 +107,7 @@ class Peer(Base):
 @dataclass
 class IpTablesChain(Base):
     __tablename__ = "wg_iptables_chain"
-    id: Mapped[int] = mapped_column(primary_key = True)
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
 
@@ -171,8 +171,12 @@ class DbRepo(object):
     @logged 
     def savePeerGroup(self, peerGroupToSave):
         with Session(self.engine) as session:
-            peerGroup = PeerGroup(id = peerGroupToSave['id'], name = peerGroupToSave['name'])
-            peerGroup = session.merge(peerGroup)
+            if 'id' in peerGroupToSave.keys():
+                peerGroup = PeerGroup(id = peerGroupToSave['id'], name = peerGroupToSave['name'])
+                peerGroup = session.merge(peerGroup)
+            else:
+                peerGroup = PeerGroup(name = peerGroupToSave['name'])
+                peerGroup = session.add(peerGroup)
             session.commit()
             return peerGroup
 

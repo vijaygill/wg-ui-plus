@@ -1,7 +1,4 @@
-<div>
-    List of peer-groups
-</div>
-<app-crud-container>
+<app-crud-container title="Peer Groups">
     <ng-template #list let-onEdit="onEdit" let-message="message">
         <app-manage-peer-groups-list (onEdit)="onEdit($event)"></app-manage-peer-groups-list>
     </ng-template>

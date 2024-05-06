@@ -1,16 +1,17 @@
 import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PrimeNGModule } from '../primeng.module';
 
 @Component({
   selector: 'app-crud-container',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PrimeNGModule],
   templateUrl: './crud-container.component.html',
   styleUrl: './crud-container.component.scss'
 })
 export class CrudContainerComponent<T> {
+  @Input() title: string = '<No Title>';
   isEditing: boolean = false;
-
   item: T = {} as T;
 
   @ContentChild("list") listControl!: TemplateRef<any>;
@@ -33,4 +34,8 @@ export class CrudContainerComponent<T> {
     }
   };
 
+  newItem(): void {
+    this.item = {} as T;
+    this.isEditing = true;
+  }
 }

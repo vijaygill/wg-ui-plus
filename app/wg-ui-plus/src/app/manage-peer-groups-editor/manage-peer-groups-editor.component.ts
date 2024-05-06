@@ -34,6 +34,7 @@ export class ManagePeerGroupsEditorComponent {
   }
 
   cancel() {
+    debugger;
     this.onFinish.emit(false);
   }
 }
