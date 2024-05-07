@@ -5,7 +5,9 @@
             <th>Name</th>
             <th>Description</th>
             <th>Disabled</th>
-            <th>Action</th>
+            <th>Action
+                <p-button label="New" (onClick)="newItem();"></p-button>
+            </th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-peerGroup>

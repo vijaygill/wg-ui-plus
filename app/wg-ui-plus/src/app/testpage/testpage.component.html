@@ -2,44 +2,6 @@
 <div>
     This is test component!
     <p-tabView>
-        <p-tabPanel header="Peers">
-            <p-table [value]="peers">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Group Name</th>
-                        <th>IP Address</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-peer>
-                    <tr>
-                        <td>{{ peer.id }}</td>
-                        <td>{{ peer.name }}</td>
-                        <td>{{ peer.peer_group.name }}</td>
-                        <td>{{ peer.ip_address }}</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-tabPanel>
-        <p-tabPanel header="IPTablesChains">
-            <p-table [value]="ipTablesChains">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Description</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-chain>
-                    <tr>
-                        <td>{{ chain.id }}</td>
-                        <td>{{ chain.name }}</td>
-                        <td>{{ chain.description}}</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-tabPanel>
         <p-tabPanel header="DockerContainers">
             <p-table [value]="dockerContainers">
                 <ng-template pTemplate="header">
@@ -65,5 +27,24 @@
                 </ng-template>
             </p-table>
         </p-tabPanel>
+        <p-tabPanel header="IPTablesChains">
+            <p-table [value]="ipTablesChains">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-chain>
+                    <tr>
+                        <td>{{ chain.id }}</td>
+                        <td>{{ chain.name }}</td>
+                        <td>{{ chain.description}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+        
     </p-tabView>
 </div>

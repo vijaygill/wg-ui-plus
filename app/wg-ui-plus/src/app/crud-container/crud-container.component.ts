@@ -21,6 +21,10 @@ export class CrudContainerComponent<T> {
   }
 
   listControlContext = {
+    onNewItem: (item: T) =>{
+      this.item = item;
+      this.isEditing = true;
+    },
     onEdit: (item: T) => {
       this.item = item;
       this.isEditing = true;
@@ -33,9 +37,4 @@ export class CrudContainerComponent<T> {
       this.isEditing = false;
     }
   };
-
-  newItem(): void {
-    this.item = {} as T;
-    this.isEditing = true;
-  }
 }

@@ -1,0 +1,24 @@
+<p-table [value]="peers" styleClass="p-datatable-striped" >
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Device Name</th>
+            <th>IP Address</th>
+            <th>Disabled</th>
+            <th>Action
+                <p-button label="New" (onClick)="newItem();"></p-button>
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-peer>
+        <tr>
+            <td>{{ peer.id }}</td>
+            <td>{{ peer.name }}</td>
+            <td>{{ peer.device_name }}</td>
+            <td>{{ peer.ip_address }}</td>
+            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peer.disabled" /></td>
+            <td><p-button label="Edit" (onClick)="editItem(peer);"></p-button></td>
+        </tr>
+    </ng-template>
+</p-table>

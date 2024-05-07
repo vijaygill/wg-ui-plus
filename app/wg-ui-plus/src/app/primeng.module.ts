@@ -1,8 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { ConfirmationService } from 'primeng/api';
-import { MessageService } from 'primeng/api';
 
 //import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
@@ -15,13 +11,14 @@ import { DataViewModule } from 'primeng/dataview';
 //import { DialogModule } from 'primeng/dialog';
 //import { DividerModule } from 'primeng/divider';
 //import { DragDropModule } from 'primeng/dragdrop';
+import { DropdownModule } from 'primeng/dropdown';
 //import { DockModule } from 'primeng/dock';
 //import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 //import { KnobModule } from 'primeng/knob';
-//import { ListboxModule } from 'primeng/listbox';
+import { ListboxModule } from 'primeng/listbox';
 //import { MegaMenuModule } from 'primeng/megamenu';
 //import { MenuModule } from 'primeng/menu';
 //import { MenubarModule } from 'primeng/menubar';
@@ -60,10 +57,14 @@ import { ToastModule } from 'primeng/toast';
 //import { TreeTableModule } from 'primeng/treetable';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 
-let modules = [ ButtonModule, CheckboxModule, DataViewModule, InputNumberModule, InputTextModule, InputTextareaModule, TableModule, TabViewModule, ToastModule ];
+let modules = [ButtonModule, CheckboxModule,
+    DataViewModule, DropdownModule,
+    InputNumberModule, InputTextModule, InputTextareaModule,
+    ListboxModule,
+    TableModule, TabViewModule, ToastModule];
 
 @NgModule({
     imports: modules,
     exports: modules
 })
-export class PrimeNGModule {}
+export class PrimeNGModule { }

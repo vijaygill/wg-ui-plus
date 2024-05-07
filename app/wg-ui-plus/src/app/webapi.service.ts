@@ -7,10 +7,12 @@ import { Observable, of } from 'rxjs';
 })
 export class WebapiService {
 
-    private urlPeerGroupList = '/api/data/peer_groups';
-    private urlPeerGroupSave = '/api/data/peer_group/save';
+    private urlPeerGroupList = '/api/data/peer_group';
+    private urlPeerGroupSave = '/api/data/peer_group';
 
-    private urlPeerList = '/api/data/peers';
+    private urlPeerList = '/api/data/peer';
+    private urlPeerSave = '/api/data/peer';
+
     private urlIpTableChainList = '/api/data/iptablechains';
 
     private urlDockerContainerList = '/api/docker/container/list';
@@ -29,6 +31,14 @@ export class WebapiService {
 
     getPeerList(): Observable<Peer[]> {
         return this.http.get<Peer[]>(this.urlPeerList);
+    }
+
+    getPeer(id: number): Observable<Peer> {
+        return this.http.get<Peer>(this.urlPeerList + '/' + id);
+    }
+
+    savePeer(item: Peer): Observable<Peer> {
+        return this.http.post<Peer>(this.urlPeerSave, item);
     }
 
     getIpTablesChainList(): Observable<IpTablesChain[]> {
@@ -52,8 +62,8 @@ export interface Peer{
     id: number;
     name: string;
     device_name: string;
-    peer_group: PeerGroup;
     ip_address: string;
+    disabled: boolean;
 }
 
 export interface PeerGroup{

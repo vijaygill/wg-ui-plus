@@ -1,8 +1,10 @@
 <app-crud-container title="Peer Groups">
-    <ng-template #list let-onEdit="onEdit" let-message="message">
-        <app-manage-peer-groups-list (onEdit)="onEdit($event)"></app-manage-peer-groups-list>
+    <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
+        <app-manage-peer-groups-list (onEdit)="onEdit($event)"
+            (onNewItem)="onNewItem($event)"></app-manage-peer-groups-list>
     </ng-template>
     <ng-template #editor let-onFinish="onFinish" let-item="item">
-        <app-manage-peer-groups-editor (onFinish)="onFinish($event)" [editItem]="item()"></app-manage-peer-groups-editor>
+        <app-manage-peer-groups-editor (onFinish)="onFinish($event)"
+            [editItem]="item()"></app-manage-peer-groups-editor>
     </ng-template>
 </app-crud-container>

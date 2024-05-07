@@ -28,7 +28,15 @@ export class ManagePeerGroupsListComponent {
     });
   }
 
+  @Output() onNewItem = new EventEmitter<PeerGroup>();
   @Output() onEdit = new EventEmitter<PeerGroup>();
+
+  newItem(): void {
+    if (this.onNewItem) {
+      let peerGroup = {} as PeerGroup;
+      this.onNewItem.emit(peerGroup);
+    }
+  }
 
   editItem(peerGroup: PeerGroup): void {
     if (this.onEdit) {

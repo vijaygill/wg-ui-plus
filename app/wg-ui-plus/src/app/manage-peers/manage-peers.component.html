@@ -1,18 +1,8 @@
-<p-table [value]="peers">
-    <ng-template pTemplate="header">
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Group Name</th>
-            <th>IP Address</th>
-        </tr>
+<app-crud-container title="Peer">
+    <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
+        <app-manage-peers-list (onEdit)="onEdit($event)" (onNewItem)="onNewItem($event)"></app-manage-peers-list>
     </ng-template>
-    <ng-template pTemplate="body" let-peer>
-        <tr>
-            <td>{{ peer.id }}</td>
-            <td>{{ peer.name }}</td>
-            <td>{{ peer.peer_group.name }}</td>
-            <td>{{ peer.ip_address }}</td>
-        </tr>
+    <ng-template #editor let-onFinish="onFinish" let-item="item">
+        <app-manage-peers-editor (onFinish)="onFinish($event)" [editItem]="item()"></app-manage-peers-editor>
     </ng-template>
-</p-table>
+</app-crud-container>
