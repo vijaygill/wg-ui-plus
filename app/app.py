@@ -369,17 +369,10 @@ class DbRepo(object):
     @logged
     def saveTargetGroup(self, target_groupToSave):
         with Session(self.engine) as session:
-            stmt = sqlalchemy.select(func.max(TargetGroup.ip_address_num))
-            ip_address_num_max = session.scalars(stmt).unique().all()
-            ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
             target_group = dict2row(TargetGroup, target_groupToSave)
-            if target_group.ip_address_num is None:
-                ip_address_num = ip_address_num_max + 1
-                target_group.ip_address = ip_address_num
             target_group = session.merge(target_group)
             session.commit()
             return target_group
-
 
 @app.route('/test')
 @logged

@@ -42,6 +42,18 @@ export class WebapiService {
         return this.http.post<Peer>(this.urlPeerSave, item);
     }
 
+    getTargetGroupList(): Observable<TargetGroup[]> {
+        return this.http.get<TargetGroup[]>(this.urlTargetGroupList);
+    }
+
+    getTargetGroup(id: number): Observable<TargetGroup> {
+        return this.http.get<TargetGroup>(this.urlTargetGroupList + '/' + id);
+    }
+
+    saveTargetGroup(item: TargetGroup): Observable<TargetGroup> {
+        return this.http.post<TargetGroup>(this.urlTargetGroupSave, item);
+    }
+
     getDockerContainerList(): Observable<DockerContainer[]> {
         return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
     }
@@ -70,15 +82,17 @@ export interface PeerGroup{
     disabled: boolean;
 }
 
-export interface IpTablesChain{
-    id: number;
-    name: string;
-    description: string;
-}
-
 export interface DockerContainer{
     id: string;
     name: string;
     short_id: string;
     status: string;
+}
+
+export interface TargetGroup
+{
+    id: number;
+    name: string;
+    description: string;
+    disabled: boolean;
 }

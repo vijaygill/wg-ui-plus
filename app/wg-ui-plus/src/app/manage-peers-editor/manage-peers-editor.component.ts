@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
-import { CrudContainerComponent } from '../crud-container/crud-container.component';
-import { ManagePeersListComponent } from '../manage-peers-list/manage-peers-list.component';
 import { PrimeNGModule } from '../primeng.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
