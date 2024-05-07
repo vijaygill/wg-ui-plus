@@ -19,18 +19,4 @@ import { MessageService } from 'primeng/api';
   styleUrl: './manage-peer-groups.component.scss'
 })
 export class ManagePeerGroupsComponent {
-  listItems: PeerGroup[] = [] as PeerGroup[];
-
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
-
-    ngOnInit() {
-    this.refreshData();
-  }
-
-  refreshData(): void {
-    this.webapiService.getPeerGroupList().subscribe(data => {
-      this.listItems = data;
-    });
-  }
-
 }

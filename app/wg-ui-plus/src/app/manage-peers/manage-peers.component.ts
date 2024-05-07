@@ -18,18 +18,4 @@ import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-
 })
 export class ManagePeersComponent {
 
-  listItems: Peer[] = [] as Peer[];
-
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
-
-  ngOnInit() {
-    this.refreshData();
-  }
-
-  refreshData(): void {
-    this.webapiService.getPeerList().subscribe(data => {
-      this.listItems = data;
-    });
-  }
-
 }
