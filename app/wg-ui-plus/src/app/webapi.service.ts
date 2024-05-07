@@ -26,6 +26,10 @@ export class WebapiService {
         return this.http.get<PeerGroup[]>(this.urlPeerGroupList);
     }
 
+    getPeerGroup(id: number): Observable<PeerGroup> {
+        return this.http.get<PeerGroup>(this.urlPeerGroupList + '/' + id);
+    }
+
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
         return this.http.post<PeerGroup>(this.urlPeerGroupSave, item);
     }

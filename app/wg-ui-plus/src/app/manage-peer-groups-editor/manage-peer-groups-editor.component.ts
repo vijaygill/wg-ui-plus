@@ -16,7 +16,12 @@ import { PrimeNGModule } from '../primeng.module';
 export class ManagePeerGroupsEditorComponent {
   @Input()
   get editItem(): PeerGroup { return this.peerGroup; }
-  set editItem(value: PeerGroup) { this.peerGroup = value; }
+  set editItem(value: PeerGroup) {
+    this.peerGroup = value;
+    this.webapiService.getPeerGroup(value.id).subscribe(data => {
+      this.peerGroup = data;
+    });
+  }
 
   peerGroup: PeerGroup = {} as PeerGroup;
 
