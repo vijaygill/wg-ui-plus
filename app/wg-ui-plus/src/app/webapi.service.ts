@@ -13,7 +13,8 @@ export class WebapiService {
     private urlPeerList = '/api/data/peer';
     private urlPeerSave = '/api/data/peer';
 
-    private urlIpTableChainList = '/api/data/iptablechains';
+    private urlTargetGroupList = '/api/data/target_group';
+    private urlTargetGroupSave = '/api/data/target_group';
 
     private urlDockerContainerList = '/api/docker/container/list';
     private urlDockerContainerStart = '/api/docker/container/start';
@@ -39,10 +40,6 @@ export class WebapiService {
 
     savePeer(item: Peer): Observable<Peer> {
         return this.http.post<Peer>(this.urlPeerSave, item);
-    }
-
-    getIpTablesChainList(): Observable<IpTablesChain[]> {
-        return this.http.get<IpTablesChain[]>(this.urlIpTableChainList);
     }
 
     getDockerContainerList(): Observable<DockerContainer[]> {
