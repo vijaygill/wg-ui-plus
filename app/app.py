@@ -40,6 +40,10 @@ DICT_DATA_TARGET_GROUPS = [
         ('to-internet', 'Internet destinations'),
         ]
 
+DICT_DATA_TARGETS = [
+        ('All Targets', 'All targets', '0.0.0.0/0')
+        ]
+
 USE_SSR = False # Will get SSR working some other time
 
 BASE_DIR_INFOS = [
@@ -192,26 +196,13 @@ class Target(Base):
     __tablename__ = "wg_target"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
-    ip_address_num: Mapped[int] = mapped_column(Integer)
+    description: Mapped[str] = mapped_column(String(255))
+    ip_network: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target")
-
-    @hybrid_property
-    def ip_address(self):
-        # TODO: I don't like this. Review later
-        try:
-            return str(ipaddress.ip_address(self.ip_address_num))
-        except:
-            pass
-
-        return None
-
-    @ip_address.setter
-    def ip_address(self, value):
-        self.ip_address_num = int(ipaddress.ip_address(value))
-
+  
     def __repr__(self) -> str:
-        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
+        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
 
 class DbRepo(object):
     def __init__(self):
@@ -237,6 +228,7 @@ class DbRepo(object):
     def createDictionaryData(self):
         self.createDictionaryDataPeerGroups()
         self.createDictionaryDataTargetGroups()
+        self.createDictionaryDataTargets()
 
     @logged
     def createDictionaryDataPeerGroups(self):
@@ -262,6 +254,18 @@ class DbRepo(object):
                 session.add(new_row)
                 session.commit()
 
+    @logged
+    def createDictionaryDataTargets(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( Target ).all() ]
+            rows_to_create = [ x for x in DICT_DATA_TARGETS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description, ip_network = r
+                new_row = Target( name = name, description = description, ip_network = ip_network )
+                session.add(new_row)
+                session.commit()
+				
     @logged
     def createSampleData(self):
         peers = self.getPeers()
@@ -374,6 +378,30 @@ class DbRepo(object):
             session.commit()
             return target_group
 
+    @logged
+    def getTargets(self, for_api = False):
+        with Session(self.engine) as session:
+            stmt = select(Target)
+            res = session.scalars(stmt).unique().all()
+            res = [row2dict(x) for x in res] if for_api else res
+            return res
+    
+    @logged
+    def getTarget(self, id):
+        with Session(self.engine) as session:
+            stmt = select(Target).where(Target.id == id)
+            res = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(res)
+            return res
+
+    @logged
+    def saveTarget(self, targetToSave):
+        with Session(self.engine) as session:
+            target = dict2row(Target, targetToSave)
+            target = session.merge(target)
+            session.commit()
+            return target
+
 @app.route('/test')
 @logged
 def test():
@@ -469,6 +497,29 @@ def target_group_save():
     data = request.json
     db = DbRepo()
     res = db.saveTargetGroup(data)
+    res = {'status': 'ok'}
+    return res
+
+@app.route('/api/data/target', methods = ['GET'])
+@logged
+def targets():
+    db = DbRepo()
+    res = db.getTargets(for_api = True)
+    return res
+
+@app.route('/api/data/target/<int:id>', methods = ['GET'])
+@logged
+def target_get(id):
+    db = DbRepo()
+    res = db.getTarget(id)
+    return res
+
+@app.route('/api/data/target', methods = ['POST'])
+@logged
+def target_save():
+    data = request.json
+    db = DbRepo()
+    res = db.saveTarget(data)
     res = {'status': 'ok'}
     return res
 

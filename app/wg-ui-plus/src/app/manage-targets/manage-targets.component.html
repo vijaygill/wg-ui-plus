@@ -1,1 +1,8 @@
-<p>manage-targets works!</p>
+<app-crud-container title="Target">
+    <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
+        <app-manage-targets-list (onEdit)="onEdit($event)" (onNewItem)="onNewItem($event)"></app-manage-targets-list>
+    </ng-template>
+    <ng-template #editor let-onFinish="onFinish" let-item="item">
+        <app-manage-targets-editor (onFinish)="onFinish($event)" [editItem]="item()"></app-manage-targets-editor>
+    </ng-template>
+</app-crud-container>
