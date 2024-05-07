@@ -55,11 +55,6 @@ app.config['DEBUG'] = True
 app.config['TESTING'] = True
 app.config['EXPLAIN_TEMPLATE_LOADING'] = False
 
-DB_DIR = os.path.dirname(os.path.abspath(DB_FILE))
-if not os.path.exists(DB_DIR):
-    os.makedirs(DB_DIR)
-    app.logger.warning(f'DB directory was missing. Created: {DB_DIR}')
-
 def logged(func):
     @wraps(func)
     def logger_func(*args, **kwargs):
@@ -184,11 +179,18 @@ class IpTablesChain(Base):
 
 class DbRepo(object):
     def __init__(self):
-        self.engine = create_engine(f'sqlite:///{DB_FILE}', echo = True)
-        Base.metadata.create_all(self.engine)
-
+        self.createDatabase()
         self.createDictionaryData()
         self.createSampleData()
+
+    @logged
+    def createDatabase(self):
+        db_dir = os.path.dirname(os.path.abspath(DB_FILE))
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+            app.logger.warning(f'DB directory was missing. Created: {db_dir}')
+        self.engine = create_engine(f'sqlite:///{DB_FILE}', echo = True)
+        Base.metadata.create_all(self.engine)
 
     @logged
     def createDictionaryData(self):
