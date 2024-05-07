@@ -1,0 +1,22 @@
+<p-table [value]="peerGroups" styleClass="p-datatable-striped" dataKey="id">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Disabled</th>
+            <th>Action
+                <p-button label="New" (onClick)="newItem();"></p-button>
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-peerGroup>
+        <tr>
+            <td>{{ peerGroup.id }}</td>
+            <td>{{ peerGroup.name }}</td>
+            <td>{{ peerGroup.description }}</td>
+            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peerGroup.disabled" /></td>
+            <td><p-button label="Edit" (onClick)="editItem(peerGroup);"></p-button></td>
+        </tr>
+    </ng-template>
+</p-table>

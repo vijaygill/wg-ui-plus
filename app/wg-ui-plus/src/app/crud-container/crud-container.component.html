@@ -1,0 +1,10 @@
+<h2>{{title}}</h2>
+<ng-container *ngIf="!isEditing">
+    <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
+</ng-container>
+
+<ng-container *ngIf="isEditing">
+    <div>
+        <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
+    </div>
+</ng-container>

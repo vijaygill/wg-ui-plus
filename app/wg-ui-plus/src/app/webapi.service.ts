@@ -7,8 +7,13 @@ import { Observable, of } from 'rxjs';
 })
 export class WebapiService {
 
-    private urlListPeerList = '/api/data/peers';
-    private urlListIpTableChainList = '/api/data/iptablechains';
+    private urlPeerGroupList = '/api/data/peer_group';
+    private urlPeerGroupSave = '/api/data/peer_group';
+
+    private urlPeerList = '/api/data/peer';
+    private urlPeerSave = '/api/data/peer';
+
+    private urlIpTableChainList = '/api/data/iptablechains';
 
     private urlDockerContainerList = '/api/docker/container/list';
     private urlDockerContainerStart = '/api/docker/container/start';
@@ -16,12 +21,28 @@ export class WebapiService {
 
     constructor(private http: HttpClient) {}
 
+    getPeerGroupList(): Observable<PeerGroup[]> {
+        return this.http.get<PeerGroup[]>(this.urlPeerGroupList);
+    }
+
+    savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
+        return this.http.post<PeerGroup>(this.urlPeerGroupSave, item);
+    }
+
     getPeerList(): Observable<Peer[]> {
-        return this.http.get<Peer[]>(this.urlListPeerList);
+        return this.http.get<Peer[]>(this.urlPeerList);
+    }
+
+    getPeer(id: number): Observable<Peer> {
+        return this.http.get<Peer>(this.urlPeerList + '/' + id);
+    }
+
+    savePeer(item: Peer): Observable<Peer> {
+        return this.http.post<Peer>(this.urlPeerSave, item);
     }
 
     getIpTablesChainList(): Observable<IpTablesChain[]> {
-        return this.http.get<IpTablesChain[]>(this.urlListIpTableChainList);
+        return this.http.get<IpTablesChain[]>(this.urlIpTableChainList);
     }
 
     getDockerContainerList(): Observable<DockerContainer[]> {
@@ -41,10 +62,16 @@ export interface Peer{
     id: number;
     name: string;
     device_name: string;
-    is_vip: boolean;
     ip_address: string;
+    disabled: boolean;
 }
 
+export interface PeerGroup{
+    id: number;
+    name: string;
+    description: string;
+    disabled: boolean;
+}
 
 export interface IpTablesChain{
     id: number;

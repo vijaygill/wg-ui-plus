@@ -1,0 +1,50 @@
+<p-toast></p-toast>
+<div>
+    This is test component!
+    <p-tabView>
+        <p-tabPanel header="DockerContainers">
+            <p-table [value]="dockerContainers">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Id (Short)</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-dockerContainer>
+                    <tr>
+                        <td>{{ dockerContainer.short_id }}</td>
+                        <td>{{ dockerContainer.name }}</td>
+                        <td>{{ dockerContainer.status }}</td>
+                        <td>
+                            <p-button *ngIf="dockerContainer.status !== 'running'" label="Start" severity="success"
+                                (onClick)="startDockerContainer(dockerContainer.name)"></p-button>
+                            <p-button *ngIf="dockerContainer.status === 'running'" label="Stop" severity="danger"
+                                (onClick)="stopDockerContainer(dockerContainer.name)"></p-button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+        <p-tabPanel header="IPTablesChains">
+            <p-table [value]="ipTablesChains">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-chain>
+                    <tr>
+                        <td>{{ chain.id }}</td>
+                        <td>{{ chain.name }}</td>
+                        <td>{{ chain.description}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+        
+    </p-tabView>
+</div>
