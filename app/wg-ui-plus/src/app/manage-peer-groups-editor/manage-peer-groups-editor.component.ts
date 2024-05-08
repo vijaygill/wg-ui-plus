@@ -3,12 +3,12 @@ import { PeerGroup, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { PrimeNGModule } from '../primeng.module';
+import { SharedModule } from '../shared.module';
 
 @Component({
   selector: 'app-manage-peer-groups-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, PrimeNGModule],
+  imports: [CommonModule, FormsModule, SharedModule],
   providers: [MessageService],
   templateUrl: './manage-peer-groups-editor.component.html',
   styleUrl: './manage-peer-groups-editor.component.scss'

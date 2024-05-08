@@ -1,9 +1,19 @@
-<nav>
-    <a routerLink="home">Home</a> |
-    <a routerLink="about">About</a> |
-    <a routerLink="manage-peer-groups">Peer-Groups</a> |
-    <a routerLink="manage-peers">Peers</a> |
-    <a routerLink="manage-target-groups">Target-Groups</a> |
-    <a routerLink="manage-targets">Targets</a> |
-    <a routerLink="test-page">Test</a>
-</nav>
+<div class="card flex justify-content-center">
+    <p-menu [model]="items">
+        <ng-template pTemplate="item" let-item>
+            <ng-container *ngIf="item.route; else elseBlock">
+                <a [routerLink]="item.route" class="p-menuitem-link">
+                    <span [class]="item.icon"></span>
+                    <span class="ml-2">{{ item.label }}</span>
+                </a>
+            </ng-container>
+            <ng-template #elseBlock>
+                <a [href]="item.url" class="p-menuitem-link">
+                    <span [class]="item.icon"></span>
+                    <span class="ml-2">{{ item.label }}</span>
+                </a>
+            </ng-template>
+        </ng-template>
+    </p-menu>
+</div>
+

@@ -145,6 +145,7 @@ class PeerGroup(Base):
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
 
 @dataclass
 class Peer(Base):
@@ -190,6 +191,7 @@ class TargetGroup(Base):
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target_group")
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
 
 @dataclass
 class Target(Base):
@@ -200,7 +202,8 @@ class Target(Base):
     ip_network: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target")
-  
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+
     def __repr__(self) -> str:
         return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
 
@@ -238,7 +241,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description = r
-                new_row = PeerGroup( name = name, description = description )
+                new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 
@@ -250,7 +253,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description = r
-                new_row = TargetGroup( name = name, description = description )
+                new_row = TargetGroup( name = name, description = description, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 
@@ -262,7 +265,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description, ip_network = r
-                new_row = Target( name = name, description = description, ip_network = ip_network )
+                new_row = Target( name = name, description = description, ip_network = ip_network, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 				
@@ -466,6 +469,13 @@ def peer_save():
 def peers_groups():
     db = DbRepo()
     res = db.getPeerGroups(for_api = True)
+    return res
+
+@app.route('/api/data/peer_group/<int:id>', methods = ['GET'])
+@logged
+def peer_group_get(id):
+    db = DbRepo()
+    res = db.getPeerGroup(id)
     return res
 
 @app.route('/api/data/peer_group', methods = ['POST'])

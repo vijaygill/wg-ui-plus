@@ -1,8 +1,8 @@
 <p-table [value]="targetGroups" styleClass="p-datatable-striped" >
     <ng-template pTemplate="header">
         <tr>
-            <th>Id</th>
             <th>Name</th>
+            <th>Description</th>
             <th>Disabled</th>
             <th>Action
                 <p-button label="New" (onClick)="newItem();"></p-button>
@@ -11,8 +11,8 @@
     </ng-template>
     <ng-template pTemplate="body" let-targetGroup>
         <tr>
-            <td>{{ targetGroup.id }}</td>
             <td>{{ targetGroup.name }}</td>
+            <td>{{ targetGroup.description }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
             <td><p-button label="Edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>

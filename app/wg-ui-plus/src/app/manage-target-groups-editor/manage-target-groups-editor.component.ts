@@ -3,12 +3,12 @@ import { TargetGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PrimeNGModule } from '../primeng.module';
+import { SharedModule } from '../shared.module';
 
 @Component({
   selector: 'app-manage-target-groups-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, PrimeNGModule],
+  imports: [CommonModule, FormsModule, SharedModule],
   templateUrl: './manage-target-groups-editor.component.html',
   styleUrl: './manage-target-groups-editor.component.scss'
 })

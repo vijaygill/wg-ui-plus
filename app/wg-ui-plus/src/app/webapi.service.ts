@@ -99,13 +99,7 @@ export interface PeerGroup {
     name: string;
     description: string;
     disabled: boolean;
-}
-
-export interface DockerContainer {
-    id: string;
-    name: string;
-    short_id: string;
-    status: string;
+    is_inbuilt: boolean;
 }
 
 export interface TargetGroup {
@@ -113,8 +107,8 @@ export interface TargetGroup {
     name: string;
     description: string;
     disabled: boolean;
+    is_inbuilt: boolean;
 }
-
 
 export interface Target {
     id: number;
@@ -122,4 +116,12 @@ export interface Target {
     description: string;
     ip_network: string;
     disabled: boolean;
+    is_inbuilt: boolean;
+}
+
+export interface DockerContainer {
+    id: string;
+    name: string;
+    short_id: string;
+    status: string;
 }
