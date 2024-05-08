@@ -16,7 +16,6 @@ import { MenuModule } from 'primeng/menu';
 export class SidepanelComponent {
   items: MenuItem[] = [
     {
-      label: 'Navigate',
       items: [
         {
           label: 'Home',

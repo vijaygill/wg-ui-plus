@@ -1,8 +1,15 @@
 <table class="editor-table">
     <tbody>
         <tr>
-            <td><label for="IPAddress">Name</label></td>
-            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address" /></td>
+            <td><label for="ipAddress">IP Address</label></td>
+            <td><input pInputText id="ipAddress" [min]="1024" [max]="64000" [(ngModel)]="editItem.ip_address" /></td>
+        </tr>
+        <tr>
+            <td><label for="portnumber">Port</label></td>
+            <td>
+                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            </td>
         </tr>
         <tr>
             <td><label for="scriptPathPostUp">Post-Up Script</label></td>

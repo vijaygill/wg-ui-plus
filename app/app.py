@@ -49,7 +49,10 @@ DICT_DATA_TARGETS = [
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
-    ('192.168.2.1', os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh'))
+    ('192.168.2.1', 51820,
+      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), 
+      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh')
+      )
 ]
 
 USE_SSR = False # Will get SSR working some other time
@@ -220,6 +223,7 @@ class ServerConfiguration(Base):
     __tablename__ = "wg_server_configuration"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     ip_address_num: Mapped[int] = mapped_column(Integer)
+    port: Mapped[int] = mapped_column(Integer)
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
     template_peer: Mapped[str] = mapped_column(String(4096), nullable = True)
@@ -276,8 +280,8 @@ class DbRepo(object):
             existing_rows = [ r.name for r in session.query( ServerConfiguration ).all() ]
             rows_to_create = [ x for x in DICT_DATA_SERVER_CONFIGURATION if x[0] not in existing_rows]
             for r in rows_to_create:
-                ip_address, script_path_post_up, script_path_post_down = r
-                new_row = ServerConfiguration( ip_address = ip_address, script_path_post_up = script_path_post_up, script_path_post_down = script_path_post_down )
+                ip_address, port, script_path_post_up, script_path_post_down = r
+                new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, script_path_post_down = script_path_post_down )
                 session.add(new_row)
                 session.commit()
         pass
