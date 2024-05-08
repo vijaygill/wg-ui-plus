@@ -1,26 +1,29 @@
-<div>
-    <div class="flex flex-column gap-2">
-        <label for="targetGroupName">Name</label>
-        <input pInputText id="targetGroupName" aria-describedby="targetGroupName-help" [(ngModel)]="editItem.name" />
-        <small id="targetGroupName-help">
-            Enter targetGroup Name.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="targetGroupDescription">Description</label>
-        <input pInputText id="targetGroupDescription" aria-describedby="targetGroupDescription-help"
-            [(ngModel)]="editItem.description" />
-        <small id="targetGroupDescription-help">
-            Enter Target-Group Description.
-        </small>
-    </div>
-    <div>
-        <label for="targetGroupDisabled">Disabled</label>
-        <p-checkbox id="targetGroupDisabled" [binary]="true" [(ngModel)]="editItem.disabled" />
-    </div>
-
-    <div>
-        <p-button label="Ok" (onClick)="ok()"></p-button>
-        <p-button label="Cancel" (onClick)="cancel()"></p-button>
-    </div>
-</div>
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td><label for="targetGroupName">Name</label></td>
+            <td><input pInputText id="targetGroupName" [(ngModel)]="editItem.name" /></td>
+        </tr>
+        <tr>
+            <td><label for="targetGroupDescription">Description</label></td>
+            <td><input pInputText id="targetGroupDescription" [(ngModel)]="editItem.description" /></td>
+        </tr>
+        <tr>
+            <td><label for="targetGroupDisabled">Disabled</label></td>
+            <td><p-checkbox id="targetGroupDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

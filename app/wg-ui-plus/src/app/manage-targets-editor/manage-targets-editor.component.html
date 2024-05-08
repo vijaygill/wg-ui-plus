@@ -1,34 +1,54 @@
-<div>
-    <div class="flex flex-column gap-2">
-        <label for="targetName">Name</label>
-        <input pInputText id="targetName" aria-describedby="targetName-help" [(ngModel)]="editItem.name" />
-        <small id="targetName-help">
-            Enter target Name.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="targetDescription">Description</label>
-        <input pInputText id="targetDescription" aria-describedby="targetDescription-help"
-            [(ngModel)]="editItem.description" />
-        <small id="targetDescription-help">
-            Enter Target- Description.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="targetIPNetwork">IPNetwork</label>
-        <input pInputText id="targetIPNetwork" aria-describedby="targetIPNetwork-help"
-            [(ngModel)]="editItem.ip_network" />
-        <small id="targetIPNetwork-help">
-            Enter Target- IPNetwork.
-        </small>
-    </div>
-    <div>
-        <label for="targetDisabled">Disabled</label>
-        <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled" />
-    </div>
-
-    <div>
-        <p-button label="Ok" (onClick)="ok()"></p-button>
-        <p-button label="Cancel" (onClick)="cancel()"></p-button>
-    </div>
-</div>
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td>
+                <label for="targetName">Name</label>
+            </td>
+            <td><input pInputText id="targetName" [(ngModel)]="editItem.name" /></td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDescription">Description</label>
+            </td>
+            <td>
+                <input pInputText id="targetDescription" [(ngModel)]="editItem.description" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetIPNetwork">IPNetwork</label>
+            <td>
+                <input pInputText id="targetIPNetwork" [(ngModel)]="editItem.ip_network" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDisabled">Disabled</label>
+            </td>
+            <td>
+                <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled" />
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
