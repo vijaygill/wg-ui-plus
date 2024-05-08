@@ -22,8 +22,8 @@
 
 .container {
     display: grid;
-    grid-template-columns: 240px auto;
-    grid-template-rows: auto;
+    grid-template-columns: min-content auto;
+    grid-template-rows: min-content auto 120px;
     grid-template-areas:
         "header header"
         "sidebar main"
