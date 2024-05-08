@@ -32,12 +32,13 @@ export class ManageServerConfigurationComponent {
 
   ok() {
     this.webapiService.saveServerConfiguration(this.editItem).subscribe(data => {
-
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
     });
   }
 
   cancel() {
     this.refreshData();
+    this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.'});
   }
 
 }
