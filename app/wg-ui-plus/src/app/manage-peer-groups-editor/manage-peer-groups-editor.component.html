@@ -23,13 +23,18 @@
         </tr>
         <tr>
             <td colspan="2">
+                <span *ngIf="editItem.is_inbuilt">In-built Peer-Groups are read-only.</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"
+                        [disabled]="editItem.is_inbuilt"></p-button>
                     &nbsp;
-                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
                 </div>
             </td>
         </tr>
     </tbody>
 </table>
-<span *ngIf="editItem.is_inbuilt">In-built Peer-Groups are read-only.</span>

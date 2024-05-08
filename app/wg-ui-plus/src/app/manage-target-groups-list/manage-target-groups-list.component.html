@@ -5,7 +5,7 @@
             <th>Description</th>
             <th>Disabled</th>
             <th>Action
-                <p-button label="New" (onClick)="newItem();"></p-button>
+                <p-button icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
             </th>
         </tr>
     </ng-template>
@@ -14,7 +14,7 @@
             <td>{{ targetGroup.name }}</td>
             <td>{{ targetGroup.description }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
-            <td><p-button label="Edit" (onClick)="editItem(targetGroup);"></p-button></td>
+            <td><p-button icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>
     </ng-template>
 </p-table>
