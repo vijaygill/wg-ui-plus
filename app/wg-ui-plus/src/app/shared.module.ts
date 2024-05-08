@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 
 //import { AccordionModule } from 'primeng/accordion';
 import { ButtonModule } from 'primeng/button';
-//import { CardModule } from 'primeng/card';
+import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
 //import { ConfirmDialogModule } from 'primeng/confirmdialog';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
@@ -20,7 +20,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 //import { KnobModule } from 'primeng/knob';
 import { ListboxModule } from 'primeng/listbox';
 //import { MegaMenuModule } from 'primeng/megamenu';
-//import { MenuModule } from 'primeng/menu';
+import { MenuModule } from 'primeng/menu';
 //import { MenubarModule } from 'primeng/menubar';
 //import { MessagesModule } from 'primeng/messages';
 //import { MeterGroupModule } from 'primeng/metergroup';
@@ -57,14 +57,19 @@ import { ToastModule } from 'primeng/toast';
 //import { TreeTableModule } from 'primeng/treetable';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 
-let modules = [ButtonModule, CheckboxModule,
+let modules = [
+    ButtonModule, CardModule, CheckboxModule,
     DataViewModule, DropdownModule,
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
-    TableModule, TabViewModule, ToastModule];
+    MenuModule,
+    TableModule, TabViewModule, ToastModule
+];
 
 @NgModule({
     imports: modules,
-    exports: modules
+    exports: modules,
+    providers: []
 })
-export class PrimeNGModule { }
+export class SharedModule {
+}

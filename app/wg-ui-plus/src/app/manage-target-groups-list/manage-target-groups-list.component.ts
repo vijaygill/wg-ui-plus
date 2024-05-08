@@ -1,20 +1,20 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { Peer, WebapiService } from '../webapi.service';
+import { TargetGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../shared.module';
 
 @Component({
-  selector: 'app-manage-peers-list',
+  selector: 'app-manage-target-groups-list',
   standalone: true,
   imports: [CommonModule, FormsModule, SharedModule],
   providers: [MessageService],
-  templateUrl: './manage-peers-list.component.html',
-  styleUrl: './manage-peers-list.component.scss'
+  templateUrl: './manage-target-groups-list.component.html',
+  styleUrl: './manage-target-groups-list.component.scss'
 })
-export class ManagePeersListComponent {
-  peers: Peer[] = [];
+export class ManageTargetGroupsListComponent {
+  targetGroups: TargetGroup[] = [];
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
@@ -23,22 +23,22 @@ export class ManagePeersListComponent {
   }
 
   refreshData(): void {
-    this.webapiService.getPeerList().subscribe(data => {
-      this.peers = data;
+    this.webapiService.getTargetGroupList().subscribe(data => {
+      this.targetGroups = data;
     });
   }
 
-  @Output() onNewItem = new EventEmitter<Peer>();
-  @Output() onEdit = new EventEmitter<Peer>();
+  @Output() onNewItem = new EventEmitter<TargetGroup>();
+  @Output() onEdit = new EventEmitter<TargetGroup>();
 
   newItem(): void {
     if (this.onNewItem) {
-      let peer = {} as Peer;
+      let peer = {} as TargetGroup;
       this.onNewItem.emit(peer);
     }
   }
 
-  editItem(peer: Peer): void {
+  editItem(peer: TargetGroup): void {
     if (this.onEdit) {
       this.onEdit.emit(peer);
     }

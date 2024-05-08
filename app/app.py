@@ -32,10 +32,16 @@ SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
 IP_ADDRESS_BASE = 3232236033
 
-DICT_DATA_IPTABLES_CHAIN = [
-        ('from-vip', 'All VIP Peers'),
+DICT_DATA_PEER_GROUPS = [
+    ('All', 'All')
+]
+DICT_DATA_TARGET_GROUPS = [
         ('to-lan', 'LAN destinations'),
         ('to-internet', 'Internet destinations'),
+        ]
+
+DICT_DATA_TARGETS = [
+        ('All Targets', 'All targets', '0.0.0.0/0')
         ]
 
 USE_SSR = False # Will get SSR working some other time
@@ -55,21 +61,16 @@ app.config['DEBUG'] = True
 app.config['TESTING'] = True
 app.config['EXPLAIN_TEMPLATE_LOADING'] = False
 
-DB_DIR = os.path.dirname(os.path.abspath(DB_FILE))
-if not os.path.exists(DB_DIR):
-    os.makedirs(DB_DIR)
-    app.logger.warning(f'DB directory was missing. Created: {DB_DIR}')
-
 def logged(func):
     @wraps(func)
     def logger_func(*args, **kwargs):
         func_name = func.__name__
         try:
-            app.logger.info(f'{func_name}: start')
+            app.logger.info(f'***** {func_name}: start')
             res = func(*args, **kwargs)
             return res
         finally:
-            app.logger.info(f'{func_name}: end')
+            app.logger.info(f'***** {func_name}: end')
 
     return logger_func
 
@@ -144,6 +145,7 @@ class PeerGroup(Base):
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
 
 @dataclass
 class Peer(Base):
@@ -171,41 +173,102 @@ class Peer(Base):
 
     def __repr__(self) -> str:
         return f"Peer(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
+    
+@dataclass
+class TargetGroupTargetLink(Base):
+    __tablename__ = "wg_target_group_target_link"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
+    target_group_id: Mapped[int] = mapped_column(ForeignKey("wg_target_group.id"))
+    target_group: Mapped["TargetGroup"] = relationship(lazy = 'joined')
+    target_id: Mapped[int] = mapped_column(ForeignKey("wg_target.id"))
+    target: Mapped["Target"] = relationship(lazy = 'joined')
 
 @dataclass
-class IpTablesChain(Base):
-    __tablename__ = "wg_iptables_chain"
+class TargetGroup(Base):
+    __tablename__ = "wg_target_group"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(String(255))
+    disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target_group")
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+
+@dataclass
+class Target(Base):
+    __tablename__ = "wg_target"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
+    ip_network: Mapped[str] = mapped_column(String(255))
+    disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target")
+    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
 
     def __repr__(self) -> str:
-        return f"IpTablesChain(id={self.id!r}, name={self.name!r})"
+        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
 
 class DbRepo(object):
     def __init__(self):
+        self.db_file = os.path.abspath(DB_FILE)
+        needs_data_seeding = not os.path.exists(self.db_file)
+
+        self.createDatabase()
+
+        if needs_data_seeding:
+            self.createDictionaryData()
+            self.createSampleData()
+
+    @logged
+    def createDatabase(self):
+        db_dir = os.path.dirname(self.db_file)
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+            app.logger.warning(f'DB directory was missing. Created: {db_dir}')
         self.engine = create_engine(f'sqlite:///{DB_FILE}', echo = True)
         Base.metadata.create_all(self.engine)
 
-        self.createDictionaryData()
-        self.createSampleData()
-
     @logged
     def createDictionaryData(self):
-        self.createDictionaryDataIpTablesChain()
+        self.createDictionaryDataPeerGroups()
+        self.createDictionaryDataTargetGroups()
+        self.createDictionaryDataTargets()
 
     @logged
-    def createDictionaryDataIpTablesChain(self):
+    def createDictionaryDataPeerGroups(self):
         with Session(self.engine) as session:
-            existing_rows = [ r.name for r in session.query( IpTablesChain ).all() ]
-            rows_to_create = [ x for x in DICT_DATA_IPTABLES_CHAIN if x[0] not in existing_rows]
+            existing_rows = [ r.name for r in session.query( PeerGroup ).all() ]
+            rows_to_create = [ x for x in DICT_DATA_PEER_GROUPS if x[0] not in existing_rows]
 
             for r in rows_to_create:
                 name, description = r
-                new_row = IpTablesChain( name = name, description = description )
+                new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 
+    @logged
+    def createDictionaryDataTargetGroups(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( TargetGroup ).all() ]
+            rows_to_create = [ x for x in DICT_DATA_TARGET_GROUPS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description = r
+                new_row = TargetGroup( name = name, description = description, is_inbuilt = True )
+                session.add(new_row)
+                session.commit()
+
+    @logged
+    def createDictionaryDataTargets(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( Target ).all() ]
+            rows_to_create = [ x for x in DICT_DATA_TARGETS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description, ip_network = r
+                new_row = Target( name = name, description = description, ip_network = ip_network, is_inbuilt = True )
+                session.add(new_row)
+                session.commit()
+				
     @logged
     def createSampleData(self):
         peers = self.getPeers()
@@ -215,7 +278,7 @@ class DbRepo(object):
                 SAMPLE_MAX_PEERS = 5
                 max_peer_groups = SAMPLE_MAX_PEER_GROUPS
                 for i in range(0,max_peer_groups):
-                    peer_groups = [('All', 'All Peers')] + [(f'Peer - {x}', f'Description {x}') for x in range(0,max_peer_groups)]
+                    peer_groups = [(f'Peer - {x}', f'Description {x}') for x in range(0,max_peer_groups)]
                     peer_group = PeerGroup(name = f'Peer Group - {i}' , description = f'Description - {i}', disabled = i == 3)
                     session.add(peer_group)
                     session.commit()
@@ -235,6 +298,7 @@ class DbRepo(object):
                         pgp_link = PeerGroupPeerLink(peer = peer, peer_group = peer_groups[2])
                         session.add(pgp_link)
                         session.commit()
+                
 
     @logged
     def getPeers(self, for_api = False):
@@ -250,26 +314,9 @@ class DbRepo(object):
             stmt = select(Peer).where(Peer.id == id)
             res = list(session.scalars(stmt).unique().all())[0]
             res = row2dict(res)
-            res['lookup_peer_group'] = [ row2dict(x) for x in self.getPeerGroups() ]
-            return res
-        
-    @logged
-    def getPeerGroups(self, for_api = False):
-        with Session(self.engine) as session:
-            stmt = select(PeerGroup)
-            res = session.scalars(stmt).unique().all()
-            if(for_api):
-                res = [row2dict(x) for x in res]
+            #res['lookup_peer_group'] = [ row2dict(x) for x in self.getPeerGroups() ]
             return res
 
-    @logged 
-    def savePeerGroup(self, dictToSave):
-        with Session(self.engine) as session:
-            item = dict2row(PeerGroup, dictToSave)
-            item = session.merge(item)
-            session.commit()
-            return item
-    
     @logged
     def savePeer(self, peerToSave):
         with Session(self.engine) as session:
@@ -285,10 +332,78 @@ class DbRepo(object):
             return peer
 
     @logged
-    def getIpTablesChains(self):
+    def getPeerGroups(self, for_api = False):
         with Session(self.engine) as session:
-            res = session.query( IpTablesChain ).all()
+            stmt = select(PeerGroup)
+            res = session.scalars(stmt).unique().all()
+            if(for_api):
+                res = [row2dict(x) for x in res]
             return res
+
+    @logged
+    def getPeerGroup(self, id):
+        with Session(self.engine) as session:
+            stmt = select(PeerGroup).where(PeerGroup.id == id)
+            res = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(res)
+            return res
+
+    @logged 
+    def savePeerGroup(self, dictToSave):
+        with Session(self.engine) as session:
+            item = dict2row(PeerGroup, dictToSave)
+            item = session.merge(item)
+            session.commit()
+            return item
+
+    @logged
+    def getTargetGroups(self, for_api = False):
+        with Session(self.engine) as session:
+            stmt = select(TargetGroup)
+            res = session.scalars(stmt).unique().all()
+            res = [row2dict(x) for x in res] if for_api else res
+            return res
+    
+    @logged
+    def getTargetGroup(self, id):
+        with Session(self.engine) as session:
+            stmt = select(TargetGroup).where(TargetGroup.id == id)
+            res = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(res)
+            res['lookup_target_group'] = [ row2dict(x) for x in self.getTargetGroups() ]
+            return res
+
+    @logged
+    def saveTargetGroup(self, target_groupToSave):
+        with Session(self.engine) as session:
+            target_group = dict2row(TargetGroup, target_groupToSave)
+            target_group = session.merge(target_group)
+            session.commit()
+            return target_group
+
+    @logged
+    def getTargets(self, for_api = False):
+        with Session(self.engine) as session:
+            stmt = select(Target)
+            res = session.scalars(stmt).unique().all()
+            res = [row2dict(x) for x in res] if for_api else res
+            return res
+    
+    @logged
+    def getTarget(self, id):
+        with Session(self.engine) as session:
+            stmt = select(Target).where(Target.id == id)
+            res = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(res)
+            return res
+
+    @logged
+    def saveTarget(self, targetToSave):
+        with Session(self.engine) as session:
+            target = dict2row(Target, targetToSave)
+            target = session.merge(target)
+            session.commit()
+            return target
 
 @app.route('/test')
 @logged
@@ -326,13 +441,6 @@ def docker_container_stop(name = None):
     container.stop()
     return { 'status': 'ok' } #docker_container_list()
 
-@app.route('/api/data/iptablechains')
-@logged
-def iptablechain():
-    db = DbRepo()
-    res = db.getIpTablesChains()
-    return res
-
 @app.route('/api/data/peer', methods = ['GET'])
 @logged
 def peers():
@@ -363,12 +471,65 @@ def peers_groups():
     res = db.getPeerGroups(for_api = True)
     return res
 
+@app.route('/api/data/peer_group/<int:id>', methods = ['GET'])
+@logged
+def peer_group_get(id):
+    db = DbRepo()
+    res = db.getPeerGroup(id)
+    return res
+
 @app.route('/api/data/peer_group', methods = ['POST'])
 @logged
 def peers_group_save():
     data = request.json
     db = DbRepo()
     res = db.savePeerGroup(data)
+    res = {'status': 'ok'}
+    return res
+
+@app.route('/api/data/target_group', methods = ['GET'])
+@logged
+def target_groups():
+    db = DbRepo()
+    res = db.getTargetGroups(for_api = True)
+    return res
+
+@app.route('/api/data/target_group/<int:id>', methods = ['GET'])
+@logged
+def target_group_get(id):
+    db = DbRepo()
+    res = db.getTargetGroup(id)
+    return res
+
+@app.route('/api/data/target_group', methods = ['POST'])
+@logged
+def target_group_save():
+    data = request.json
+    db = DbRepo()
+    res = db.saveTargetGroup(data)
+    res = {'status': 'ok'}
+    return res
+
+@app.route('/api/data/target', methods = ['GET'])
+@logged
+def targets():
+    db = DbRepo()
+    res = db.getTargets(for_api = True)
+    return res
+
+@app.route('/api/data/target/<int:id>', methods = ['GET'])
+@logged
+def target_get(id):
+    db = DbRepo()
+    res = db.getTarget(id)
+    return res
+
+@app.route('/api/data/target', methods = ['POST'])
+@logged
+def target_save():
+    data = request.json
+    db = DbRepo()
+    res = db.saveTarget(data)
     res = {'status': 'ok'}
     return res
 

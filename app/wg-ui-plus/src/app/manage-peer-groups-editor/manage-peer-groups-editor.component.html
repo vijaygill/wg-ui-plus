@@ -1,25 +1,35 @@
-<div>
-    <div class="flex flex-column gap-2">
-        <label for="peerGroupName">Name</label>
-        <input pInputText id="peerGroupName" aria-describedby="peerGroupName-help" [(ngModel)]="editItem.name" />
-        <small id="peerGroupName-help">
-            Enter Peer Name.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="peerGroupDescription">Description</label>
-        <input pInputText id="peerGroupDescription" aria-describedby="peerGroupDescription-help"
-            [(ngModel)]="editItem.description" />
-        <small id="peerGroupDescription-help">
-            Enter Peer Description.
-        </small>
-    </div>
-    <div>
-        <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled"/>
-        <label for="peerGroupDisabled">Disabled</label>
-    </div>
-    <div>
-        <p-button label="Ok" (onClick)="ok()"></p-button>
-        <p-button label="Cancel" (onClick)="cancel()"></p-button>
-    </div>
-</div>
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td><label for="peerGroupName">Name</label></td>
+            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name" [disabled]="editItem.is_inbuilt" />
+            </td>
+        </tr>
+        <tr>
+            <td> <label for="peerGroupDescription">Description</label></td>
+            <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
+                    [disabled]="editItem.is_inbuilt" /></td>
+        </tr>
+        <tr>
+            <td><label for="peerGroupDisabled">Disabled</label></td>
+            <td>
+                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"
+                    variant="filled" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
+                    &nbsp;
+                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span *ngIf="editItem.is_inbuilt">In-built Peer-Groups are read-only.</span>

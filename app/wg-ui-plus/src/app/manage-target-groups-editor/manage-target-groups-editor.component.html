@@ -1,0 +1,30 @@
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td><label for="targetGroupName">Name</label></td>
+            <td><input pInputText id="targetGroupName" [(ngModel)]="editItem.name" /></td>
+        </tr>
+        <tr>
+            <td><label for="targetGroupDescription">Description</label></td>
+            <td><input pInputText id="targetGroupDescription" [(ngModel)]="editItem.description" [disabled]="editItem.is_inbuilt"/></td>
+        </tr>
+        <tr>
+            <td><label for="targetGroupDisabled">Disabled</label></td>
+            <td><p-checkbox id="targetGroupDisabled" [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"/></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
+                    &nbsp;
+                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span *ngIf="editItem.is_inbuilt">In-built Target-Groups are read-only.</span>

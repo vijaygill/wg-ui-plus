@@ -1,3 +1,31 @@
-@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/themes/viva-dark/theme.css";
 @import "primeng/resources/primeng.css";
 
+.item-header {
+    grid-area: header;
+}
+
+.item-main {
+    grid-area: main;
+}
+
+.item-sidebar {
+    grid-area: sidebar;
+}
+
+.item-footer {
+    grid-area: footer;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: min-content auto;
+    grid-template-rows: min-content auto 120px;
+    grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+}

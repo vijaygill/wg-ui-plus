@@ -1,0 +1,47 @@
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td>
+                <label for="targetName">Name</label>
+            </td>
+            <td><input pInputText id="targetName" [(ngModel)]="editItem.name" [disabled]="editItem.is_inbuilt"/></td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDescription">Description</label>
+            </td>
+            <td>
+                <input pInputText id="targetDescription" [(ngModel)]="editItem.description" [disabled]="editItem.is_inbuilt"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetIPNetwork">IPNetwork</label>
+            <td>
+                <input pInputText id="targetIPNetwork" [(ngModel)]="editItem.ip_network" [disabled]="editItem.is_inbuilt"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDisabled">Disabled</label>
+            </td>
+            <td>
+                <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
+                    &nbsp;
+                    <p-button label="Cancel" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span *ngIf="editItem.is_inbuilt">In-built Peers are read-only.</span>

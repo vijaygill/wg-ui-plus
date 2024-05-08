@@ -1,9 +1,13 @@
-<app-sidepanel></app-sidepanel>
-<main class="main">
-  <div>
+<div class="container">
+  <div class="item item-header">
+    <h2>Welcome to WG-UI-Plus</h2>
   </div>
-  <div>
-    Welcome to WG-UI-Plus
+  <div class="item item-sidebar">
+    <app-sidepanel></app-sidepanel>
   </div>
-</main>
-<router-outlet />
+  <div class="item item-main"><router-outlet /></div>
+  <div class="item item-footer">
+    <span>
+      (c) WG-UI-Plus 2024.</span>
+  </div>
+</div>

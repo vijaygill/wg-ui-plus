@@ -1,21 +1,20 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DockerContainer, IpTablesChain, Peer, WebapiService } from '../webapi.service';
+import { DockerContainer, Peer, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
-import { PrimeNGModule } from '../primeng.module';
+import { SharedModule } from '../shared.module';
 
 @Component({
     selector: 'app-testpage',
     standalone: true,
-    imports: [CommonModule, FormsModule, PrimeNGModule],
+    imports: [CommonModule, FormsModule, SharedModule],
     providers: [MessageService],
     templateUrl: './testpage.component.html',
     styleUrl: './testpage.component.scss'
 })
 export class TestpageComponent {
     peers: Peer[] = [];
-    ipTablesChains: IpTablesChain[] = [];
     dockerContainers: DockerContainer[] = [];
 
     selectedPeers: number[] = [];
@@ -32,9 +31,6 @@ export class TestpageComponent {
             this.peers = data;
         });
 
-        this.webapiService.getIpTablesChainList().subscribe(data => {
-            this.ipTablesChains = data;
-        });
     }
 
     refreshDockerContainers() {

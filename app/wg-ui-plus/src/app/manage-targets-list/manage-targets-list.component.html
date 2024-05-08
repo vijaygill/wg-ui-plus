@@ -1,0 +1,22 @@
+<p-table [value]="targets" styleClass="p-datatable-striped" >
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>IP Network</th>
+            <th>Disabled</th>
+            <th>Action
+                <p-button label="New" (onClick)="newItem();"></p-button>
+            </th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-targetGroup>
+        <tr>
+            <td>{{ targetGroup.id }}</td>
+            <td>{{ targetGroup.name }}</td>
+            <td>{{ targetGroup.ip_network }}</td>
+            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
+            <td><p-button label="Edit" (onClick)="editItem(targetGroup);"></p-button></td>
+        </tr>
+    </ng-template>
+</p-table>

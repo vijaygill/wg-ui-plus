@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class WebapiService {
 
@@ -13,16 +13,24 @@ export class WebapiService {
     private urlPeerList = '/api/data/peer';
     private urlPeerSave = '/api/data/peer';
 
-    private urlIpTableChainList = '/api/data/iptablechains';
+    private urlTargetGroupList = '/api/data/target_group';
+    private urlTargetGroupSave = '/api/data/target_group';
+
+    private urlTargetList = '/api/data/target';
+    private urlTargetSave = '/api/data/target';
 
     private urlDockerContainerList = '/api/docker/container/list';
     private urlDockerContainerStart = '/api/docker/container/start';
     private urlDockerContainerStop = '/api/docker/container/stop';
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     getPeerGroupList(): Observable<PeerGroup[]> {
         return this.http.get<PeerGroup[]>(this.urlPeerGroupList);
+    }
+
+    getPeerGroup(id: number): Observable<PeerGroup> {
+        return this.http.get<PeerGroup>(this.urlPeerGroupList + '/' + id);
     }
 
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
@@ -41,8 +49,28 @@ export class WebapiService {
         return this.http.post<Peer>(this.urlPeerSave, item);
     }
 
-    getIpTablesChainList(): Observable<IpTablesChain[]> {
-        return this.http.get<IpTablesChain[]>(this.urlIpTableChainList);
+    getTargetGroupList(): Observable<TargetGroup[]> {
+        return this.http.get<TargetGroup[]>(this.urlTargetGroupList);
+    }
+
+    getTargetGroup(id: number): Observable<TargetGroup> {
+        return this.http.get<TargetGroup>(this.urlTargetGroupList + '/' + id);
+    }
+
+    saveTargetGroup(item: TargetGroup): Observable<TargetGroup> {
+        return this.http.post<TargetGroup>(this.urlTargetGroupSave, item);
+    }
+
+    getTargetList(): Observable<Target[]> {
+        return this.http.get<Target[]>(this.urlTargetList);
+    }
+
+    getTarget(id: number): Observable<Target> {
+        return this.http.get<Target>(this.urlTargetList + '/' + id);
+    }
+
+    saveTarget(item: Target): Observable<Target> {
+        return this.http.post<Target>(this.urlTargetSave, item);
     }
 
     getDockerContainerList(): Observable<DockerContainer[]> {
@@ -58,7 +86,7 @@ export class WebapiService {
     }
 }
 
-export interface Peer{
+export interface Peer {
     id: number;
     name: string;
     device_name: string;
@@ -66,20 +94,32 @@ export interface Peer{
     disabled: boolean;
 }
 
-export interface PeerGroup{
+export interface PeerGroup {
     id: number;
     name: string;
     description: string;
     disabled: boolean;
+    is_inbuilt: boolean;
 }
 
-export interface IpTablesChain{
+export interface TargetGroup {
     id: number;
     name: string;
     description: string;
+    disabled: boolean;
+    is_inbuilt: boolean;
 }
 
-export interface DockerContainer{
+export interface Target {
+    id: number;
+    name: string;
+    description: string;
+    ip_network: string;
+    disabled: boolean;
+    is_inbuilt: boolean;
+}
+
+export interface DockerContainer {
     id: string;
     name: string;
     short_id: string;

@@ -1,16 +1,17 @@
 import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PrimeNGModule } from '../primeng.module';
+import { SharedModule } from '../shared.module';
 
 @Component({
   selector: 'app-crud-container',
   standalone: true,
-  imports: [CommonModule, PrimeNGModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './crud-container.component.html',
   styleUrl: './crud-container.component.scss'
 })
 export class CrudContainerComponent<T> {
-  @Input() title: string = '<No Title>';
+  @Input() header: string = '<No Header>';
+  @Input() subheader!: string;
   isEditing: boolean = false;
   item: T = {} as T;
 
@@ -21,7 +22,7 @@ export class CrudContainerComponent<T> {
   }
 
   listControlContext = {
-    onNewItem: (item: T) =>{
+    onNewItem: (item: T) => {
       this.item = item;
       this.isEditing = true;
     },

@@ -16,7 +16,9 @@
             <td>{{ peerGroup.name }}</td>
             <td>{{ peerGroup.description }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peerGroup.disabled" /></td>
-            <td><p-button label="Edit" (onClick)="editItem(peerGroup);"></p-button></td>
+            <td>
+                <p-button label="Edit" (onClick)="editItem(peerGroup);"></p-button>
+            </td>
         </tr>
     </ng-template>
 </p-table>
