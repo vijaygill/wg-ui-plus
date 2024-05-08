@@ -6,7 +6,7 @@
             <th>Description</th>
             <th>Disabled</th>
             <th>Action
-                <p-button label="New" (onClick)="newItem();"></p-button>
+                <p-button icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
             </th>
         </tr>
     </ng-template>
@@ -17,7 +17,7 @@
             <td>{{ peerGroup.description }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peerGroup.disabled" /></td>
             <td>
-                <p-button label="Edit" (onClick)="editItem(peerGroup);"></p-button>
+                <p-button icon="pi pi-file-edit" (onClick)="editItem(peerGroup);"></p-button>
             </td>
         </tr>
     </ng-template>
