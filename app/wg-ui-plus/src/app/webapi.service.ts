@@ -19,6 +19,9 @@ export class WebapiService {
     private urlTargetList = '/api/data/target';
     private urlTargetSave = '/api/data/target';
 
+    private urlServerConfigurationList = '/api/data/server_configuration';
+    private urlServerConfigurationSave = '/api/data/server_configuration';
+
     private urlDockerContainerList = '/api/docker/container/list';
     private urlDockerContainerStart = '/api/docker/container/start';
     private urlDockerContainerStop = '/api/docker/container/stop';
@@ -73,6 +76,18 @@ export class WebapiService {
         return this.http.post<Target>(this.urlTargetSave, item);
     }
 
+    getServerConfigurationList(): Observable<ServerConfiguration[]> {
+        return this.http.get<ServerConfiguration[]>(this.urlServerConfigurationList);
+    }
+
+    getServerConfiguration(id: number): Observable<ServerConfiguration> {
+        return this.http.get<ServerConfiguration>(this.urlServerConfigurationList + '/' + id);
+    }
+
+    saveServerConfiguration(item: ServerConfiguration): Observable<ServerConfiguration> {
+        return this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item);
+    }
+
     getDockerContainerList(): Observable<DockerContainer[]> {
         return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
     }
@@ -124,4 +139,13 @@ export interface DockerContainer {
     name: string;
     short_id: string;
     status: string;
+}
+
+export interface ServerConfiguration {
+    id: number;
+    ip_address: string;
+    script_path_post_down: string;
+    script_path_post_up: string;
+    template_peer: string;
+    template_server: string;
 }

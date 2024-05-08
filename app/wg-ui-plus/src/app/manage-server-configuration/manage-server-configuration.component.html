@@ -1,1 +1,31 @@
-<p>manage-server-configuration works!</p>
+<table class="editor-table">
+    <tbody>
+        <tr>
+            <td><label for="IPAddress">Name</label></td>
+            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address" /></td>
+        </tr>
+        <tr>
+            <td><label for="scriptPathPostUp">Post-Up Script</label></td>
+            <td><input pInputText id="scriptPathPostUp" [(ngModel)]="editItem.script_path_post_up" /></td>
+        </tr>
+        <tr>
+            <td><label for="scriptPathPostDown">Post-Down Script</label></td>
+            <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down"/></td>
+        </tr>
+        <tr>
+            <td><label for="templateServer">Template - Server</label></td>
+            <td><input pInputText id="templateServer" [(ngModel)]="editItem.template_server" /></td>
+        </tr>
+        <tr>
+            <td><label for="templatePeer">Template - Peer</label></td>
+            <td><input pInputText id="templatePeer" [(ngModel)]="editItem.template_peer"/></td>
+        </tr>
+        <td colspan="2">
+            <div style="width:100%;align-items: center; text-align: center;">
+                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                &nbsp;
+                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+            </div>
+        </td>
+    </tbody>
+</table>

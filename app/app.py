@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os
 import ipaddress
 from functools import wraps
@@ -25,8 +26,11 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import select
 from typing import List
 import docker
+import pathlib
 
-DB_FILE = './data/wg-ui-plus.db'
+SCRIPT_DIR = pathlib.Path().resolve() 
+
+DB_FILE = os.path.join(SCRIPT_DIR, 'data/wg-ui-plus.db')
 
 SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
@@ -43,6 +47,10 @@ DICT_DATA_TARGET_GROUPS = [
 DICT_DATA_TARGETS = [
         ('All Targets', 'All targets', '0.0.0.0/0')
         ]
+
+DICT_DATA_SERVER_CONFIGURATION = [
+    ('192.168.2.1', os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh'))
+]
 
 USE_SSR = False # Will get SSR working some other time
 
@@ -207,6 +215,34 @@ class Target(Base):
     def __repr__(self) -> str:
         return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
 
+@dataclass
+class ServerConfiguration(Base):
+    __tablename__ = "wg_server_configuration"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
+    ip_address_num: Mapped[int] = mapped_column(Integer)
+    script_path_post_down: Mapped[str] = mapped_column(String(255))
+    script_path_post_up: Mapped[str] = mapped_column(String(255))
+    template_peer: Mapped[str] = mapped_column(String(4096), nullable = True)
+    template_server: Mapped[str] = mapped_column(String(4096), nullable = True)
+
+    @hybrid_property
+    def ip_address(self):
+        # TODO: I don't like this. Review later
+        try:
+            return str(ipaddress.ip_address(self.ip_address_num))
+        except:
+            pass
+
+        return None
+
+    @ip_address.setter
+    def ip_address(self, value):
+        self.ip_address_num = int(ipaddress.ip_address(value))
+
+
+    def __repr__(self) -> str:
+        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+
 class DbRepo(object):
     def __init__(self):
         self.db_file = os.path.abspath(DB_FILE)
@@ -232,6 +268,19 @@ class DbRepo(object):
         self.createDictionaryDataPeerGroups()
         self.createDictionaryDataTargetGroups()
         self.createDictionaryDataTargets()
+        self.createDictionaryDataServerConfiguration()
+
+    @logged
+    def createDictionaryDataServerConfiguration(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( ServerConfiguration ).all() ]
+            rows_to_create = [ x for x in DICT_DATA_SERVER_CONFIGURATION if x[0] not in existing_rows]
+            for r in rows_to_create:
+                ip_address, script_path_post_up, script_path_post_down = r
+                new_row = ServerConfiguration( ip_address = ip_address, script_path_post_up = script_path_post_up, script_path_post_down = script_path_post_down )
+                session.add(new_row)
+                session.commit()
+        pass
 
     @logged
     def createDictionaryDataPeerGroups(self):
@@ -405,6 +454,30 @@ class DbRepo(object):
             session.commit()
             return target
 
+    @logged
+    def getServerConfigurations(self, for_api = False):
+        with Session(self.engine) as session:
+            stmt = select(ServerConfiguration)
+            res = session.scalars(stmt).unique().all()
+            res = [row2dict(x) for x in res] if for_api else res
+            return res
+    
+    @logged
+    def getServerConfiguration(self, id):
+        with Session(self.engine) as session:
+            stmt = select(ServerConfiguration).where(ServerConfiguration.id == id)
+            res = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(res)
+            return res
+
+    @logged
+    def saveServerConfiguration(self, serverConfigurationToSave):
+        with Session(self.engine) as session:
+            serverConfiguration = dict2row(ServerConfiguration, serverConfigurationToSave)
+            serverConfiguration = session.merge(serverConfiguration)
+            session.commit()
+            return serverConfiguration
+
 @app.route('/test')
 @logged
 def test():
@@ -532,6 +605,30 @@ def target_save():
     res = db.saveTarget(data)
     res = {'status': 'ok'}
     return res
+
+@app.route('/api/data/server_configuration', methods = ['GET'])
+@logged
+def server_configurations():
+    db = DbRepo()
+    res = db.getServerConfigurations(for_api = True)
+    return res
+
+@app.route('/api/data/server_configuration/<int:id>', methods = ['GET'])
+@logged
+def server_configuration_get(id):
+    db = DbRepo()
+    res = db.getServerConfiguration(id)
+    return res
+
+@app.route('/api/data/server_configuration', methods = ['POST'])
+@logged
+def server_configuration_save():
+    data = request.json
+    db = DbRepo()
+    res = db.saveServerConfiguration(data)
+    res = {'status': 'ok'}
+    return res
+
 
 @app.route('/<path:path>', methods=['GET'])
 @logged

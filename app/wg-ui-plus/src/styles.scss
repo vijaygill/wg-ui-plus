@@ -30,3 +30,20 @@
         "sidebar main"
         "footer footer";
 }
+
+.editor-table {
+    min-width: 640px;
+
+    td:nth-child(1) {
+        width: 30%;
+    }
+
+    td:nth-child(2) {
+        width: 100%;
+
+        input {
+            width: 100%;
+        }
+    }
+
+}
