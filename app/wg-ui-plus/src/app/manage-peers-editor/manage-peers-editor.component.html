@@ -1,34 +1,32 @@
-<div>
-    <div class="flex flex-column gap-2">
-        <label for="peerName">Name</label>
-        <input pInputText id="peerName" aria-describedby="peerName-help" [(ngModel)]="editItem.name" />
-        <small id="peerName-help">
-            Enter Peer Name.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="peerDeviceName">DeviceName</label>
-        <input pInputText id="peerDeviceName" aria-describedby="peerDeviceName-help"
-            [(ngModel)]="editItem.device_name" />
-        <small id="peerDeviceName-help">
-            Enter Peer DeviceName.
-        </small>
-    </div>
-    <div class="flex flex-column gap-2">
-        <label for="peerIPAddress">IPAddress</label>
-        <input pInputText id="peerIPAddress" aria-describedby="peerIPAddress-help" [(ngModel)]="editItem.ip_address"
-            [readonly]="editItem.ip_address" [disabled]="editItem.ip_address" />
-        <small id="peerIPAddress-help">
-            Enter Peer IPAddress.
-        </small>
-    </div>
-    <div>
-        <label for="peerDisabled">Disabled</label>
-        <p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" />
-    </div>
-
-    <div>
-        <p-button label="Ok" (onClick)="ok()"></p-button>
-        <p-button label="Cancel" (onClick)="cancel()"></p-button>
-    </div>
-</div>
+<table>
+    <colgroup>
+        <col />
+        <col />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td><label for="peerName">Name</label></td>
+            <td><input pInputText id="peerName" [(ngModel)]="editItem.name" /></td>
+        </tr>
+        <tr>
+            <td><label for="peerDeviceName">DeviceName</label></td>
+            <td><input pInputText id="peerDeviceName" [(ngModel)]="editItem.device_name" /></td>
+        </tr>
+        <tr>
+            <td><label for="peerIPAddress">IPAddress</label></td>
+            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="editItem.ip_address"
+                    [disabled]="editItem.ip_address" /></td>
+        </tr>
+        <tr>
+            <td><label for="peerDisabled">Disabled</label></td>
+            <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
+        </tr>
+        <td colspan="2">
+            <div style="width:100%;align-items: center; text-align: center;">
+                <p-button label="Ok" (onClick)="ok()"></p-button>
+                &nbsp;
+                <p-button label="Cancel" (onClick)="cancel()"></p-button>
+            </div>
+        </td>
+    </tbody>
+</table>
