@@ -35,13 +35,20 @@
     min-width: 640px;
 
     td:nth-child(1) {
-        width: 30%;
+        width: auto;
+        text-wrap: nowrap ;
+        vertical-align: top;
     }
 
     td:nth-child(2) {
         width: 100%;
+        vertical-align: top;
 
         input {
+            width: 100%;
+        }
+
+        textarea {
             width: 100%;
         }
     }
