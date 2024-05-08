@@ -24,7 +24,7 @@
         <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button label="Ok" (onClick)="ok()"></p-button>
+                    <p-button label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
                     &nbsp;
                     <p-button label="Cancel" (onClick)="cancel()"></p-button>
                 </div>
