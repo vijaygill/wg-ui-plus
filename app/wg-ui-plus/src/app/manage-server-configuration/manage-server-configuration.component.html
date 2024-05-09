@@ -22,10 +22,21 @@
         </tr>
         <td colspan="2">
             <div style="width:100%;align-items: center; text-align: center;">
+                <!-- <p-button icon="pi pi-check" label="Generate Wireguard Config" (onClick)="generateWireguardConfig()"></p-button>
+                &nbsp; -->
                 <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                 &nbsp;
                 <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
             </div>
         </td>
+        <tr>
+            <td>Server Configuration</td>
+            <td><textarea 
+                rows="15"
+                cols="120" 
+                pInputTextarea 
+                [(ngModel)]="wireguardConfiguration.serverConfiguration">
+            </textarea></td>
+        </tr>
     </tbody>
 </table>

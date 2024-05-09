@@ -22,6 +22,9 @@ export class WebapiService {
     private urlServerConfigurationList = '/api/data/server_configuration';
     private urlServerConfigurationSave = '/api/data/server_configuration';
 
+    private urlGetWireguardConfiguration = '/api/data/wireguard_configuration';
+    
+
     private urlDockerContainerList = '/api/docker/container/list';
     private urlDockerContainerStart = '/api/docker/container/start';
     private urlDockerContainerStop = '/api/docker/container/stop';
@@ -88,6 +91,10 @@ export class WebapiService {
         return this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item);
     }
 
+    getWireguardConfiguration(): Observable<WireguardConfiguration>{
+        return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration);
+    }
+
     getDockerContainerList(): Observable<DockerContainer[]> {
         return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
     }
@@ -147,4 +154,8 @@ export interface ServerConfiguration {
     port: number;
     script_path_post_down: string;
     script_path_post_up: string;
+}
+
+export interface WireguardConfiguration{
+    serverConfiguration: string;
 }

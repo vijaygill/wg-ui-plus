@@ -243,7 +243,7 @@ class ServerConfiguration(Base):
 
 
     def __repr__(self) -> str:
-        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+        return f"ServerConfiguration(id={self.id!r}, ip_address={self.ip_address!r}, port={self.port!r})"
 
 class DbRepo(object):
     def __init__(self):
@@ -465,20 +465,57 @@ class DbRepo(object):
             return res
     
     @logged
-    def getServerConfiguration(self, id):
+    def getServerConfiguration(self, id, for_api = False):
         with Session(self.engine) as session:
             stmt = select(ServerConfiguration).where(ServerConfiguration.id == id)
             res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
+            res = row2dict(res) if for_api else res
             return res
 
     @logged
     def saveServerConfiguration(self, serverConfigurationToSave):
         with Session(self.engine) as session:
             serverConfiguration = dict2row(ServerConfiguration, serverConfigurationToSave)
+            serverConfiguration.ip_address = serverConfigurationToSave['ip_address']
             serverConfiguration = session.merge(serverConfiguration)
             session.commit()
             return serverConfiguration
+        
+    @logged
+    def getWireguardConfiguration(self):
+        res = {}
+        serverConfiguration = self.getServerConfiguration(1)
+        serverConfiguration = [
+            f'[Interface]',
+            f'Address = {serverConfiguration.ip_address}',
+            f'ListenPort = {serverConfiguration.port}',
+            f'PrivateKey = ???',
+            f'',
+            f'PostUp = {serverConfiguration.script_path_post_up}',
+            f'PostDown = {serverConfiguration.script_path_post_down}',
+            f'',
+        ]
+
+        # now generate lines for peers
+        peers = self.getPeers()
+        for peer in peers:
+            peerConfig = [
+                f'# {peer.name}: disabled',
+            f'',
+            ] if peer.disabled else [
+                f'[Peer]',
+                f'# {peer.name}',
+                f'PublicKey = ???',
+                f'PresharedKey = ???',
+                f'AllowedIPs = {peer.ip_address}/32',
+                f'PersistentKeepalive = 25',
+            f'',
+            ]
+            serverConfiguration += peerConfig
+
+        res['serverConfiguration'] = '\n'.join(serverConfiguration)
+        return res
+
 
 @app.route('/test')
 @logged
@@ -619,7 +656,7 @@ def server_configurations():
 @logged
 def server_configuration_get(id):
     db = DbRepo()
-    res = db.getServerConfiguration(id)
+    res = db.getServerConfiguration(id, for_api = True)
     return res
 
 @app.route('/api/data/server_configuration', methods = ['POST'])
@@ -629,6 +666,13 @@ def server_configuration_save():
     db = DbRepo()
     res = db.saveServerConfiguration(data)
     res = {'status': 'ok'}
+    return res
+
+@app.route('/api/data/wireguard_configuration', methods = ['GET'])
+@logged
+def wireguard_configuration_get():
+    db = DbRepo()
+    res = db.getWireguardConfiguration()
     return res
 
 
