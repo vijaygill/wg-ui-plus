@@ -8,7 +8,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
 //import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
-//import { DialogModule } from 'primeng/dialog';
+import { DialogModule } from 'primeng/dialog';
 //import { DividerModule } from 'primeng/divider';
 //import { DragDropModule } from 'primeng/dragdrop';
 import { DropdownModule } from 'primeng/dropdown';
@@ -59,7 +59,7 @@ import { ToastModule } from 'primeng/toast';
 
 let modules = [
     ButtonModule, CardModule, CheckboxModule,
-    DataViewModule, DropdownModule,
+    DataViewModule, DialogModule, DropdownModule,
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
     MenuModule,

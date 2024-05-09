@@ -15,6 +15,8 @@ export class CrudContainerComponent<T> {
   isEditing: boolean = false;
   item: T = {} as T;
 
+  useDialogForEditor: boolean = false;
+
   @ContentChild("list") listControl!: TemplateRef<any>;
   @ContentChild("editor") editorControl!: TemplateRef<any>;
 
@@ -33,7 +35,7 @@ export class CrudContainerComponent<T> {
   };
 
   editControlContext = {
-    item: () => { return this.item; },
+    getEditItem: () => { return this.item; },
     onFinish: (item: T) => {
       this.isEditing = false;
     }
