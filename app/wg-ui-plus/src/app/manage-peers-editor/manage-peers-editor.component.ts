@@ -1,14 +1,14 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-manage-peers-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   templateUrl: './manage-peers-editor.component.html',
   styleUrl: './manage-peers-editor.component.scss'
 })

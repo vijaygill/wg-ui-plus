@@ -22,7 +22,7 @@ import { ListboxModule } from 'primeng/listbox';
 //import { MegaMenuModule } from 'primeng/megamenu';
 import { MenuModule } from 'primeng/menu';
 //import { MenubarModule } from 'primeng/menubar';
-//import { MessagesModule } from 'primeng/messages';
+import { MessagesModule } from 'primeng/messages';
 //import { MeterGroupModule } from 'primeng/metergroup';
 //import { MultiSelectModule } from 'primeng/multiselect';
 //import { OrderListModule } from 'primeng/orderlist';
@@ -63,6 +63,7 @@ let modules = [
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
     MenuModule,
+    MessagesModule,
     TableModule, TabViewModule, ToastModule
 ];
 
@@ -71,5 +72,5 @@ let modules = [
     exports: modules,
     providers: []
 })
-export class SharedModule {
+export class AppSharedModule {
 }

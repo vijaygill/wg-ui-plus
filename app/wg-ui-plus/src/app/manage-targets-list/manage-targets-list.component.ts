@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
 import { Target, WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-targets-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   providers: [MessageService],
   templateUrl: './manage-targets-list.component.html',
   styleUrl: './manage-targets-list.component.scss'

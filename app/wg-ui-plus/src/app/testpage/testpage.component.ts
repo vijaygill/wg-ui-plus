@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DockerContainer, Peer, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
     selector: 'app-testpage',
     standalone: true,
-    imports: [CommonModule, FormsModule, SharedModule],
+    imports: [CommonModule, FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './testpage.component.html',
     styleUrl: './testpage.component.scss'

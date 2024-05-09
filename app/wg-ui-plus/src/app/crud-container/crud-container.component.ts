@@ -1,11 +1,11 @@
 import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
   selector: 'app-crud-container',
   standalone: true,
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, AppSharedModule],
   templateUrl: './crud-container.component.html',
   styleUrl: './crud-container.component.scss'
 })

@@ -1,14 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TargetGroup, WebapiService } from '../webapi.service';
-import { MessageService } from 'primeng/api';
+import { Message, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
   selector: 'app-manage-target-groups-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   templateUrl: './manage-target-groups-editor.component.html',
   styleUrl: './manage-target-groups-editor.component.scss'
 })
@@ -25,6 +25,10 @@ export class ManageTargetGroupsEditorComponent {
   targetGroup: TargetGroup = {} as TargetGroup;
 
   @Output() onFinish = new EventEmitter<boolean>();
+
+  messages: Message[] = [
+    { severity: 'info', detail: 'In-built Target-Groups are read-only.' }
+  ];
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 

@@ -3,12 +3,12 @@ import { Target, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
   selector: 'app-manage-targets-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   templateUrl: './manage-targets-editor.component.html',
   styleUrl: './manage-targets-editor.component.scss'
 })

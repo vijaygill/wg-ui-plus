@@ -4,12 +4,12 @@ import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
-import { SharedModule } from './shared.module';
+import { AppSharedModule } from './app-shared.module';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, SharedModule ],
+  imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

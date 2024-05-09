@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ CommonModule, FormsModule, SharedModule ],
+  imports: [ CommonModule, FormsModule, AppSharedModule ],
   providers: [ MessageService ],
   templateUrl: `./home.component.html`,
   styleUrl: './home.component.scss'
