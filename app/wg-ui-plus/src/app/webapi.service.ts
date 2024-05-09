@@ -147,6 +147,4 @@ export interface ServerConfiguration {
     port: number;
     script_path_post_down: string;
     script_path_post_up: string;
-    template_peer: string;
-    template_server: string;
 }

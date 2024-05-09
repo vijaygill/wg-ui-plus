@@ -226,8 +226,6 @@ class ServerConfiguration(Base):
     port: Mapped[int] = mapped_column(Integer)
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
-    template_peer: Mapped[str] = mapped_column(String(4096), nullable = True)
-    template_server: Mapped[str] = mapped_column(String(4096), nullable = True)
 
     @hybrid_property
     def ip_address(self):
