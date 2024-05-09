@@ -16,7 +16,6 @@ import { MenuModule } from 'primeng/menu';
 export class SidepanelComponent {
   items: MenuItem[] = [
     {
-      label: 'Navigate',
       items: [
         {
           label: 'Home',
@@ -37,6 +36,10 @@ export class SidepanelComponent {
         {
           label: 'Targets',
           route: '/manage-targets',
+        },
+        {
+          label: 'Server Configuration',
+          route: '/manage-server-configuration',
         },
         {
           label: 'Test',

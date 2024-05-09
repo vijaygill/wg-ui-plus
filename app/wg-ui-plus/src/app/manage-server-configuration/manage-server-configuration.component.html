@@ -1,0 +1,42 @@
+<p-toast></p-toast>
+<table class="editor-table">
+    <tbody>
+        <tr>
+            <td><label for="ipAddress">IP Address</label></td>
+            <td><input pInputText id="ipAddress" [min]="1024" [max]="64000" [(ngModel)]="editItem.ip_address" /></td>
+        </tr>
+        <tr>
+            <td><label for="portnumber">Port</label></td>
+            <td>
+                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            </td>
+        </tr>
+        <tr>
+            <td><label for="scriptPathPostUp">Post-Up Script</label></td>
+            <td><input pInputText id="scriptPathPostUp" [(ngModel)]="editItem.script_path_post_up" /></td>
+        </tr>
+        <tr>
+            <td><label for="scriptPathPostDown">Post-Down Script</label></td>
+            <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down" /></td>
+        </tr>
+        <tr>
+            <td><label for="templateServer">Template - Server</label></td>
+            <td>
+                <textarea id="templateServer" rows="5" pInputTextarea [(ngModel)]="editItem.template_server"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="templatePeer">Template - Peer</label></td>
+            <td><textarea id="templatePeer" rows="7" pInputTextarea [(ngModel)]="editItem.template_peer"></textarea>
+            </td>
+        </tr>
+        <td colspan="2">
+            <div style="width:100%;align-items: center; text-align: center;">
+                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                &nbsp;
+                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+            </div>
+        </td>
+    </tbody>
+</table>

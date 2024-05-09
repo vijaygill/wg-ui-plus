@@ -30,3 +30,28 @@
         "sidebar main"
         "footer footer";
 }
+
+.editor-table {
+    min-width: 640px;
+    max-width: 920px;
+
+    td:nth-child(1) {
+        width: auto;
+        text-wrap: nowrap ;
+        vertical-align: top;
+    }
+
+    td:nth-child(2) {
+        width: 100%;
+        vertical-align: top;
+
+        input {
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+        }
+    }
+
+}
