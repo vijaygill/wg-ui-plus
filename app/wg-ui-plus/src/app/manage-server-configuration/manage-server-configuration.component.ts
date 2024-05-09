@@ -46,7 +46,6 @@ export class ManageServerConfigurationComponent {
   wireguardConfiguration : WireguardConfiguration = {} as WireguardConfiguration;
 
   generateWireguardConfig(){
-    debugger;
     this.webapiService.getWireguardConfiguration().subscribe(data => {
       this.wireguardConfiguration = data;
     });
