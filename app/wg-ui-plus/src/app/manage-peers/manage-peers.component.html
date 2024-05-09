@@ -2,7 +2,7 @@
     <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
         <app-manage-peers-list (onEdit)="onEdit($event)" (onNewItem)="onNewItem($event)"></app-manage-peers-list>
     </ng-template>
-    <ng-template #editor let-onFinish="onFinish" let-item="item">
-        <app-manage-peers-editor (onFinish)="onFinish($event)" [editItem]="item()"></app-manage-peers-editor>
+    <ng-template #editor let-onFinish="onFinish" let-getEditItem="getEditItem">
+        <app-manage-peers-editor (onFinish)="onFinish($event)" [editItem]="getEditItem()"></app-manage-peers-editor>
     </ng-template>
 </app-crud-container>

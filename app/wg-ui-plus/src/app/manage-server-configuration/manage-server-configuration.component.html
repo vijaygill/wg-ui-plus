@@ -20,17 +20,6 @@
             <td><label for="scriptPathPostDown">Post-Down Script</label></td>
             <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down" /></td>
         </tr>
-        <tr>
-            <td><label for="templateServer">Template - Server</label></td>
-            <td>
-                <textarea id="templateServer" rows="5" pInputTextarea [(ngModel)]="editItem.template_server"></textarea>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="templatePeer">Template - Peer</label></td>
-            <td><textarea id="templatePeer" rows="7" pInputTextarea [(ngModel)]="editItem.template_peer"></textarea>
-            </td>
-        </tr>
         <td colspan="2">
             <div style="width:100%;align-items: center; text-align: center;">
                 <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>

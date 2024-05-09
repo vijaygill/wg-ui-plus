@@ -3,12 +3,12 @@ import { MessageService } from 'primeng/api';
 import { ServerConfiguration, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
   selector: 'app-manage-server-configuration',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'

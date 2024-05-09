@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 import { ManagePeerGroupsListComponent } from '../manage-peer-groups-list/manage-peer-groups-list.component';
 import { ManagePeerGroupsEditorComponent } from '../manage-peer-groups-editor/manage-peer-groups-editor.component';
 import { PeerGroup, WebapiService } from '../webapi.service';
@@ -11,7 +11,7 @@ import { MessageService } from 'primeng/api';
 @Component({
   selector: 'app-manage-peer-groups',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule,
+  imports: [CommonModule, FormsModule, AppSharedModule,
     CrudContainerComponent,
     ManagePeerGroupsListComponent, ManagePeerGroupsEditorComponent],
   providers: [MessageService],

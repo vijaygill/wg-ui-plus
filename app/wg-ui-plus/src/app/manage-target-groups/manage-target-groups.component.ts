@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 import { CrudContainerComponent } from '../crud-container/crud-container.component';
 import { ManageTargetGroupsListComponent } from '../manage-target-groups-list/manage-target-groups-list.component';
 import { MessageService } from 'primeng/api';
@@ -10,7 +10,7 @@ import { ManageTargetGroupsEditorComponent } from '../manage-target-groups-edito
 @Component({
   selector: 'app-manage-target-groups',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule, CrudContainerComponent,
+  imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent,
     ManageTargetGroupsListComponent, ManageTargetGroupsEditorComponent],
   providers: [MessageService],
   templateUrl: './manage-target-groups.component.html',

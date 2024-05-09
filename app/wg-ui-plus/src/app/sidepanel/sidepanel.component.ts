@@ -2,14 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { MenuItem, SharedModule } from 'primeng/api';
+import { MenuItem  } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
+import { AppSharedModule } from '../app-shared.module';
 
 
 @Component({
   selector: 'app-sidepanel',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RouterOutlet, SharedModule, MenuModule],
+  imports: [CommonModule, FormsModule, RouterModule, RouterOutlet, AppSharedModule, MenuModule],
   templateUrl: './sidepanel.component.html',
   styleUrl: './sidepanel.component.scss'
 })

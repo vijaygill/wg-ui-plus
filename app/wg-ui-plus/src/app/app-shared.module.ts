@@ -8,7 +8,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
 //import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
-//import { DialogModule } from 'primeng/dialog';
+import { DialogModule } from 'primeng/dialog';
 //import { DividerModule } from 'primeng/divider';
 //import { DragDropModule } from 'primeng/dragdrop';
 import { DropdownModule } from 'primeng/dropdown';
@@ -22,7 +22,7 @@ import { ListboxModule } from 'primeng/listbox';
 //import { MegaMenuModule } from 'primeng/megamenu';
 import { MenuModule } from 'primeng/menu';
 //import { MenubarModule } from 'primeng/menubar';
-//import { MessagesModule } from 'primeng/messages';
+import { MessagesModule } from 'primeng/messages';
 //import { MeterGroupModule } from 'primeng/metergroup';
 //import { MultiSelectModule } from 'primeng/multiselect';
 //import { OrderListModule } from 'primeng/orderlist';
@@ -59,10 +59,11 @@ import { ToastModule } from 'primeng/toast';
 
 let modules = [
     ButtonModule, CardModule, CheckboxModule,
-    DataViewModule, DropdownModule,
+    DataViewModule, DialogModule, DropdownModule,
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
     MenuModule,
+    MessagesModule,
     TableModule, TabViewModule, ToastModule
 ];
 
@@ -71,5 +72,5 @@ let modules = [
     exports: modules,
     providers: []
 })
-export class SharedModule {
+export class AppSharedModule {
 }

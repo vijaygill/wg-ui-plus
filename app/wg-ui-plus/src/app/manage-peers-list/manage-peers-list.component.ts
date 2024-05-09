@@ -3,12 +3,12 @@ import { Peer, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SharedModule } from '../shared.module';
+import { AppSharedModule } from '../app-shared.module';
 
 @Component({
   selector: 'app-manage-peers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   providers: [MessageService],
   templateUrl: './manage-peers-list.component.html',
   styleUrl: './manage-peers-list.component.scss'
