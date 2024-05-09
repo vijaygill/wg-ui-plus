@@ -486,6 +486,8 @@ class DbRepo(object):
         res = {}
         serverConfiguration = self.getServerConfiguration(1)
         serverConfiguration = [
+            f'# Generated for test purposes only.',
+            f'# Will be removed once file can be consumed by WG.',
             f'[Interface]',
             f'Address = {serverConfiguration.ip_address}',
             f'ListenPort = {serverConfiguration.port}',
