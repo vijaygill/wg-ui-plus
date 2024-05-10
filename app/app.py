@@ -88,7 +88,7 @@ def row2dict(row, include_relations = True):
     try:
         self_insp = inspect(row)
         cols = self_insp.mapper.columns
-    except:
+    except NoInspectionAvailable:
         pass
     if not cols:
         return None
@@ -109,7 +109,7 @@ def row2dict(row, include_relations = True):
         else:
             try:
                 res[col.key] = row2dict(value, include_relations = False)
-            except:
+            except NoInspectionAvailable:
                 pass
             pass
     hybrids = [ (k, v) for k, v in inspect(row).mapper.all_orm_descriptors.items() if v.extension_type == sqlalchemy.ext.hybrid.HybridExtensionType.HYBRID_PROPERTY]
@@ -168,7 +168,7 @@ class Peer(Base):
         # TODO: I don't like this. Review later
         try:
             return str(ipaddress.ip_address(self.ip_address_num))
-        except:
+        except ValueError:
             pass
 
         return None
