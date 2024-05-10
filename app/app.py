@@ -227,7 +227,7 @@ class ServerConfiguration(Base):
         # TODO: I don't like this. Review later
         try:
             return str(ipaddress.ip_address(self.ip_address_num))
-        except:
+        except ValueError:
             pass
 
         return None
