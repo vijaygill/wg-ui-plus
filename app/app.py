@@ -5,7 +5,7 @@ from functools import wraps
 from dataclasses import dataclass
 import random
 from flask import Flask, send_from_directory
-from flask import request, jsonify
+from flask import request
 import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
@@ -20,10 +20,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy import select
-from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import joinedload
-from sqlalchemy import select
 from typing import List
 import docker
 import pathlib
@@ -91,7 +88,6 @@ def row2dict(row, include_relations = True):
     try:
         self_insp = inspect(row)
         cols = self_insp.mapper.columns
-        d = inspect(row).dict
     except:
         pass
     if not cols:
@@ -112,7 +108,6 @@ def row2dict(row, include_relations = True):
             res[col.key] = [row2dict(item) for item in value]
         else:
             try:
-                insp = inspect(value)
                 res[col.key] = row2dict(value, include_relations = False)
             except:
                 pass
