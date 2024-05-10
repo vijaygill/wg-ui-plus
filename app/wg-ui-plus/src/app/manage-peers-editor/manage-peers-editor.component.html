@@ -14,6 +14,13 @@
                     [disabled]="editItem.ip_address" /></td>
         </tr>
         <tr>
+            <td><label for="portnumber">Port</label></td>
+            <td>
+                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            </td>
+        </tr>
+        <tr>
             <td><label for="peerDisabled">Disabled</label></td>
             <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
         </tr>

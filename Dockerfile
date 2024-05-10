@@ -16,8 +16,7 @@ RUN apt-get update -y \
 		python3 \
 		python-is-python3 \
 		npm \
-		sqlite3 \
-	&& rm -rf /var/lib/apt/lists/*
+		sqlite3
 
 RUN npm install -g @angular/cli
 
@@ -25,6 +24,8 @@ RUN pip install --break-system-packages --upgrade \
 	Flask \
 	sqlalchemy \
 	docker
+
+RUN apt-get install -y python3-cryptography
 
 USER $UNAME
 

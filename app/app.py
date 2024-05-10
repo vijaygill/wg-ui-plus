@@ -27,6 +27,9 @@ from sqlalchemy import select
 from typing import List
 import docker
 import pathlib
+import codecs
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives import serialization
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
@@ -35,6 +38,9 @@ DB_FILE = os.path.join(SCRIPT_DIR, 'data/wg-ui-plus.db')
 SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
 IP_ADDRESS_BASE = 3232236033
+PORT_DEFAULT_PEER = 1195
+PORT_DEFAULT_SERVER = 51820
+
 
 DICT_DATA_PEER_GROUPS = [
     ('All', 'All')
@@ -49,7 +55,7 @@ DICT_DATA_TARGETS = [
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
-    ('192.168.2.1', 51820,
+    ('192.168.2.1', PORT_DEFAULT_SERVER,
       os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), 
       os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh')
       )
@@ -136,6 +142,17 @@ def dict2row(classType, dictToSave):
             setattr(res, col.key, value)
     return res
 
+def generate_keys():
+    # generate private key
+    private_key = X25519PrivateKey.generate()
+    private_bytes = private_key.private_bytes( encoding = serialization.Encoding.Raw, format = serialization.PrivateFormat.Raw, encryption_algorithm = serialization.NoEncryption())
+    key_private = codecs.encode(private_bytes, 'base64').decode('utf8').strip()
+
+    # derive public key
+    public_bytes = private_key.public_key().public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+    key_public = codecs.encode(public_bytes, 'base64').decode('utf8').strip()
+    return (key_public, key_private)
+
 class Base(DeclarativeBase):
     pass
 
@@ -165,7 +182,10 @@ class Peer(Base):
     name: Mapped[str] = mapped_column(String(255))
     device_name:  Mapped[str] = mapped_column(String(255))
     ip_address_num: Mapped[int] = mapped_column(Integer)
+    port: Mapped[int] = mapped_column(Integer)
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    public_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    private_key: Mapped[str] = mapped_column(String(255), nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer")
 
     @hybrid_property
@@ -226,6 +246,8 @@ class ServerConfiguration(Base):
     port: Mapped[int] = mapped_column(Integer)
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
+    public_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    private_key: Mapped[str] = mapped_column(String(255), nullable = True)
 
     @hybrid_property
     def ip_address(self):
@@ -279,7 +301,10 @@ class DbRepo(object):
             rows_to_create = [ x for x in DICT_DATA_SERVER_CONFIGURATION if x[0] not in existing_rows]
             for r in rows_to_create:
                 ip_address, port, script_path_post_up, script_path_post_down = r
-                new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, script_path_post_down = script_path_post_down )
+                public_key, private_key = generate_keys()
+                new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, 
+                                              script_path_post_down = script_path_post_down, 
+                                              public_key = public_key, private_key = private_key )
                 session.add(new_row)
                 session.commit()
         pass
@@ -335,7 +360,10 @@ class DbRepo(object):
                     session.commit()
                 for i in range(0, SAMPLE_MAX_PEERS):
                     ip_address_num = IP_ADDRESS_BASE + 2 + i
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address = ip_address_num )
+                    public_key, private_key = generate_keys()
+                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', 
+                                ip_address = ip_address_num, port = PORT_DEFAULT_PEER,
+                                public_key = public_key, private_key = private_key)
                     session.add(peer)
                     session.commit()
                 peer_groups = [x for x in session.query( PeerGroup ).all()]
@@ -485,37 +513,57 @@ class DbRepo(object):
     def getWireguardConfiguration(self):
         res = {}
         serverConfiguration = self.getServerConfiguration(1)
-        serverConfiguration = [
+        server_config = [
             f'# Generated for test purposes only.',
             f'# Will be removed once file can be consumed by WG.',
             f'[Interface]',
             f'Address = {serverConfiguration.ip_address}',
             f'ListenPort = {serverConfiguration.port}',
-            f'PrivateKey = ???',
+            f'PrivateKey = {serverConfiguration.public_key}',
             f'',
             f'PostUp = {serverConfiguration.script_path_post_up}',
             f'PostDown = {serverConfiguration.script_path_post_down}',
             f'',
         ]
 
-        # now generate lines for peers
+        # now generate configs for peers
+        # both for the server side and client side
+        peer_configs = []
         peers = self.getPeers()
         for peer in peers:
-            peerConfig = [
+            peer_config = [
                 f'# {peer.name}: disabled',
-            f'',
-            ] if peer.disabled else [
+                f'',
+                ] if peer.disabled else [
                 f'[Peer]',
-                f'# {peer.name}',
-                f'PublicKey = ???',
-                f'PresharedKey = ???',
+                f'# Client: {peer.name}',
+                f'PublicKey = {peer.public_key}',
+                #f'#PresharedKey = <this is optional>',
                 f'AllowedIPs = {peer.ip_address}/32',
                 f'PersistentKeepalive = 25',
             f'',
             ]
-            serverConfiguration += peerConfig
+            server_config += peer_config
 
-        res['serverConfiguration'] = '\n'.join(serverConfiguration)
+            peer_config = [
+                f'# Generated for test purposes only.',
+                f'# Will be removed once file can be consumed by WG.',
+                f'[Interface]',
+                f'Address = {peer.ip_address}',
+                f'ListenPort = {peer.port}',
+                f'PrivateKey = {peer.public_key}',
+                f'',
+                f'',
+                f'[Peer]',
+                f'# Server',
+                f'PublicKey = {serverConfiguration.public_key}',
+                f'Endpoint = {serverConfiguration.ip_address}/32',
+                f'AllowedIPs = 0.0.0.0/0',
+            ]
+            peer_configs += [ '\n'.join(peer_config) ]
+
+        res['serverConfiguration'] = '\n'.join(server_config)
+        res['peerConfigurations'] = peer_configs
         return res
 
 

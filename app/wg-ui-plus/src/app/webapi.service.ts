@@ -113,7 +113,10 @@ export interface Peer {
     name: string;
     device_name: string;
     ip_address: string;
+    port: number;
     disabled: boolean;
+    public_key: string;
+    private_key: string;
 }
 
 export interface PeerGroup {
@@ -154,8 +157,11 @@ export interface ServerConfiguration {
     port: number;
     script_path_post_down: string;
     script_path_post_up: string;
+    public_key: string;
+    private_key: string;
 }
 
 export interface WireguardConfiguration{
     serverConfiguration: string;
+    peerConfigurations: string[];
 }

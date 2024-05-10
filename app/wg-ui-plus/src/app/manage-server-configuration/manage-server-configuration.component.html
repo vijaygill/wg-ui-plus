@@ -20,23 +20,29 @@
             <td><label for="scriptPathPostDown">Post-Down Script</label></td>
             <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down" /></td>
         </tr>
-        <td colspan="2">
-            <div style="width:100%;align-items: center; text-align: center;">
-                <!-- <p-button icon="pi pi-check" label="Generate Wireguard Config" (onClick)="generateWireguardConfig()"></p-button>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <!-- <p-button icon="pi pi-check" label="Generate Wireguard Config" (onClick)="generateWireguardConfig()"></p-button>
                 &nbsp; -->
-                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                &nbsp;
-                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-            </div>
-        </td>
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
         <tr>
             <td>Server Configuration</td>
-            <td><textarea 
-                rows="15"
-                cols="120" 
-                pInputTextarea 
-                [(ngModel)]="wireguardConfiguration.serverConfiguration">
-            </textarea></td>
+            <td>
+                <p-tabView>
+                    <p-tabPanel header="Server Configuration">
+                        <textarea rows="15" cols="120">{{wireguardConfiguration.serverConfiguration}}</textarea>
+                    </p-tabPanel>
+                    <p-tabPanel header="Peer" *ngFor="let peerConfiguration of wireguardConfiguration.peerConfigurations">
+                        <textarea rows="15" cols="120">{{peerConfiguration}}</textarea>
+                    </p-tabPanel>
+                </p-tabView>
+            </td>
         </tr>
     </tbody>
 </table>
