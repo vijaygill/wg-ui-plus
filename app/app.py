@@ -89,7 +89,8 @@ def row2dict(row, include_relations = True):
     try:
         self_insp = inspect(row)
         cols = self_insp.mapper.columns
-    except NoInspectionAvailable:
+        # except NoInspectionAvailable:
+    except:
         pass
     if not cols:
         return None

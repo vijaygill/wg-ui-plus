@@ -33,4 +33,3 @@ jobs:
         run: |
           pip install ruff
           ruff --output-format=github .
-        continue-on-error: true
