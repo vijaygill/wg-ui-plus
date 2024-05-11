@@ -508,11 +508,9 @@ class DbRepo(object):
             serverConfiguration = session.merge(serverConfiguration)
             session.commit()
             return serverConfiguration
-        
+    
     @logged
-    def getWireguardConfiguration(self):
-        res = {}
-        serverConfiguration = self.getServerConfiguration(1)
+    def getWireguardConfigurationForServer(self, serverConfiguration):
         server_config = [
             f'# Generated for test purposes only.',
             f'# Will be removed once file can be consumed by WG.',
@@ -525,44 +523,63 @@ class DbRepo(object):
             f'PostDown = {serverConfiguration.script_path_post_down}',
             f'',
         ]
+        res = '\n'.join(server_config)
+        return res
+
+    @logged
+    def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
+        # returns tuple of server-side and client-side configurations
+        peer_config_server_side = [
+            f'# {peer.name}: disabled',
+            f'',
+            ] if peer.disabled else [
+            f'[Peer]',
+            f'# {peer.name} - the other side of the pipe',
+            f'PublicKey = {peer.public_key}',
+            #f'#PresharedKey = <this is optional>',
+            f'AllowedIPs = {peer.ip_address}/32',
+            f'PersistentKeepalive = 25',
+            f'',
+            f'',
+        ]
+        peer_config_server_side = '\n'.join(peer_config_server_side)
+
+        peer_config_client_side = [
+            f'# Generated for test purposes only.',
+            f'# Will be removed once file can be consumed by WG.',
+            f'[Interface]',
+            f'Address = {peer.ip_address}',
+            f'ListenPort = {peer.port}',
+            f'PrivateKey = {peer.public_key}',
+            f'',
+            f'',
+            f'[Peer]',
+            f'# the other side of the pipe',
+            f'PublicKey = {serverConfiguration.public_key}',
+            f'Endpoint = {serverConfiguration.ip_address}/32',
+            f'AllowedIPs = 0.0.0.0/0',
+        ]
+        peer_config_client_side = '\n'.join(peer_config_client_side)
+        res = (peer_config_server_side, peer_config_client_side)
+        return res
+
+    @logged
+    def getWireguardConfiguration(self):
+        
+        serverConfiguration = self.getServerConfiguration(1)
+        server_config = self.getWireguardConfigurationForServer(serverConfiguration)
 
         # now generate configs for peers
         # both for the server side and client side
         peer_configs = []
         peers = self.getPeers()
         for peer in peers:
-            peer_config = [
-                f'# {peer.name}: disabled',
-                f'',
-                ] if peer.disabled else [
-                f'[Peer]',
-                f'# Client: {peer.name}',
-                f'PublicKey = {peer.public_key}',
-                #f'#PresharedKey = <this is optional>',
-                f'AllowedIPs = {peer.ip_address}/32',
-                f'PersistentKeepalive = 25',
-            f'',
-            ]
-            server_config += peer_config
+            peer_config_server_side, peer_config_client_side = self.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+            server_config += peer_config_server_side
+            peer_configs += [peer_config_client_side]
 
-            peer_config = [
-                f'# Generated for test purposes only.',
-                f'# Will be removed once file can be consumed by WG.',
-                f'[Interface]',
-                f'Address = {peer.ip_address}',
-                f'ListenPort = {peer.port}',
-                f'PrivateKey = {peer.public_key}',
-                f'',
-                f'',
-                f'[Peer]',
-                f'# Server',
-                f'PublicKey = {serverConfiguration.public_key}',
-                f'Endpoint = {serverConfiguration.ip_address}/32',
-                f'AllowedIPs = 0.0.0.0/0',
-            ]
-            peer_configs += [ '\n'.join(peer_config) ]
-
-        res['serverConfiguration'] = '\n'.join(server_config)
+        res = {}
+        res['serverConfiguration'] = server_config
         res['peerConfigurations'] = peer_configs
         return res
 
