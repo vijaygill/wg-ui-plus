@@ -248,6 +248,7 @@ class ServerConfiguration(Base):
     script_path_post_up: Mapped[str] = mapped_column(String(255))
     public_key: Mapped[str] = mapped_column(String(255), nullable = True)
     private_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    peer_default_port : Mapped[int] = mapped_column(Integer)
 
     @hybrid_property
     def ip_address(self):
@@ -304,7 +305,8 @@ class DbRepo(object):
                 public_key, private_key = generate_keys()
                 new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, 
                                               script_path_post_down = script_path_post_down, 
-                                              public_key = public_key, private_key = private_key )
+                                              public_key = public_key, private_key = private_key,
+                                              peer_default_port = PORT_DEFAULT_PEER )
                 session.add(new_row)
                 session.commit()
         pass
@@ -358,11 +360,13 @@ class DbRepo(object):
                     peer_group = PeerGroup(name = f'Peer Group - {i}' , description = f'Description - {i}', disabled = i == 3)
                     session.add(peer_group)
                     session.commit()
+                
+                serverConfiguration = self.getServerConfiguration(1)
                 for i in range(0, SAMPLE_MAX_PEERS):
                     ip_address_num = IP_ADDRESS_BASE + 2 + i
                     public_key, private_key = generate_keys()
                     peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', 
-                                ip_address = ip_address_num, port = PORT_DEFAULT_PEER,
+                                ip_address = ip_address_num, port = serverConfiguration.peer_default_port,
                                 public_key = public_key, private_key = private_key)
                     session.add(peer)
                     session.commit()

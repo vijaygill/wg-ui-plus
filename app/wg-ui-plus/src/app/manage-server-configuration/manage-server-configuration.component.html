@@ -21,6 +21,13 @@
             <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down" /></td>
         </tr>
         <tr>
+            <td><label for="peerDefaultPort">Default Peer Port</label></td>
+            <td>
+                <p-inputNumber id="peerDefaultPort" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port" />
+            </td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
                     <!-- <p-button icon="pi pi-check" label="Generate Wireguard Config" (onClick)="generateWireguardConfig()"></p-button>

@@ -159,6 +159,7 @@ export interface ServerConfiguration {
     script_path_post_up: string;
     public_key: string;
     private_key: string;
+    peer_default_port: number;
 }
 
 export interface WireguardConfiguration{
