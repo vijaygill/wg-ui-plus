@@ -14,6 +14,7 @@ import { DividerModule } from 'primeng/divider';
 import { DropdownModule } from 'primeng/dropdown';
 //import { DockModule } from 'primeng/dock';
 //import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { ImageModule } from 'primeng/image';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -61,6 +62,7 @@ let modules = [
     ButtonModule, CardModule, CheckboxModule,
     DataViewModule, DialogModule, DividerModule,
     DropdownModule,
+    ImageModule,
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
     MenuModule,

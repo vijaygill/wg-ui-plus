@@ -27,6 +27,8 @@ RUN pip install --break-system-packages --upgrade \
 
 RUN apt-get install -y python3-cryptography
 
+RUN pip install --break-system-packages --upgrade qrcode
+
 USER $UNAME
 
 WORKDIR /wg-ui-plus/app

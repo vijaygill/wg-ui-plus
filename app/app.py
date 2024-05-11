@@ -4,7 +4,7 @@ import ipaddress
 from functools import wraps
 from dataclasses import dataclass
 import random
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, send_file
 from flask import request, jsonify
 import sqlalchemy
 from sqlalchemy import ForeignKey
@@ -30,6 +30,8 @@ import pathlib
 import codecs
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives import serialization
+import qrcode
+from io import BytesIO
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
@@ -606,6 +608,18 @@ class DbRepo(object):
 def test():
     return 'Hello, World!'
 
+@app.route('/test-qr')
+@logged
+def testqr():
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=5)
+    qr.add_data('Hello, World!')
+    qr.make(fit = True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    byteIO = BytesIO()
+    img.save(byteIO, 'PNG')
+    byteIO.seek(0)
+    return send_file(byteIO, mimetype='image/png')
+
 @app.route('/api/docker/container/list')
 @logged
 def docker_container_list():
@@ -659,6 +673,23 @@ def peer_save():
     res = db.savePeer(data)
     res = {'status': 'ok'}
     return res
+
+@app.route('/api/data/peer-config-qr/<int:id>', methods = ['GET'])
+@logged
+def peer_get_config_qr(id):
+    db = DbRepo()
+    serverConfiguration = db.getServerConfiguration(1)
+    peer = db.getPeer(id)
+    s,c = db.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=5)
+    qr.add_data(c)
+    qr.make(fit = True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    byteIO = BytesIO()
+    img.save(byteIO, 'PNG')
+    byteIO.seek(0)
+    return send_file(byteIO, mimetype='image/png')
+
 
 @app.route('/api/data/peer_group')
 @logged
