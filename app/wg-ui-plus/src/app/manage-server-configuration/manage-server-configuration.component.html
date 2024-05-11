@@ -59,11 +59,11 @@
             <td>
                 <p-tabView>
                     <p-tabPanel header="Server Configuration">
-                        <textarea rows="15" cols="120">{{wireguardConfiguration.serverConfiguration}}</textarea>
+                        <textarea rows="15" cols="120">{{wireguardConfiguration.server_configuration}}</textarea>
                     </p-tabPanel>
                     <p-tabPanel header="Peer"
-                        *ngFor="let peerConfiguration of wireguardConfiguration.peerConfigurations">
-                        <textarea rows="15" cols="120">{{peerConfiguration}}</textarea>
+                        *ngFor="let peer_configuration of wireguardConfiguration.peer_configurations">
+                        <textarea rows="15" cols="120">{{peer_configuration}}</textarea>
                     </p-tabPanel>
                 </p-tabView>
             </td>

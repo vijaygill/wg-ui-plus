@@ -24,12 +24,20 @@
             <td><label for="peerDisabled">Disabled</label></td>
             <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
         </tr>
-        <td colspan="2">
-            <div style="width:100%;align-items: center; text-align: center;">
-                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                &nbsp;
-                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-            </div>
-        </td>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Peer Configuration</td>
+            <td>
+                <textarea rows="15" cols="120">{{editItem.peer_configuration}}</textarea>
+            </td>
+        </tr>
     </tbody>
 </table>

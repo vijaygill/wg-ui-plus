@@ -117,6 +117,7 @@ export interface Peer {
     disabled: boolean;
     public_key: string;
     private_key: string;
+    peer_configuration : string;
 }
 
 export interface PeerGroup {
@@ -165,6 +166,6 @@ export interface ServerConfiguration {
 }
 
 export interface WireguardConfiguration{
-    serverConfiguration: string;
-    peerConfigurations: string[];
+    server_configuration: string;
+    peer_configurations: string[];
 }

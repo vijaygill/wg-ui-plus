@@ -399,12 +399,16 @@ class DbRepo(object):
             return res
     
     @logged
-    def getPeer(self, id):
+    def getPeer(self, id, for_api = False):
         with Session(self.engine) as session:
             stmt = select(Peer).where(Peer.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            #res['lookup_peer_group'] = [ row2dict(x) for x in self.getPeerGroups() ]
+            peer = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(peer) if for_api else peer
+            if for_api:
+                # add client side config also.
+                sc = self.getServerConfiguration(1)
+                s,c = self.getWireguardConfigurationsForPeer(sc, peer)
+                res['peer_configuration'] = c
             return res
 
     @logged
@@ -592,8 +596,8 @@ class DbRepo(object):
             peer_configs += [peer_config_client_side]
 
         res = {}
-        res['serverConfiguration'] = server_config
-        res['peerConfigurations'] = peer_configs
+        res['server_configuration'] = server_config
+        res['peer_configurations'] = peer_configs
         return res
 
 
@@ -644,7 +648,7 @@ def peers():
 @logged
 def peer_get(id):
     db = DbRepo()
-    res = db.getPeer(id)
+    res = db.getPeer(id, for_api = True)
     return res
 
 @app.route('/api/data/peer', methods = ['POST'])
