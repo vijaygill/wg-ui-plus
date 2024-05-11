@@ -35,15 +35,14 @@ from io import BytesIO
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
-DB_FILE = os.path.join(SCRIPT_DIR, 'data/wg-ui-plus.db')
+DB_FILE = '/app/data/wg-ui-plus.db'
 
 SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
 IP_ADDRESS_BASE = 3232236033
-PORT_DEFAULT_PEER = 1195
-PORT_DEFAULT_SERVER = 51820
+PORT_DEFAULT_EXTERNAL = 1196
+PORT_DEFAULT_INTERNAL = 51820
 SERVER_HOST_NAME_DEFAULT = f'myvpn.duckdns.org'
-
 
 DICT_DATA_PEER_GROUPS = [
     ('All', 'All')
@@ -58,9 +57,10 @@ DICT_DATA_TARGETS = [
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
-    ('192.168.2.1', PORT_DEFAULT_SERVER,
-      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), 
-      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh')
+    (SERVER_HOST_NAME_DEFAULT, '192.168.2.1', PORT_DEFAULT_INTERNAL, PORT_DEFAULT_EXTERNAL,
+      '/app/wireguard/wg0.conf',
+      '/app/wireguard/scripts/post-up.sh', 
+      '/app/wireguard/scripts/post-down.sh'
       )
 ]
 
@@ -144,6 +144,13 @@ def dict2row(classType, dictToSave):
         else:
             setattr(res, col.key, value)
     return res
+
+@logged
+def ensure_folder_exists_for_file(filepath):
+    dir = os.path.dirname(filepath)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        app.logger.warning(f'Directory was missing. Created: {dir}')
 
 def generate_keys():
     # generate private key
@@ -248,6 +255,7 @@ class ServerConfiguration(Base):
     host_name: Mapped[str] = mapped_column(String(255))
     port_external: Mapped[int] = mapped_column(Integer)
     port_internal: Mapped[int] = mapped_column(Integer)
+    wireguard_config_path: Mapped[str] = mapped_column(String(255))
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
     public_key: Mapped[str] = mapped_column(String(255), nullable = True)
@@ -285,10 +293,7 @@ class DbRepo(object):
 
     @logged
     def createDatabase(self):
-        db_dir = os.path.dirname(self.db_file)
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-            app.logger.warning(f'DB directory was missing. Created: {db_dir}')
+        ensure_folder_exists_for_file(self.db_file)
         self.engine = create_engine(f'sqlite:///{DB_FILE}', echo = True)
         Base.metadata.create_all(self.engine)
 
@@ -305,16 +310,17 @@ class DbRepo(object):
             existing_rows = [ r.name for r in session.query( ServerConfiguration ).all() ]
             rows_to_create = [ x for x in DICT_DATA_SERVER_CONFIGURATION if x[0] not in existing_rows]
             for r in rows_to_create:
-                ip_address, port, script_path_post_up, script_path_post_down = r
+                host_name, ip_address, port_internal, port_external, wireguard_config_path, script_path_post_up, script_path_post_down = r
                 public_key, private_key = generate_keys()
                 new_row = ServerConfiguration(ip_address = ip_address,
-                                              host_name = SERVER_HOST_NAME_DEFAULT,
-                                              port_internal = PORT_DEFAULT_SERVER,
-                                              port_external = PORT_DEFAULT_PEER,
+                                              host_name = host_name,
+                                              port_internal = port_internal,
+                                              port_external = port_external,
+                                              wireguard_config_path = wireguard_config_path,
                                               script_path_post_up = script_path_post_up, 
                                               script_path_post_down = script_path_post_down, 
                                               public_key = public_key, private_key = private_key,
-                                              peer_default_port = PORT_DEFAULT_PEER )
+                                              peer_default_port = PORT_DEFAULT_EXTERNAL )
                 session.add(new_row)
                 session.commit()
         pass
@@ -525,6 +531,10 @@ class DbRepo(object):
             session.commit()
             return serverConfiguration
     
+class WireGuardHelper(object):
+    def __init__(self, dbRepo):
+        self.dbRepo = dbRepo
+
     @logged
     def getWireguardConfigurationForServer(self, serverConfiguration):
         server_config = [
@@ -584,13 +594,13 @@ class DbRepo(object):
     @logged
     def getWireguardConfiguration(self):
         
-        serverConfiguration = self.getServerConfiguration(1)
+        serverConfiguration = self.dbRepo.getServerConfiguration(1)
         server_config = self.getWireguardConfigurationForServer(serverConfiguration)
 
         # now generate configs for peers
         # both for the server side and client side
         peer_configs = []
-        peers = self.getPeers()
+        peers = self.dbRepo.getPeers()
         for peer in peers:
             peer_config_server_side, peer_config_client_side = self.getWireguardConfigurationsForPeer(serverConfiguration, peer)
             server_config += peer_config_server_side
@@ -600,7 +610,19 @@ class DbRepo(object):
         res['server_configuration'] = server_config
         res['peer_configurations'] = peer_configs
         return res
-
+    
+    @logged
+    def generateConfigurationFiles(self):
+        serverConfiguration = self.dbRepo.getServerConfiguration(1)
+        ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
+        
+        configs = self.getWireguardConfiguration();
+        with open(serverConfiguration.wireguard_config_path, 'w') as f:
+            server_config = configs['server_configuration']
+            f.write(f"{server_config}\n")
+        pass
 
 @app.route('/test')
 @logged
@@ -677,9 +699,10 @@ def peer_save():
 @logged
 def peer_get_config_qr(id):
     db = DbRepo()
+    wg = WireGuardHelper(db)
     serverConfiguration = db.getServerConfiguration(1)
     peer = db.getPeer(id)
-    s,c = db.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+    s,c = wg.getWireguardConfigurationsForPeer(serverConfiguration, peer)
     qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=5)
     qr.add_data(c)
     qr.make(fit = True)
@@ -786,9 +809,24 @@ def server_configuration_save():
 @logged
 def wireguard_configuration_get():
     db = DbRepo()
-    res = db.getWireguardConfiguration()
+    wg = WireGuardHelper(db)
+    res = wg.getWireguardConfiguration()
     return res
 
+@app.route('/api/control/generate_configuration_files', methods = ['GET'])
+@logged
+def generate_configuration_files():
+    db = DbRepo()
+    wg = WireGuardHelper(db)
+    wg.generateConfigurationFiles()
+    res = {'status': 'ok'}
+    return res
+
+@app.route('/api/control/wireguard_restart', methods = ['GET'])
+@logged
+def wireguard_restart():
+    res = {'status': 'ok'}
+    return res
 
 @app.route('/<path:path>', methods=['GET'])
 @logged

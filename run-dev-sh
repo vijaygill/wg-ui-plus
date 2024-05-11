@@ -6,6 +6,7 @@ source ${BASE_DIR}/build-dev
 
 docker run -it --rm \
   -v "${BASE_DIR}":/wg-ui-plus \
+  -v "${BASE_DIR}/app":/app \
   -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
   -v /tmp:/tmp \
   -v /var/run/docker.sock:/var/run/docker.sock \

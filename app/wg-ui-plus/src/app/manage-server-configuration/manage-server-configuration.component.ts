@@ -27,14 +27,12 @@ export class ManageServerConfigurationComponent {
     // get the server configurations and use only first
     this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
-      this.generateWireguardConfig();
     });
   }
 
   ok() {
     this.webapiService.saveServerConfiguration(this.editItem).subscribe(data => {
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
-      this.generateWireguardConfig();
     });
   }
 
@@ -46,8 +44,8 @@ export class ManageServerConfigurationComponent {
   wireguardConfiguration : WireguardConfiguration = {} as WireguardConfiguration;
 
   generateWireguardConfig(){
-    this.webapiService.getWireguardConfiguration().subscribe(data => {
-      this.wireguardConfiguration = data;
+    this.webapiService.generateConfigurationFiles().subscribe(data => {
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.'});
     });
   }
 

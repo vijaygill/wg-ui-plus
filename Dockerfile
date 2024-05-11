@@ -29,6 +29,12 @@ RUN apt-get install -y python3-cryptography
 
 RUN pip install --break-system-packages --upgrade qrcode
 
+RUN apt install -y wireguard wireguard-tools
+
+RUN mkdir -p /app && chown $UID:$GID /app
+
+VOLUME /app
+
 USER $UNAME
 
 WORKDIR /wg-ui-plus/app
