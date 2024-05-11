@@ -3,14 +3,29 @@
     <tbody>
         <tr>
             <td><label for="ipAddress">IP Address</label></td>
-            <td><input pInputText id="ipAddress" [min]="1024" [max]="64000" [(ngModel)]="editItem.ip_address" /></td>
+            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address" /></td>
         </tr>
         <tr>
-            <td><label for="portnumber">Port</label></td>
-            <td>
-                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            <td><label for="hostName">Host Name</label></td>
+            <td><input pInputText id="hostName" [(ngModel)]="editItem.host_name" />
+                <small>Peers connect to this peer using this name.</small>
             </td>
+        </tr>
+        <tr>
+            <td><label for="portExternal">Port External</label></td>
+            <td>
+                <p-inputNumber id="portExternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_external" />
+                <small>Port exposed on your router. This is forwarded to the host where WG is running.</small>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="portInternal">Port Internal</label></td>
+            <td>
+                <p-inputNumber id="portInternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_internal" />
+                    <small>Port on the machine where WG is running.</small>
+                </td>
         </tr>
         <tr>
             <td><label for="scriptPathPostUp">Post-Up Script</label></td>
@@ -23,8 +38,9 @@
         <tr>
             <td><label for="peerDefaultPort">Default Peer Port</label></td>
             <td>
-                <p-inputNumber id="peerDefaultPort" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port" />
+                <p-inputNumber id="peerDefaultPort" inputId="integeronly" [min]="1024" [max]="65535"
+                    [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port" />
+                    <small>Default port used in Peer configuration.</small>
             </td>
         </tr>
         <tr>
@@ -45,7 +61,8 @@
                     <p-tabPanel header="Server Configuration">
                         <textarea rows="15" cols="120">{{wireguardConfiguration.serverConfiguration}}</textarea>
                     </p-tabPanel>
-                    <p-tabPanel header="Peer" *ngFor="let peerConfiguration of wireguardConfiguration.peerConfigurations">
+                    <p-tabPanel header="Peer"
+                        *ngFor="let peerConfiguration of wireguardConfiguration.peerConfigurations">
                         <textarea rows="15" cols="120">{{peerConfiguration}}</textarea>
                     </p-tabPanel>
                 </p-tabView>

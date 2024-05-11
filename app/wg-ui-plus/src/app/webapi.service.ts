@@ -154,7 +154,9 @@ export interface DockerContainer {
 export interface ServerConfiguration {
     id: number;
     ip_address: string;
-    port: number;
+    host_name: string;
+    port_internal: number;
+    port_external: number;
     script_path_post_down: string;
     script_path_post_up: string;
     public_key: string;

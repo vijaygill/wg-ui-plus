@@ -40,6 +40,7 @@ SAMPLE_MAX_PEERS = 5
 IP_ADDRESS_BASE = 3232236033
 PORT_DEFAULT_PEER = 1195
 PORT_DEFAULT_SERVER = 51820
+SERVER_HOST_NAME_DEFAULT = f'myvpn.duckdns.org'
 
 
 DICT_DATA_PEER_GROUPS = [
@@ -243,7 +244,9 @@ class ServerConfiguration(Base):
     __tablename__ = "wg_server_configuration"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     ip_address_num: Mapped[int] = mapped_column(Integer)
-    port: Mapped[int] = mapped_column(Integer)
+    host_name: Mapped[str] = mapped_column(String(255))
+    port_external: Mapped[int] = mapped_column(Integer)
+    port_internal: Mapped[int] = mapped_column(Integer)
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
     public_key: Mapped[str] = mapped_column(String(255), nullable = True)
@@ -303,7 +306,11 @@ class DbRepo(object):
             for r in rows_to_create:
                 ip_address, port, script_path_post_up, script_path_post_down = r
                 public_key, private_key = generate_keys()
-                new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, 
+                new_row = ServerConfiguration(ip_address = ip_address,
+                                              host_name = SERVER_HOST_NAME_DEFAULT,
+                                              port_internal = PORT_DEFAULT_SERVER,
+                                              port_external = PORT_DEFAULT_PEER,
+                                              script_path_post_up = script_path_post_up, 
                                               script_path_post_down = script_path_post_down, 
                                               public_key = public_key, private_key = private_key,
                                               peer_default_port = PORT_DEFAULT_PEER )
@@ -516,15 +523,16 @@ class DbRepo(object):
     @logged
     def getWireguardConfigurationForServer(self, serverConfiguration):
         server_config = [
-            f'# Generated for test purposes only.',
-            f'# Will be removed once file can be consumed by WG.',
+            f'# Settings for this peer.',
             f'[Interface]',
             f'Address = {serverConfiguration.ip_address}',
-            f'ListenPort = {serverConfiguration.port}',
+            f'ListenPort = {serverConfiguration.port_internal}',
             f'PrivateKey = {serverConfiguration.public_key}',
             f'',
             f'PostUp = {serverConfiguration.script_path_post_up}',
             f'PostDown = {serverConfiguration.script_path_post_down}',
+            f'',
+            f'',
             f'',
         ]
         res = '\n'.join(server_config)
@@ -534,11 +542,13 @@ class DbRepo(object):
     def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
         # returns tuple of server-side and client-side configurations
         peer_config_server_side = [
+            f'# Settings for the peer on the other side of the pipe.',
             f'# {peer.name}: disabled',
             f'',
             ] if peer.disabled else [
+            f'# Settings for the peer on the other side of the pipe.',
+            f'# {peer.name}',
             f'[Peer]',
-            f'# {peer.name} - the other side of the pipe',
             f'PublicKey = {peer.public_key}',
             #f'#PresharedKey = <this is optional>',
             f'AllowedIPs = {peer.ip_address}/32',
@@ -549,18 +559,17 @@ class DbRepo(object):
         peer_config_server_side = '\n'.join(peer_config_server_side)
 
         peer_config_client_side = [
-            f'# Generated for test purposes only.',
-            f'# Will be removed once file can be consumed by WG.',
+            f'# Settings for this peer.',
             f'[Interface]',
             f'Address = {peer.ip_address}',
             f'ListenPort = {peer.port}',
             f'PrivateKey = {peer.public_key}',
             f'',
             f'',
+            f'# Settings for the peer on the other side of the pipe.',
             f'[Peer]',
-            f'# the other side of the pipe',
             f'PublicKey = {serverConfiguration.public_key}',
-            f'Endpoint = {serverConfiguration.ip_address}/32',
+            f'Endpoint = {serverConfiguration.host_name}:{serverConfiguration.port_external}',
             f'AllowedIPs = 0.0.0.0/0',
         ]
         peer_config_client_side = '\n'.join(peer_config_client_side)
