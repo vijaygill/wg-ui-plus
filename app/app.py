@@ -183,7 +183,6 @@ class Peer(Base):
     __tablename__ = "wg_peer"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
-    device_name:  Mapped[str] = mapped_column(String(255))
     ip_address_num: Mapped[int] = mapped_column(Integer)
     port: Mapped[int] = mapped_column(Integer)
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
@@ -206,7 +205,7 @@ class Peer(Base):
         self.ip_address_num = int(ipaddress.ip_address(value))
 
     def __repr__(self) -> str:
-        return f"Peer(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
+        return f"Peer(id={self.id!r}, name={self.name!r})"
     
 @dataclass
 class TargetGroupTargetLink(Base):
@@ -374,7 +373,7 @@ class DbRepo(object):
                 for i in range(0, SAMPLE_MAX_PEERS):
                     ip_address_num = IP_ADDRESS_BASE + 2 + i
                     public_key, private_key = generate_keys()
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', 
+                    peer = Peer(name = f'Peer - {i}',
                                 ip_address = ip_address_num, port = serverConfiguration.peer_default_port,
                                 public_key = public_key, private_key = private_key)
                     session.add(peer)

@@ -111,7 +111,6 @@ export class WebapiService {
 export interface Peer {
     id: number;
     name: string;
-    device_name: string;
     ip_address: string;
     port: number;
     disabled: boolean;

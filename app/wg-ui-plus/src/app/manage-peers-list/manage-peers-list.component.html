@@ -3,7 +3,6 @@
         <tr>
             <th>Id</th>
             <th>Name</th>
-            <th>Device Name</th>
             <th>IP Address</th>
             <th>Disabled</th>
             <th>Action
@@ -15,7 +14,6 @@
         <tr>
             <td>{{ peer.id }}</td>
             <td>{{ peer.name }}</td>
-            <td>{{ peer.device_name }}</td>
             <td>{{ peer.ip_address }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peer.disabled" /></td>
             <td><p-button icon="pi pi-file-edit" (onClick)="editItem(peer);"></p-button></td>
