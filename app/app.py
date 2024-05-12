@@ -116,6 +116,9 @@ def row2dict(row, include_relations = True):
     for k,col in relationships:
         if not include_relations:
             continue
+        if (self_insp.unloaded) and (col.key in self_insp.unloaded):
+            app.logger.warn(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>> {col.key}: {self_insp.unloaded}')
+            continue
         value = getattr(row, col.key)
         if isinstance(value, (list, tuple)):
             res[col.key] = [row2dict(item) for item in value]
@@ -171,9 +174,11 @@ class PeerGroupPeerLink(Base):
     __tablename__ = "wg_peer_group_peer_link"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
-    peer_group: Mapped["PeerGroup"] = relationship(lazy = 'joined')
+    #peer_group: Mapped["PeerGroup"] = relationship(lazy = 'joined')
+    peer_group: Mapped["PeerGroup"] = relationship()
     peer_id: Mapped[int] = mapped_column(ForeignKey("wg_peer.id"))
-    peer: Mapped["Peer"] = relationship(lazy = 'joined')
+    #peer: Mapped["Peer"] = relationship(lazy = 'joined')
+    peer: Mapped["Peer"] = relationship()
 
 @dataclass
 class PeerGroup(Base):
@@ -182,8 +187,8 @@ class PeerGroup(Base):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
 
 @dataclass
 class Peer(Base):
@@ -408,10 +413,14 @@ class DbRepo(object):
     @logged
     def getPeer(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(Peer).where(Peer.id == id)
+            stmt = select(Peer).options(joinedload(Peer.peer_group_peer_links)
+                                        .joinedload(PeerGroupPeerLink.peer_group)).where(Peer.id == id)
             peer = list(session.scalars(stmt).unique().all())[0]
             res = row2dict(peer) if for_api else peer
             if for_api:
+                # add peer-groups also for lookup
+                lookup_peer_groups = self.getPeerGroups(for_api = True)
+                res['lookup_peer_groups'] = lookup_peer_groups
                 # add client side config also.
                 sc = self.getServerConfiguration(1)
                 wg = WireGuardHelper(self)

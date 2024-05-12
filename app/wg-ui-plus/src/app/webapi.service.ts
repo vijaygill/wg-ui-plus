@@ -23,7 +23,7 @@ export class WebapiService {
     private urlServerConfigurationSave = '/api/data/server_configuration';
 
     private urlGetWireguardConfiguration = '/api/data/wireguard_configuration';
-    
+
     private urlControlWireguardRestart = '/api/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/control/generate_configuration_files';
 
@@ -93,7 +93,7 @@ export class WebapiService {
         return this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item);
     }
 
-    getWireguardConfiguration(): Observable<WireguardConfiguration>{
+    getWireguardConfiguration(): Observable<WireguardConfiguration> {
         return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration);
     }
 
@@ -126,7 +126,8 @@ export interface Peer {
     disabled: boolean;
     public_key: string;
     private_key: string;
-    peer_configuration : string;
+    peer_configuration: string;
+    peer_group_peer_links: PeerGroupPeerLink[];
 }
 
 export interface PeerGroup {
@@ -135,6 +136,15 @@ export interface PeerGroup {
     description: string;
     disabled: boolean;
     is_inbuilt: boolean;
+    peer_group_peer_links: PeerGroupPeerLink[];
+}
+
+export interface PeerGroupPeerLink {
+    id: number;
+    peer_group_id: number;
+    peer_group: PeerGroup;
+    peer_id: number;
+    peer: Peer;
 }
 
 export interface TargetGroup {
@@ -175,7 +185,7 @@ export interface ServerConfiguration {
     peer_default_port: number;
 }
 
-export interface WireguardConfiguration{
+export interface WireguardConfiguration {
     server_configuration: string;
     peer_configurations: string[];
 }
