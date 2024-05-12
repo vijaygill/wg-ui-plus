@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PeerGroup, PeerGroupPeerLink, WebapiService } from '../webapi.service';
+import { PeerGroup, PeerGroupPeerLink, PeerGroupTargetLink, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -42,9 +42,15 @@ export class ManagePeerGroupsEditorComponent {
     this.onFinish.emit(false);
   }
 
-  peerGroupsPickListTrackBy(index: number, item: any) {
+  peersPickListTrackBy(index: number, item: any) {
     let x = item as PeerGroupPeerLink;
     debugger;
     return x.peer_group.id;
+  }
+
+  targetsPickListTrackBy(index: number, item: any) {
+    let x = item as PeerGroupTargetLink;
+    debugger;
+    return x.target.id;
   }
 }

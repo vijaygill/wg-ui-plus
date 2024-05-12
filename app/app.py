@@ -22,7 +22,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, defaultload
 from sqlalchemy import select
 from typing import List
 import docker
@@ -43,21 +43,19 @@ IP_ADDRESS_BASE = 3232236033
 PORT_DEFAULT_EXTERNAL = 1196
 PORT_DEFAULT_INTERNAL = 51820
 SERVER_HOST_NAME_DEFAULT = f'myvpn.duckdns.org'
+SERVER_HOST_IP_ADDRESS_DEFAULT='192.168.2.1'
+NETWORK_DEFAULT='192.168.2.0/24'
 
 DICT_DATA_PEER_GROUPS = [
     ('All', 'All')
 ]
-DICT_DATA_TARGET_GROUPS = [
-        ('to-lan', 'LAN destinations'),
-        ('to-internet', 'Internet destinations'),
-        ]
 
 DICT_DATA_TARGETS = [
         ('All Targets', 'All targets', '0.0.0.0/0')
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
-    (SERVER_HOST_NAME_DEFAULT, '192.168.2.1', PORT_DEFAULT_INTERNAL, PORT_DEFAULT_EXTERNAL,
+    (SERVER_HOST_NAME_DEFAULT, SERVER_HOST_IP_ADDRESS_DEFAULT, PORT_DEFAULT_INTERNAL, PORT_DEFAULT_EXTERNAL,
       '/app/wireguard/wg0.conf',
       '/app/wireguard/scripts/post-up.sh', 
       '/app/wireguard/scripts/post-down.sh'
@@ -120,7 +118,10 @@ def row2dict(row, include_relations = True):
             continue
         value = getattr(row, col.key)
         if isinstance(value, (list, tuple)):
-            res[col.key] = [row2dict(item) for item in value]
+            if value:
+                res[col.key] = [row2dict(item) for item in value]
+            else:
+                res[col.key] = []
         else:
             try:
                 insp = inspect(value)
@@ -169,17 +170,6 @@ class Base(DeclarativeBase):
     pass
 
 @dataclass
-class PeerGroupPeerLink(Base):
-    __tablename__ = "wg_peer_group_peer_link"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
-    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
-    #peer_group: Mapped["PeerGroup"] = relationship(lazy = 'joined')
-    peer_group: Mapped["PeerGroup"] = relationship()
-    peer_id: Mapped[int] = mapped_column(ForeignKey("wg_peer.id"))
-    #peer: Mapped["Peer"] = relationship(lazy = 'joined')
-    peer: Mapped["Peer"] = relationship()
-
-@dataclass
 class PeerGroup(Base):
     __tablename__ = "wg_peer_group"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
@@ -188,6 +178,7 @@ class PeerGroup(Base):
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
+    peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
 
 @dataclass
 class Peer(Base):
@@ -217,25 +208,15 @@ class Peer(Base):
 
     def __repr__(self) -> str:
         return f"Peer(id={self.id!r}, name={self.name!r})"
-    
-@dataclass
-class TargetGroupTargetLink(Base):
-    __tablename__ = "wg_target_group_target_link"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
-    target_group_id: Mapped[int] = mapped_column(ForeignKey("wg_target_group.id"))
-    target_group: Mapped["TargetGroup"] = relationship(lazy = 'joined')
-    target_id: Mapped[int] = mapped_column(ForeignKey("wg_target.id"))
-    target: Mapped["Target"] = relationship(lazy = 'joined')
 
 @dataclass
-class TargetGroup(Base):
-    __tablename__ = "wg_target_group"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
-    name: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(String(255))
-    disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target_group")
-    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+class PeerGroupPeerLink(Base):
+    __tablename__ = "wg_peer_group_peer_link"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
+    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
+    peer_group: Mapped["PeerGroup"] = relationship()
+    peer_id: Mapped[int] = mapped_column(ForeignKey("wg_peer.id"))
+    peer: Mapped["Peer"] = relationship()
 
 @dataclass
 class Target(Base):
@@ -245,11 +226,20 @@ class Target(Base):
     description: Mapped[str] = mapped_column(String(255))
     ip_network: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target")
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="target", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+
+@dataclass
+class PeerGroupTargetLink(Base):
+    __tablename__ = "wg_peer_group_target_link"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
+    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
+    peer_group: Mapped["PeerGroup"] = relationship()
+    target_id: Mapped[int] = mapped_column(ForeignKey("wg_target.id"))
+    target: Mapped["Target"] = relationship()
 
 @dataclass
 class ServerConfiguration(Base):
@@ -304,7 +294,6 @@ class DbRepo(object):
     @logged
     def createDictionaryData(self):
         self.createDictionaryDataPeerGroups()
-        self.createDictionaryDataTargetGroups()
         self.createDictionaryDataTargets()
         self.createDictionaryDataServerConfiguration()
 
@@ -338,18 +327,6 @@ class DbRepo(object):
             for r in rows_to_create:
                 name, description = r
                 new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
-                session.add(new_row)
-                session.commit()
-
-    @logged
-    def createDictionaryDataTargetGroups(self):
-        with Session(self.engine) as session:
-            existing_rows = [ r.name for r in session.query( TargetGroup ).all() ]
-            rows_to_create = [ x for x in DICT_DATA_TARGET_GROUPS if x[0] not in existing_rows]
-
-            for r in rows_to_create:
-                name, description = r
-                new_row = TargetGroup( name = name, description = description, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 
@@ -458,17 +435,24 @@ class DbRepo(object):
     @logged
     def getPeerGroup(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(PeerGroup).options(joinedload(PeerGroup.peer_group_peer_links)
-                                             .joinedload(PeerGroupPeerLink.peer)).where(PeerGroup.id == id)
+            opts1 = joinedload(PeerGroup.peer_group_peer_links).options(joinedload(PeerGroupPeerLink.peer))
+            opts2 = joinedload(PeerGroup.peer_group_target_links).options(joinedload(PeerGroupTargetLink.target))
+            stmt = select(PeerGroup).options(opts1, opts2).where(PeerGroup.id == id)
             peerGroup = list(session.scalars(stmt).unique().all())[0]
             res = row2dict(peerGroup) if for_api else peerGroup
             if for_api:
-                # add peer-groups also for lookup but which are not already added
+                # add peers also for lookup but which are not already added
                 lookup_peers = self.getPeers()
                 lookup_peers = [x for x in lookup_peers if x.id not in [link.peer.id for link in peerGroup.peer_group_peer_links]]
                 lookup_peers = [PeerGroupPeerLink(peer_id = x.id, peer = x) for x in lookup_peers]
                 lookup_peers = [row2dict(x) for x in lookup_peers]
                 res['lookup_peers'] = lookup_peers
+                # add targets also for lookup but which are not already added
+                lookup_targets = self.getTargets()
+                lookup_targets = [x for x in lookup_targets if x.id not in [link.target.id for link in peerGroup.peer_group_target_links]]
+                lookup_targets = [PeerGroupTargetLink(target_id = x.id, target = x) for x in lookup_targets]
+                lookup_targets = [row2dict(x) for x in lookup_targets]
+                res['lookup_targets'] = lookup_targets
             return res
 
     @logged 
@@ -477,34 +461,11 @@ class DbRepo(object):
             peerGroup = dict2row(PeerGroup, peerGroupToSave)
             for link in peerGroupToSave['peer_group_peer_links']:
                 peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            for link in peerGroupToSave['peer_group_target_links']:
+                peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
             peerGroup = session.merge(peerGroup)
             session.commit()
             return peerGroup
-
-    @logged
-    def getTargetGroups(self, for_api = False):
-        with Session(self.engine) as session:
-            stmt = select(TargetGroup)
-            res = session.scalars(stmt).unique().all()
-            res = [row2dict(x) for x in res] if for_api else res
-            return res
-    
-    @logged
-    def getTargetGroup(self, id):
-        with Session(self.engine) as session:
-            stmt = select(TargetGroup).where(TargetGroup.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            res['lookup_target_group'] = [ row2dict(x) for x in self.getTargetGroups() ]
-            return res
-
-    @logged
-    def saveTargetGroup(self, target_groupToSave):
-        with Session(self.engine) as session:
-            target_group = dict2row(TargetGroup, target_groupToSave)
-            target_group = session.merge(target_group)
-            session.commit()
-            return target_group
 
     @logged
     def getTargets(self, for_api = False):
@@ -515,20 +476,31 @@ class DbRepo(object):
             return res
     
     @logged
-    def getTarget(self, id):
+    def getTarget(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(Target).where(Target.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            return res
+            opts = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group))
+            stmt = select(Target).options(opts).where(Target.id == id)
+            all = list(session.scalars(stmt).unique().all())
+            target = all[0] if all else Target()
+            res = row2dict(target) if for_api else target
+            if for_api:
+                # add peers also for lookup but which are not already added
+                lookup_peergroups = self.getPeerGroups()
+                lookup_peergroups = [x for x in lookup_peergroups if x.id not in [link.peer_group.id for link in target.peer_group_target_links]]
+                lookup_peergroups = [PeerGroupTargetLink(peer_group_id = x.id, peer_group = x) for x in lookup_peergroups]
+                lookup_peergroups = [row2dict(x) for x in lookup_peergroups]
+                res['lookup_peergroups'] = lookup_peergroups
+        return res
 
     @logged
     def saveTarget(self, targetToSave):
         with Session(self.engine) as session:
             target = dict2row(Target, targetToSave)
+            for link in targetToSave['peer_group_target_links']:
+                target.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
             target = session.merge(target)
             session.commit()
-            return target
+            return row2dict(target)
 
     @logged
     def getServerConfigurations(self, for_api = False):
@@ -762,29 +734,6 @@ def peers_group_save():
     res = {'status': 'ok'}
     return res
 
-@app.route('/api/data/target_group', methods = ['GET'])
-@logged
-def target_groups():
-    db = DbRepo()
-    res = db.getTargetGroups(for_api = True)
-    return res
-
-@app.route('/api/data/target_group/<int:id>', methods = ['GET'])
-@logged
-def target_group_get(id):
-    db = DbRepo()
-    res = db.getTargetGroup(id)
-    return res
-
-@app.route('/api/data/target_group', methods = ['POST'])
-@logged
-def target_group_save():
-    data = request.json
-    db = DbRepo()
-    res = db.saveTargetGroup(data)
-    res = {'status': 'ok'}
-    return res
-
 @app.route('/api/data/target', methods = ['GET'])
 @logged
 def targets():
@@ -796,7 +745,7 @@ def targets():
 @logged
 def target_get(id):
     db = DbRepo()
-    res = db.getTarget(id)
+    res = db.getTarget(id, for_api = True)
     return res
 
 @app.route('/api/data/target', methods = ['POST'])

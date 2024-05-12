@@ -13,9 +13,6 @@ export class WebapiService {
     private urlPeerList = '/api/data/peer';
     private urlPeerSave = '/api/data/peer';
 
-    private urlTargetGroupList = '/api/data/target_group';
-    private urlTargetGroupSave = '/api/data/target_group';
-
     private urlTargetList = '/api/data/target';
     private urlTargetSave = '/api/data/target';
 
@@ -55,18 +52,6 @@ export class WebapiService {
 
     savePeer(item: Peer): Observable<Peer> {
         return this.http.post<Peer>(this.urlPeerSave, item);
-    }
-
-    getTargetGroupList(): Observable<TargetGroup[]> {
-        return this.http.get<TargetGroup[]>(this.urlTargetGroupList);
-    }
-
-    getTargetGroup(id: number): Observable<TargetGroup> {
-        return this.http.get<TargetGroup>(this.urlTargetGroupList + '/' + id);
-    }
-
-    saveTargetGroup(item: TargetGroup): Observable<TargetGroup> {
-        return this.http.post<TargetGroup>(this.urlTargetGroupSave, item);
     }
 
     getTargetList(): Observable<Target[]> {
@@ -139,6 +124,8 @@ export interface PeerGroup {
     is_inbuilt: boolean;
     peer_group_peer_links: PeerGroupPeerLink[];
     lookup_peers: PeerGroupPeerLink[];
+    peer_group_target_links: PeerGroupTargetLink[];
+    lookup_targets: PeerGroupTargetLink[];
 }
 
 export interface PeerGroupPeerLink {
@@ -149,14 +136,6 @@ export interface PeerGroupPeerLink {
     peer: Peer;
 }
 
-export interface TargetGroup {
-    id: number;
-    name: string;
-    description: string;
-    disabled: boolean;
-    is_inbuilt: boolean;
-}
-
 export interface Target {
     id: number;
     name: string;
@@ -164,6 +143,16 @@ export interface Target {
     ip_network: string;
     disabled: boolean;
     is_inbuilt: boolean;
+    peer_group_target_links: PeerGroupTargetLink[];
+    lookup_peergroups: PeerGroupTargetLink[];
+}
+
+export interface PeerGroupTargetLink {
+    id: number;
+    peer_group_id: number;
+    peer_group: PeerGroup;
+    target_id: number;
+    target: Target;
 }
 
 export interface DockerContainer {
