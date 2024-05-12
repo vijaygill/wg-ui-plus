@@ -50,8 +50,23 @@ DICT_DATA_PEER_GROUPS = [
     ('All', 'All')
 ]
 
+SAMPLE_DATA_PEER_GROUPS = [
+    ('Developers', 'All developers'),
+    ('Testers', 'All testers'),
+    ('UAT Testers', 'All testers for UAT'),
+    ('Managers', 'All Managers'),
+]
+
 DICT_DATA_TARGETS = [
-        ('All Targets', 'All targets', '0.0.0.0/0')
+        ('All Targets', 'All targets', '0.0.0.0/0'),
+        ]
+
+SAMPLE_DATA_TARGETS = [
+        ('Internet', 'Internet', '0.0.0.0/0'),
+        ('Email Server', 'All targets', '192.168.0.33/0'),
+        ('Database Server', 'All targets', '192.168.0.34/0'),
+        ('Git Server', 'All targets', '192.168.0.35/0'),
+        ('Print Server', 'All targets', '192.168.0.32/0'),
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
@@ -344,17 +359,31 @@ class DbRepo(object):
 				
     @logged
     def createSampleData(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( Target ).all() ]
+            rows_to_create = [ x for x in SAMPLE_DATA_TARGETS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description, ip_network = r
+                new_row = Target( name = name, description = description, ip_network = ip_network )
+                session.add(new_row)
+                session.commit()
+
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( PeerGroup ).all() ]
+            rows_to_create = [ x for x in SAMPLE_DATA_PEER_GROUPS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description = r
+                new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
+                session.add(new_row)
+                session.commit()
+
+
         peers = self.getPeers()
         if not peers:
             with Session(self.engine) as session:
-                SAMPLE_MAX_PEER_GROUPS = 3
                 SAMPLE_MAX_PEERS = 5
-                max_peer_groups = SAMPLE_MAX_PEER_GROUPS
-                for i in range(0,max_peer_groups):
-                    peer_groups = [(f'Peer - {x}', f'Description {x}') for x in range(0,max_peer_groups)]
-                    peer_group = PeerGroup(name = f'Peer Group - {i}' , description = f'Description - {i}', disabled = i == 3)
-                    session.add(peer_group)
-                    session.commit()
                 
                 serverConfiguration = self.getServerConfiguration(1)
                 for i in range(0, SAMPLE_MAX_PEERS):
