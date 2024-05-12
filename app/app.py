@@ -117,7 +117,6 @@ def row2dict(row, include_relations = True):
         if not include_relations:
             continue
         if (self_insp.unloaded) and (col.key in self_insp.unloaded):
-            app.logger.warn(f'>>>>>>>>>>>>>>>>>>>>>>>>>>>> {col.key}: {self_insp.unloaded}')
             continue
         value = getattr(row, col.key)
         if isinstance(value, (list, tuple)):
@@ -188,7 +187,7 @@ class PeerGroup(Base):
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
+    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
 
 @dataclass
 class Peer(Base):
@@ -200,7 +199,7 @@ class Peer(Base):
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     public_key: Mapped[str] = mapped_column(String(255), nullable = True)
     private_key: Mapped[str] = mapped_column(String(255), nullable = True)
-    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer")
+    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer", cascade="all, delete-orphan")
 
     @hybrid_property
     def ip_address(self):
@@ -418,14 +417,17 @@ class DbRepo(object):
             peer = list(session.scalars(stmt).unique().all())[0]
             res = row2dict(peer) if for_api else peer
             if for_api:
-                # add peer-groups also for lookup
-                lookup_peer_groups = self.getPeerGroups(for_api = True)
-                res['lookup_peer_groups'] = lookup_peer_groups
                 # add client side config also.
                 sc = self.getServerConfiguration(1)
                 wg = WireGuardHelper(self)
-                s,c = wg.getWireguardConfigurationsForPeer(sc, peer)
+                s, c = wg.getWireguardConfigurationsForPeer(sc, peer)
                 res['peer_configuration'] = c
+                # add peer-groups also for lookup but which are not already added
+                lookup_peer_groups = self.getPeerGroups()
+                lookup_peer_groups = [x for x in lookup_peer_groups if x.id not in [link.peer_group.id for link in peer.peer_group_peer_links]]
+                lookup_peer_groups = [PeerGroupPeerLink(peer_group_id = x.id, peer_group = x) for x in lookup_peer_groups]
+                lookup_peer_groups = [row2dict(x) for x in lookup_peer_groups]
+                res['lookup_peer_groups'] = lookup_peer_groups
             return res
 
     @logged
@@ -435,6 +437,8 @@ class DbRepo(object):
             ip_address_num_max = session.scalars(stmt).unique().all()
             ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
             peer = dict2row(Peer, peerToSave)
+            for link in peerToSave['peer_group_peer_links']:
+                peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
             if peer.ip_address_num is None:
                 ip_address_num = ip_address_num_max + 1
                 peer.ip_address = ip_address_num
@@ -452,20 +456,30 @@ class DbRepo(object):
             return res
 
     @logged
-    def getPeerGroup(self, id):
+    def getPeerGroup(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(PeerGroup).where(PeerGroup.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
+            stmt = select(PeerGroup).options(joinedload(PeerGroup.peer_group_peer_links)
+                                             .joinedload(PeerGroupPeerLink.peer)).where(PeerGroup.id == id)
+            peerGroup = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(peerGroup) if for_api else peerGroup
+            if for_api:
+                # add peer-groups also for lookup but which are not already added
+                lookup_peers = self.getPeers()
+                lookup_peers = [x for x in lookup_peers if x.id not in [link.peer.id for link in peerGroup.peer_group_peer_links]]
+                lookup_peers = [PeerGroupPeerLink(peer_id = x.id, peer = x) for x in lookup_peers]
+                lookup_peers = [row2dict(x) for x in lookup_peers]
+                res['lookup_peers'] = lookup_peers
             return res
 
     @logged 
-    def savePeerGroup(self, dictToSave):
+    def savePeerGroup(self, peerGroupToSave):
         with Session(self.engine) as session:
-            item = dict2row(PeerGroup, dictToSave)
-            item = session.merge(item)
+            peerGroup = dict2row(PeerGroup, peerGroupToSave)
+            for link in peerGroupToSave['peer_group_peer_links']:
+                peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            peerGroup = session.merge(peerGroup)
             session.commit()
-            return item
+            return peerGroup
 
     @logged
     def getTargetGroups(self, for_api = False):
@@ -736,7 +750,7 @@ def peers_groups():
 @logged
 def peer_group_get(id):
     db = DbRepo()
-    res = db.getPeerGroup(id)
+    res = db.getPeerGroup(id, for_api = True)
     return res
 
 @app.route('/api/data/peer_group', methods = ['POST'])

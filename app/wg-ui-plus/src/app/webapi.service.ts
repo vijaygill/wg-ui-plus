@@ -128,6 +128,7 @@ export interface Peer {
     private_key: string;
     peer_configuration: string;
     peer_group_peer_links: PeerGroupPeerLink[];
+    lookup_peer_groups: PeerGroupPeerLink[];
 }
 
 export interface PeerGroup {
@@ -137,6 +138,7 @@ export interface PeerGroup {
     disabled: boolean;
     is_inbuilt: boolean;
     peer_group_peer_links: PeerGroupPeerLink[];
+    lookup_peers: PeerGroupPeerLink[];
 }
 
 export interface PeerGroupPeerLink {
