@@ -11,5 +11,8 @@ docker run -it --rm \
   -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
   -v /tmp:/tmp \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  --network=dockernet \
+  --cap-add=NET_ADMIN \
+  --cap-add=SYS_MODULE \
   --name wg-ui-dev-py \
   wg-ui-plus-dev /wg-ui-plus/scripts/run-app.sh

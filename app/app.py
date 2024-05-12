@@ -414,7 +414,8 @@ class DbRepo(object):
             if for_api:
                 # add client side config also.
                 sc = self.getServerConfiguration(1)
-                s,c = self.getWireguardConfigurationsForPeer(sc, peer)
+                wg = WireGuardHelper(self)
+                s,c = wg.getWireguardConfigurationsForPeer(sc, peer)
                 res['peer_configuration'] = c
             return res
 
@@ -542,7 +543,7 @@ class WireGuardHelper(object):
             f'[Interface]',
             f'Address = {serverConfiguration.ip_address}',
             f'ListenPort = {serverConfiguration.port_internal}',
-            f'PrivateKey = {serverConfiguration.public_key}',
+            f'PrivateKey = {serverConfiguration.private_key}',
             f'',
             f'PostUp = {serverConfiguration.script_path_post_up}',
             f'PostDown = {serverConfiguration.script_path_post_down}',
@@ -578,7 +579,9 @@ class WireGuardHelper(object):
             f'[Interface]',
             f'Address = {peer.ip_address}',
             f'ListenPort = {peer.port}',
-            f'PrivateKey = {peer.public_key}',
+            f'PrivateKey = {peer.private_key}',
+            f'DNS = 192.168.0.5',
+            #f'DNS = {serverConfiguration.ip_address}',
             f'',
             f'',
             f'# Settings for the peer on the other side of the pipe.',

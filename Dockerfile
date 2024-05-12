@@ -31,6 +31,20 @@ RUN pip install --break-system-packages --upgrade qrcode
 
 RUN apt install -y wireguard wireguard-tools
 
+RUN apt install -y net-tools iproute2 iptables openresolv
+
+RUN apt install -y libcap2-bin libcap2
+
+RUN apt install -y iptraf-ng
+
+RUN apt install -y procps 
+RUN apt install -y tcpdump
+RUN apt install -y sudo
+
+RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
+
+RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+
 RUN mkdir -p /app && chown $UID:$GID /app
 
 VOLUME /app
