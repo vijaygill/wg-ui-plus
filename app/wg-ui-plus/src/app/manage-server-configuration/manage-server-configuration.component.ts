@@ -49,4 +49,10 @@ export class ManageServerConfigurationComponent {
     });
   }
 
+  restartWireguard(){
+    this.webapiService.wireguardRestart().subscribe(data => {
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.'});
+    });
+  }
+
 }

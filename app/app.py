@@ -32,6 +32,7 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 import qrcode
 from io import BytesIO
+import subprocess
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
@@ -719,9 +720,22 @@ class WireGuardHelper(object):
                 f'iptables -A {chain_name} -j DROP',
             ]
             post_up += rules
+
+        post_up += ['\n' , 'iptables -n -L -v --line-numbers;' , '\n']
+
         post_up = '\n'.join(post_up)
 
-        return (post_up,'post-down script')
+        post_down = [
+            f'iptables --flush',
+            f'iptables --table nat --flush',
+            f'iptables --delete-chain',
+            f'',
+            f'iptables -n -L -v --line-numbers',
+        ]
+
+        post_down = '\n'.join(post_down)
+
+        return (post_up, post_down)
     
     @logged
     def generateConfigurationFiles(self):
@@ -921,7 +935,17 @@ def generate_configuration_files():
 @app.route('/api/control/wireguard_restart', methods = ['GET'])
 @logged
 def wireguard_restart():
-    res = {'status': 'ok'}
+    command = 'wg-quick down /app/wireguard/wg0.conf; wg-quick up /app/wireguard/wg0.conf;'
+    output = ''
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    try:
+        outs, errs = proc.communicate(timeout = 60)
+        output = outs.decode('utf-8') + errs.decode('utf-8')
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    app.logger.warn(f'output: {output}')
+    res = {'status': 'ok', 'output': output }
+    res = jsonify(res)
     return res
 
 @app.route('/<path:path>', methods=['GET'])
