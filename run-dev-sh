@@ -4,23 +4,12 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
 source ${BASE_DIR}/build-dev
 
-docker run -it --rm \
-  -v "${BASE_DIR}":/wg-ui-plus \
-  -v "${BASE_DIR}/app":/app \
-  -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
-  -v /tmp:/tmp \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /lib/modules:/lib/modules:ro \
-  -p "1196:51820/udp" \
-  --cap-add NET_ADMIN \
-  --cap-add SYS_MODULE \
-  --cap-add CAP_NET_ADMIN \
-  --privileged \
-  --sysctl net.ipv4.ip_forward=1 \
-  --sysctl net.ipv4.conf.all.src_valid_mark=1 \
-  --name wg-ui-dev-sh \
-  --network dockernet \
-  --dns 192.168.0.5 \
-  wg-ui-plus-dev bash
-#  --network=dockernet \
-#  --user ${ARG_UID}:${ARG_GID} \
+
+runing_container=`docker container ls | grep ${CONTAINER_DEV_APP}`
+
+if [ "${runing_container}" = "" ]
+then
+    echo "First run the dep-app container."
+else
+    docker exec -it ${CONTAINER_DEV_APP} bash
+fi
