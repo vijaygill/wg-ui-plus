@@ -140,7 +140,7 @@ export interface Target {
     id: number;
     name: string;
     description: string;
-    ip_network: string;
+    ip_address: string;
     disabled: boolean;
     is_inbuilt: boolean;
     peer_group_target_links: PeerGroupTargetLink[];

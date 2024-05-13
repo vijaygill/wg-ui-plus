@@ -63,10 +63,10 @@ DICT_DATA_TARGETS = [
 
 SAMPLE_DATA_TARGETS = [
         ('Internet', 'Internet', '0.0.0.0/0'),
-        ('Email Server', 'All targets', '192.168.0.33/0'),
-        ('Database Server', 'All targets', '192.168.0.34/0'),
-        ('Git Server', 'All targets', '192.168.0.35/0'),
-        ('Print Server', 'All targets', '192.168.0.32/0'),
+        ('Email Server', 'Email server', '192.168.0.33'),
+        ('Database Server', 'Database server for developers', '192.168.0.34'),
+        ('Git Server', 'Git server for developers', '192.168.0.35'),
+        ('Print Server', 'Print Server', '192.168.0.32'),
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
@@ -239,13 +239,13 @@ class Target(Base):
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
-    ip_network: Mapped[str] = mapped_column(String(255))
+    ip_address: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="target", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+        return f"Target(id={self.id!r}, name={self.name!r}, address={self.ip_address!r})"
 
 @dataclass
 class PeerGroupTargetLink(Base):
@@ -352,8 +352,8 @@ class DbRepo(object):
             rows_to_create = [ x for x in DICT_DATA_TARGETS if x[0] not in existing_rows]
 
             for r in rows_to_create:
-                name, description, ip_network = r
-                new_row = Target( name = name, description = description, ip_network = ip_network, is_inbuilt = True )
+                name, description, ip_address = r
+                new_row = Target( name = name, description = description, ip_address = ip_address, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 				
@@ -364,8 +364,8 @@ class DbRepo(object):
             rows_to_create = [ x for x in SAMPLE_DATA_TARGETS if x[0] not in existing_rows]
 
             for r in rows_to_create:
-                name, description, ip_network = r
-                new_row = Target( name = name, description = description, ip_network = ip_network )
+                name, description, ip_address = r
+                new_row = Target( name = name, description = description, ip_address = ip_address )
                 session.add(new_row)
                 session.commit()
 
@@ -375,7 +375,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description = r
-                new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
+                new_row = PeerGroup( name = name, description = description)
                 session.add(new_row)
                 session.commit()
 
@@ -555,6 +555,18 @@ class DbRepo(object):
             serverConfiguration = session.merge(serverConfiguration)
             session.commit()
             return serverConfiguration
+        
+    
+    @logged
+    def getTargetsForIPTablesRules(self):
+        with Session(self.engine) as session:
+            opts_load_peers = joinedload(PeerGroup.peer_group_peer_links).options(joinedload(PeerGroupPeerLink.peer))
+            opts_load_peergroups = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group).options(opts_load_peers))
+            #opts2 = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group).options(joinedload(PeerGroup.peer_group_peer_links)))
+            stmt = select(Target).options(opts_load_peergroups)
+            targets = list(session.scalars(stmt).unique().all())
+            return targets
+
     
 class WireGuardHelper(object):
     def __init__(self, dbRepo):
@@ -639,17 +651,97 @@ class WireGuardHelper(object):
         return res
     
     @logged
+    def getWireguardIpTablesScript(self):
+        # generate post-up script
+        post_up = [
+            f'#!/bin/bash',
+            f'WIREGUARD_INTERFACE=wg0',
+            f'WIREGUARD_LAN=192.168.2.0/24',
+            f'LAN_INTERFACE=eth0',
+            f'LOCAL_LAN=192.168.0.0/24',
+
+            f'echo "***** PostUp: Configuration ******************** "',
+            f'echo "WIREGUARD_LAN: ${{WIREGUARD_LAN}}"',
+            f'echo "LAN_INTERFACE: ${{LAN_INTERFACE}}"',
+            f'echo "LOCAL_LAN    : ${{LOCAL_LAN}}"',
+            f'echo "************************************************ "',
+            f'',
+            f'# clear existing rules and setup defaults',
+            f'iptables --flush',
+            f'iptables --table nat --flush',
+            f'iptables --delete-chain',
+            f'',
+            f'# masquerade traffic related to wg0',
+            f'iptables -t nat -I POSTROUTING -o ${{LAN_INTERFACE}} -j MASQUERADE -s $WIREGUARD_LAN',
+            f'iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to 192.168.0.5:53',
+            f'# Accept related or established traffic',
+            f'iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT',
+            f'',
+        ]
+
+        targets = self.dbRepo.getTargetsForIPTablesRules()
+
+        post_up += [f'# create chains for targets',]
+        for target in targets:
+            if not target.peer_group_target_links:
+                # if there are noi links with Peer-Groups, do not create the chain
+                continue
+            chain_name = f'udc-{target.id}'
+            rules = [
+                f'iptables -N {chain_name}',
+            ]
+            post_up += rules
+
+        for target in targets:
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = f'udc-{target.id}'
+                    comment = f'{target.name} => {pg_target_link.peer_group.name} => {pg_peer_link.peer.name}'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append FORWARD --source {pg_peer_link.peer.ip_address} --destination {target.ip_address} -j {chain_name} -m comment --comment "{comment}"',
+                        f'iptables --append {chain_name} --source {pg_peer_link.peer.ip_address} -j ACCEPT  -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        rules = [
+            f'# now add DROP rule to all uder-defined chains',
+        ]
+        post_up += rules
+
+        for target in targets:
+            if not target.peer_group_target_links:
+                # if there are noi links with Peer-Groups, do not create the chain
+                continue
+            chain_name = f'udc-{target.id}'
+            rules = [
+                f'iptables -A {chain_name} -j DROP',
+            ]
+            post_up += rules
+        post_up = '\n'.join(post_up)
+
+        return (post_up,'post-down script')
+    
+    @logged
     def generateConfigurationFiles(self):
         serverConfiguration = self.dbRepo.getServerConfiguration(1)
-        ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
-        ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
-        ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
         
+        # first save wg0.conf
+        ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
         configs = self.getWireguardConfiguration();
         with open(serverConfiguration.wireguard_config_path, 'w') as f:
             server_config = configs['server_configuration']
             f.write(f"{server_config}\n")
-        pass
+
+        # save post-up/post-down scripts        
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
+        iptables_scripts_post_up, iptables_scripts_post_down = self.getWireguardIpTablesScript();
+        with open(serverConfiguration.script_path_post_up, 'w') as f:
+            f.write(f"{iptables_scripts_post_up}\n")
+        with open(serverConfiguration.script_path_post_down, 'w') as f:
+            f.write(f"{iptables_scripts_post_down}\n")
 
 @app.route('/test')
 @logged

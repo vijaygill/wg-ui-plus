@@ -9,6 +9,7 @@ sudo wg-quick up /app/wireguard/wg0.conf
 while true
 do
     sudo wg show
+    sudo iptables -n -L -v --line-numbers
     sleep 2
     clear
 done
