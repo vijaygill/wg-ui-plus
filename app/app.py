@@ -438,20 +438,24 @@ class DbRepo(object):
             return res
 
     @logged
-    def savePeer(self, peerToSave):
+    def savePeer(self, peerToSave, for_api = False):
         with Session(self.engine) as session:
             stmt = sqlalchemy.select(func.max(Peer.ip_address_num))
             ip_address_num_max = session.scalars(stmt).unique().all()
             ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
             peer = dict2row(Peer, peerToSave)
-            for link in peerToSave['peer_group_peer_links']:
-                peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            if peerToSave['peer_group_peer_links']:
+                for link in peerToSave['peer_group_peer_links']:
+                    peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            else:
+                peer.peer_group_peer_links = []
             if peer.ip_address_num is None:
                 ip_address_num = ip_address_num_max + 1
                 peer.ip_address = ip_address_num
             peer = session.merge(peer)
             session.commit()
-            return peer
+            res = row2dict(peer) if for_api else peer
+            return res
 
     @logged
     def getPeerGroups(self, for_api = False):
@@ -486,16 +490,23 @@ class DbRepo(object):
             return res
 
     @logged 
-    def savePeerGroup(self, peerGroupToSave):
+    def savePeerGroup(self, peerGroupToSave, for_api = False):
         with Session(self.engine) as session:
             peerGroup = dict2row(PeerGroup, peerGroupToSave)
-            for link in peerGroupToSave['peer_group_peer_links']:
-                peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
-            for link in peerGroupToSave['peer_group_target_links']:
-                peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            if peerGroupToSave['peer_group_peer_links']:
+                for link in peerGroupToSave['peer_group_peer_links']:
+                    peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            else:
+                peerGroup.peer_group_peer_links = []
+            if peerGroupToSave['peer_group_target_links']:
+                for link in peerGroupToSave['peer_group_target_links']:
+                    peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            else:
+                peerGroup.peer_group_target_links = []
             peerGroup = session.merge(peerGroup)
             session.commit()
-            return peerGroup
+            res = row2dict(peerGroup) if for_api else peerGroup
+            return res
 
     @logged
     def getTargets(self, for_api = False):
@@ -523,14 +534,18 @@ class DbRepo(object):
         return res
 
     @logged
-    def saveTarget(self, targetToSave):
+    def saveTarget(self, targetToSave, for_api = False):
         with Session(self.engine) as session:
             target = dict2row(Target, targetToSave)
-            for link in targetToSave['peer_group_target_links']:
-                target.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            if targetToSave['peer_group_target_links']:
+                for link in targetToSave['peer_group_target_links']:
+                    target.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            else:
+                target.peer_group_target_links = []
             target = session.merge(target)
             session.commit()
-            return row2dict(target)
+            res = row2dict(target) if for_api else target
+            return res
 
     @logged
     def getServerConfigurations(self, for_api = False):
@@ -549,14 +564,14 @@ class DbRepo(object):
             return res
 
     @logged
-    def saveServerConfiguration(self, serverConfigurationToSave):
+    def saveServerConfiguration(self, serverConfigurationToSave, for_api = False):
         with Session(self.engine) as session:
             serverConfiguration = dict2row(ServerConfiguration, serverConfigurationToSave)
             serverConfiguration.ip_address = serverConfigurationToSave['ip_address']
             serverConfiguration = session.merge(serverConfiguration)
             session.commit()
-            return serverConfiguration
-        
+            res = row2dict(serverConfiguration) if for_api else serverConfiguration
+            return res
     
     @logged
     def getTargetsForIPTablesRules(self):
@@ -824,8 +839,7 @@ def peer_get(id):
 def peer_save():
     data = request.json
     db = DbRepo()
-    res = db.savePeer(data)
-    res = {'status': 'ok'}
+    res = db.savePeer(data, True)
     return res
 
 @app.route('/api/data/peer-config-qr/<int:id>', methods = ['GET'])
@@ -865,8 +879,7 @@ def peer_group_get(id):
 def peers_group_save():
     data = request.json
     db = DbRepo()
-    res = db.savePeerGroup(data)
-    res = {'status': 'ok'}
+    res = db.savePeerGroup(data, True)
     return res
 
 @app.route('/api/data/target', methods = ['GET'])
@@ -888,8 +901,7 @@ def target_get(id):
 def target_save():
     data = request.json
     db = DbRepo()
-    res = db.saveTarget(data)
-    res = {'status': 'ok'}
+    res = db.saveTarget(data, True)
     return res
 
 @app.route('/api/data/server_configuration', methods = ['GET'])
@@ -911,8 +923,7 @@ def server_configuration_get(id):
 def server_configuration_save():
     data = request.json
     db = DbRepo()
-    res = db.saveServerConfiguration(data)
-    res = {'status': 'ok'}
+    res = db.saveServerConfiguration(data, True)
     return res
 
 @app.route('/api/data/wireguard_configuration', methods = ['GET'])
