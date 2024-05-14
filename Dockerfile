@@ -21,10 +21,14 @@ RUN apt-get update -y \
 
 RUN npm install -g @angular/cli
 
+# Don't forget to update CI scripts
+# Can we maybe extract this list of packages out to a file so we only have to change in one place?
 RUN pip install --break-system-packages --upgrade \
+	docker \
 	Flask \
-	sqlalchemy \
-	docker
+	pytest \
+	pytest-cov \
+	sqlalchemy
 
 USER $UNAME
 
