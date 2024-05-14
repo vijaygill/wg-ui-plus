@@ -121,7 +121,7 @@ export interface PeerGroup {
     name: string;
     description: string;
     disabled: boolean;
-    is_inbuilt: boolean;
+    allow_modify_self: boolean;
     allow_modify_peers: boolean;
     allow_modify_targets: boolean;
     peer_group_peer_links: PeerGroupPeerLink[];
@@ -144,7 +144,7 @@ export interface Target {
     description: string;
     ip_address: string;
     disabled: boolean;
-    is_inbuilt: boolean;
+    allow_modify_self: boolean;
     peer_group_target_links: PeerGroupTargetLink[];
     lookup_peergroups: PeerGroupTargetLink[];
 }

@@ -51,7 +51,7 @@ SERVER_HOST_IP_ADDRESS_DEFAULT='192.168.2.1/24'
 DICT_DATA_PEER_GROUP_EVERYONE = 'Everyone'
 
 DICT_DATA_PEER_GROUPS = [
-    ('Everyone', 'All Peers in the system', False, True)
+    (DICT_DATA_PEER_GROUP_EVERYONE, 'All Peers in the system', False, True)
 ]
 
 SAMPLE_DATA_PEER_GROUPS = [
@@ -198,7 +198,7 @@ class PeerGroup(Base):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    allow_modify_self : Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     allow_modify_peers: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     allow_modify_targets: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
@@ -233,7 +233,7 @@ class Target(Base):
     description: Mapped[str] = mapped_column(String(255))
     ip_address: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    allow_modify_self: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="target", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
@@ -318,7 +318,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description, allow_modify_peers, allow_modify_targets = r
-                new_row = PeerGroup( name = name, description = description, is_inbuilt = True, allow_modify_peers = allow_modify_peers, allow_modify_targets = allow_modify_targets )
+                new_row = PeerGroup( name = name, description = description, allow_modify_self = True, allow_modify_peers = allow_modify_peers, allow_modify_targets = allow_modify_targets )
                 session.add(new_row)
                 session.commit()
 
@@ -330,7 +330,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description, ip_address = r
-                new_row = Target( name = name, description = description, ip_address = ip_address, is_inbuilt = True )
+                new_row = Target( name = name, description = description, ip_address = ip_address, allow_modify_self = True )
                 session.add(new_row)
                 session.commit()
 				
@@ -482,7 +482,8 @@ class DbRepo(object):
                     peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
             else:
                 peerGroup.peer_group_target_links = []
-            peerGroup.allow_modify_peers = True
+            peerGroup.allow_modify_self = DICT_DATA_PEER_GROUP_EVERYONE != peerGroup.name
+            peerGroup.allow_modify_peers = DICT_DATA_PEER_GROUP_EVERYONE != peerGroup.name
             peerGroup.allow_modify_targets = True
             peerGroup = session.merge(peerGroup)
             session.commit()

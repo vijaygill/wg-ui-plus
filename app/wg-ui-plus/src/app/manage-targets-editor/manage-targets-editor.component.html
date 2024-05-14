@@ -4,21 +4,21 @@
             <td>
                 <label for="targetName">Name</label>
             </td>
-            <td><input pInputText id="targetName" [(ngModel)]="editItem.name" [disabled]="editItem.is_inbuilt"/></td>
+            <td><input pInputText id="targetName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self"/></td>
         </tr>
         <tr>
             <td>
                 <label for="targetDescription">Description</label>
             </td>
             <td>
-                <input pInputText id="targetDescription" [(ngModel)]="editItem.description" [disabled]="editItem.is_inbuilt"/>
+                <input pInputText id="targetDescription" [(ngModel)]="editItem.description" [disabled]="!editItem.allow_modify_self"/>
             </td>
         </tr>
         <tr>
             <td>
                 <label for="targetIPAddress">IPAddress</label>
             <td>
-                <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address" [disabled]="editItem.is_inbuilt"/>
+                <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address" [disabled]="!editItem.allow_modify_self"/>
             </td>
         </tr>
         <tr>
@@ -26,12 +26,12 @@
                 <label for="targetDisabled">Disabled</label>
             </td>
             <td>
-                <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"/>
+                <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"/>
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span *ngIf="editItem.is_inbuilt">In-built Targets are read-only.</span>
+                <span *ngIf="!editItem.allow_modify_self">In-built Targets are read-only.</span>
             </td>
         </tr>
         <tr>
@@ -60,7 +60,7 @@
         <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()" [disabled]="editItem.is_inbuilt"></p-button>
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()" [disabled]="!editItem.allow_modify_self"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
                 </div>

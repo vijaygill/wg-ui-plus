@@ -2,24 +2,24 @@
     <tbody>
         <tr>
             <td><label for="peerGroupName">Name</label></td>
-            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name" [disabled]="editItem.is_inbuilt" />
+            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self" />
             </td>
         </tr>
         <tr>
             <td> <label for="peerGroupDescription">Description</label></td>
             <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
-                    [disabled]="editItem.is_inbuilt" /></td>
+                    [disabled]="!editItem.allow_modify_self" /></td>
         </tr>
         <tr>
             <td><label for="peerGroupDisabled">Disabled</label></td>
             <td>
-                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"
+                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"
                     variant="filled" />
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span *ngIf="editItem.is_inbuilt">Only changing access to targets is allowed.</span>
+                <span *ngIf="!editItem.allow_modify_self">Only changing access to targets is allowed.</span>
             </td>
         </tr>
         <tr>
@@ -29,7 +29,7 @@
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
-                    breakpoint="1400px" [disabled]="editItem.is_inbuilt" *ngIf="editItem.allow_modify_peers">
+                    breakpoint="1400px" [disabled]="!editItem.allow_modify_self" *ngIf="editItem.allow_modify_peers">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
