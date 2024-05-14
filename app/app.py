@@ -5,7 +5,7 @@ from functools import wraps
 from dataclasses import dataclass
 import random
 from flask import Flask, send_from_directory, send_file
-from flask import request, jsonify
+from flask import request
 import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
@@ -20,7 +20,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy import select
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import joinedload, defaultload
 from sqlalchemy import select
@@ -116,8 +116,7 @@ def row2dict(row, include_relations = True):
     try:
         self_insp = inspect(row)
         cols = self_insp.mapper.columns
-        d = inspect(row).dict
-    except:
+    except NoInspectionAvailable:
         pass
     if not cols:
         return None
@@ -142,9 +141,8 @@ def row2dict(row, include_relations = True):
                 res[col.key] = []
         else:
             try:
-                insp = inspect(value)
                 res[col.key] = row2dict(value, include_relations = False)
-            except:
+            except NoInspectionAvailable:
                 pass
             pass
     hybrids = [ (k, v) for k, v in inspect(row).mapper.all_orm_descriptors.items() if v.extension_type == sqlalchemy.ext.hybrid.HybridExtensionType.HYBRID_PROPERTY]

@@ -1,2 +1,5 @@
 app/data
 app/wireguard
+app/.coverage
+__pycache__/
+junit/
