@@ -9,11 +9,12 @@ import { CheckboxModule } from 'primeng/checkbox';
 //import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
 import { DialogModule } from 'primeng/dialog';
-//import { DividerModule } from 'primeng/divider';
-//import { DragDropModule } from 'primeng/dragdrop';
+import { DividerModule } from 'primeng/divider';
+import { DragDropModule } from 'primeng/dragdrop';
 import { DropdownModule } from 'primeng/dropdown';
 //import { DockModule } from 'primeng/dock';
 //import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { ImageModule } from 'primeng/image';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -31,7 +32,7 @@ import { MessagesModule } from 'primeng/messages';
 //import { PanelMenuModule } from 'primeng/panelmenu';
 //import { PanelModule } from 'primeng/panel';
 //import { PasswordModule } from 'primeng/password';
-//import { PickListModule } from 'primeng/picklist';
+import { PickListModule } from 'primeng/picklist';
 //import { ProgressBarModule } from 'primeng/progressbar';
 //import { ProgressSpinnerModule } from 'primeng/progressspinner';
 //import { RadioButtonModule } from 'primeng/radiobutton';
@@ -59,11 +60,15 @@ import { ToastModule } from 'primeng/toast';
 
 let modules = [
     ButtonModule, CardModule, CheckboxModule,
-    DataViewModule, DialogModule, DropdownModule,
+    DataViewModule, DialogModule, DividerModule,
+    DragDropModule,
+    DropdownModule,
+    ImageModule,
     InputNumberModule, InputTextModule, InputTextareaModule,
     ListboxModule,
     MenuModule,
     MessagesModule,
+    PickListModule,
     TableModule, TabViewModule, ToastModule
 ];
 

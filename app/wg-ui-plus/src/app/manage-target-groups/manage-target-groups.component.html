@@ -1,8 +1,0 @@
-<app-crud-container header="Target Groups">
-    <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
-        <app-manage-target-groups-list (onEdit)="onEdit($event)" (onNewItem)="onNewItem($event)"></app-manage-target-groups-list>
-    </ng-template>
-    <ng-template #editor let-onFinish="onFinish" let-getEditItem="getEditItem">
-        <app-manage-target-groups-editor (onFinish)="onFinish($event)" [editItem]="getEditItem()"></app-manage-target-groups-editor>
-    </ng-template>
-</app-crud-container>

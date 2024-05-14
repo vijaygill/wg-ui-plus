@@ -16,9 +16,9 @@
         </tr>
         <tr>
             <td>
-                <label for="targetIPNetwork">IPNetwork</label>
+                <label for="targetIPAddress">IPAddress</label>
             <td>
-                <input pInputText id="targetIPNetwork" [(ngModel)]="editItem.ip_network" [disabled]="editItem.is_inbuilt"/>
+                <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address" [disabled]="editItem.is_inbuilt"/>
             </td>
         </tr>
         <tr>
@@ -32,6 +32,29 @@
         <tr>
             <td colspan="2">
                 <span *ngIf="editItem.is_inbuilt">In-built Peers are read-only.</span>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="target">Targets</label></td>
+            <td>
+                <p-pickList id="target" [source]="editItem.lookup_peergroups" [target]="editItem.peer_group_target_links"
+                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+                    (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
+                    [stripedRows]="true">
+                    <ng-template let-targetGroupLink pTemplate="item">
+                        <div class="flex flex-wrap p-2 align-items-center gap-3">
+                            <div class="flex-1 flex flex-column gap-2">
+                                <span class="font-bold">{{ targetGroupLink.peer_group.name }}</span>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-tag text-sm"></i>
+                                    <small>
+                                        {{ targetGroupLink.peer_group.description }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-pickList>
             </td>
         </tr>
         <tr>

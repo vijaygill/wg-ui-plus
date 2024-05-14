@@ -1,0 +1,27 @@
+#!/bin/bash
+
+BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
+
+source ${BASE_DIR}/build-dev
+
+docker run -it --rm \
+    --cap-add CAP_NET_ADMIN \
+    --cap-add NET_ADMIN \
+    --cap-add SYS_MODULE \
+    --cap-add=NET_ADMIN \
+    --cap-add=SYS_MODULE \
+    --dns 192.168.0.5 \
+    --name wg-ui-dev-sh \
+    --privileged \
+    --sysctl net.ipv4.conf.all.src_valid_mark=1 \
+    --sysctl net.ipv4.ip_forward=1 \
+    -p "1196:51820/udp" \
+    -p "13080:80" \
+    -v "${BASE_DIR}":/wg-ui-plus \
+    -v "${BASE_DIR}/app":/app \
+    -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
+    -v /lib/modules:/lib/modules:ro \
+    -v /tmp:/tmp \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    --name wg-ui-dev-app \
+    wg-ui-plus-dev /wg-ui-plus/scripts/run-app.sh

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ServerConfiguration, WebapiService } from '../webapi.service';
+import { ServerConfiguration, WebapiService, WireguardConfiguration } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -39,6 +39,20 @@ export class ManageServerConfigurationComponent {
   cancel() {
     this.refreshData();
     this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.'});
+  }
+
+  wireguardConfiguration : WireguardConfiguration = {} as WireguardConfiguration;
+
+  generateWireguardConfig(){
+    this.webapiService.generateConfigurationFiles().subscribe(data => {
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.'});
+    });
+  }
+
+  restartWireguard(){
+    this.webapiService.wireguardRestart().subscribe(data => {
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.'});
+    });
   }
 
 }

@@ -16,8 +16,7 @@ RUN apt-get update -y \
 		python3 \
 		python-is-python3 \
 		npm \
-		sqlite3 \
-	&& rm -rf /var/lib/apt/lists/*
+		sqlite3
 
 RUN npm install -g @angular/cli
 
@@ -29,6 +28,31 @@ RUN pip install --break-system-packages --upgrade \
 	pytest \
 	pytest-cov \
 	sqlalchemy
+
+RUN apt-get install -y python3-cryptography
+
+RUN pip install --break-system-packages --upgrade qrcode
+
+RUN apt install -y wireguard wireguard-tools
+
+RUN apt install -y net-tools iproute2 iptables openresolv
+
+RUN apt install -y libcap2-bin libcap2
+
+RUN apt install -y iptraf-ng
+
+RUN apt install -y procps 
+RUN apt install -y tcpdump
+RUN apt install -y sudo
+RUN apt install -y conntrack
+
+RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
+
+RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+
+RUN mkdir -p /app && chown $UID:$GID /app
+
+VOLUME /app
 
 USER $UNAME
 

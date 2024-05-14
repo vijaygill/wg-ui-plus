@@ -4,10 +4,12 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
 source ${BASE_DIR}/build-dev
 
-docker run -it --rm \
-  -v "${BASE_DIR}":/wg-ui-plus \
-  -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
-  -v /tmp:/tmp \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  --name wg-ui-dev-sh \
-  wg-ui-plus-dev bash
+
+runing_container=`docker container ls | grep ${CONTAINER_DEV_APP}`
+
+if [ "${runing_container}" = "" ]
+then
+    echo "First run the dep-app container."
+else
+    docker exec -it ${CONTAINER_DEV_APP} bash
+fi

@@ -3,14 +3,34 @@
     <tbody>
         <tr>
             <td><label for="ipAddress">IP Address</label></td>
-            <td><input pInputText id="ipAddress" [min]="1024" [max]="64000" [(ngModel)]="editItem.ip_address" /></td>
+            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address" /></td>
         </tr>
         <tr>
-            <td><label for="portnumber">Port</label></td>
-            <td>
-                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            <td><label for="hostNameExternal">Host Name External</label></td>
+            <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external" />
+                <small>Peers connect to this peer from internet using this name.</small>
             </td>
+        </tr>
+        <tr>
+            <td><label for="portExternal">Port External</label></td>
+            <td>
+                <p-inputNumber id="portExternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_external" />
+                <small>Port exposed on your router. This is forwarded to the host where WG is running.</small>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="portInternal">Port Internal</label></td>
+            <td>
+                <p-inputNumber id="portInternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_internal" />
+                <small>Port on the machine where WG is running.</small>
+            </td>
+        </tr>
+
+        <tr>
+            <td><label for="wireguardConfigPath">Wireguard Config Path</label></td>
+            <td><input pInputText id="wireguardConfigPath" [(ngModel)]="editItem.wireguard_config_path" /></td>
         </tr>
         <tr>
             <td><label for="scriptPathPostUp">Post-Up Script</label></td>
@@ -20,12 +40,42 @@
             <td><label for="scriptPathPostDown">Post-Down Script</label></td>
             <td><input pInputText id="scriptPathPostDown" [(ngModel)]="editItem.script_path_post_down" /></td>
         </tr>
-        <td colspan="2">
-            <div style="width:100%;align-items: center; text-align: center;">
-                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                &nbsp;
-                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-            </div>
-        </td>
+        <tr>
+            <td><label for="peerDefaultPort">Default Peer Port</label></td>
+            <td>
+                <p-inputNumber id="peerDefaultPort" inputId="integeronly" [min]="1024" [max]="65535"
+                    [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port" />
+                <small>Default port used in Peer configuration.</small>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button icon="pi pi-check" label="Restart Wireguard"
+                        (onClick)="restartWireguard()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-check" label="Generate Wireguard Configuration Files"
+                        (onClick)="generateWireguardConfig()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+        <!-- <tr>
+            <td>Server Configuration</td>
+            <td>
+                <p-tabView>
+                    <p-tabPanel header="Server Configuration">
+                        <textarea rows="15" cols="120">{{wireguardConfiguration.server_configuration}}</textarea>
+                    </p-tabPanel>
+                    <p-tabPanel header="Peer"
+                        *ngFor="let peer_configuration of wireguardConfiguration.peer_configurations">
+                        <textarea rows="15" cols="120">{{peer_configuration}}</textarea>
+                    </p-tabPanel>
+                </p-tabView>
+            </td>
+        </tr> -->
     </tbody>
 </table>

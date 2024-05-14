@@ -5,24 +5,66 @@
             <td><input pInputText id="peerName" [(ngModel)]="editItem.name" /></td>
         </tr>
         <tr>
-            <td><label for="peerDeviceName">DeviceName</label></td>
-            <td><input pInputText id="peerDeviceName" [(ngModel)]="editItem.device_name" /></td>
+            <td><label for="peerIPAddress">IPAddress</label></td>
+            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
+                    [disabled]="true" /></td>
         </tr>
         <tr>
-            <td><label for="peerIPAddress">IPAddress</label></td>
-            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="editItem.ip_address"
-                    [disabled]="editItem.ip_address" /></td>
+            <td><label for="portnumber">Port</label></td>
+            <td>
+                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+            </td>
         </tr>
         <tr>
             <td><label for="peerDisabled">Disabled</label></td>
             <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
         </tr>
-        <td colspan="2">
-            <div style="width:100%;align-items: center; text-align: center;">
-                <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                &nbsp;
-                <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-            </div>
-        </td>
+        <tr>
+            <td><label for="peerGroups">Groups</label></td>
+            <td>
+                <p-pickList id="peerGroups" [source]="editItem.lookup_peer_groups"
+                    [target]="editItem.peer_group_peer_links" sourceHeader="Available" targetHeader="Selected"
+                    [dragdrop]="true" [responsive]="true" 
+                    (trackBy)="peerGroupsPickListTrackBy"
+                    [showSourceControls]="false" [showTargetControls]="false"
+                    [stripedRows]="true">
+                    <ng-template let-peerGroupLink pTemplate="item">
+                        <div class="flex flex-wrap p-2 align-items-center gap-3">
+                            <div class="flex-1 flex flex-column gap-2">
+                                <span class="font-bold">{{ peerGroupLink.peer_group.name }}</span>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-tag text-sm"></i>
+                                    <small>
+                                        {{ peerGroupLink.peer_group.description }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-pickList>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+        <!-- <tr>
+            <td>Peer Configuration</td>
+            <td>
+                <textarea rows="15" cols="120">{{editItem.peer_configuration}}</textarea>
+            </td>
+        </tr> -->
+        <tr>
+            <td>Peer Configuration</td>
+            <td>
+                <p-image src="/api/data/peer-config-qr/{{editItem.id}}" alt="Image" width="250" />
+            </td>
+        </tr>
     </tbody>
 </table>

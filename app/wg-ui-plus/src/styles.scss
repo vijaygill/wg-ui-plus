@@ -2,6 +2,18 @@
 @import "primeng/resources/primeng.css";
 @import "primeicons/primeicons.css";
 
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.item {
+    border-style: hidden;
+    border-color: yellow;
+}
+
 .item-header {
     grid-area: header;
 }
@@ -24,7 +36,7 @@
 .container {
     display: grid;
     grid-template-columns: min-content auto;
-    grid-template-rows: min-content auto 120px;
+    grid-template-rows: min-content auto min-content;
     grid-template-areas:
         "header header"
         "sidebar main"
@@ -32,12 +44,12 @@
 }
 
 .editor-table {
-    min-width: 640px;
-    max-width: 920px;
+    min-width: 50%;
+    max-width: 70%;
 
     td:nth-child(1) {
         width: auto;
-        text-wrap: nowrap ;
+        text-wrap: nowrap;
         vertical-align: top;
     }
 

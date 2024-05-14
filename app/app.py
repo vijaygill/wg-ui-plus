@@ -4,7 +4,7 @@ import ipaddress
 from functools import wraps
 from dataclasses import dataclass
 import random
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, send_file
 from flask import request
 import sqlalchemy
 from sqlalchemy import ForeignKey
@@ -22,34 +22,61 @@ from sqlalchemy import create_engine
 from sqlalchemy import select
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import joinedload, defaultload
+from sqlalchemy import select
 from typing import List
 import docker
 import pathlib
+import codecs
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+import qrcode
+from io import BytesIO
+import subprocess
+import re
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
-DB_FILE = os.path.join(SCRIPT_DIR, 'data/wg-ui-plus.db')
+DB_FILE = '/app/data/wg-ui-plus.db'
 
 SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
 IP_ADDRESS_BASE = 3232236033
+PORT_DEFAULT_EXTERNAL = 1196
+PORT_DEFAULT_INTERNAL = 51820
+SERVER_HOST_NAME_DEFAULT = f'myvpn.duckdns.org'
+SERVER_HOST_IP_ADDRESS_DEFAULT='192.168.2.1/24'
 
 DICT_DATA_PEER_GROUPS = [
     ('All', 'All')
 ]
-DICT_DATA_TARGET_GROUPS = [
-        ('to-lan', 'LAN destinations'),
-        ('to-internet', 'Internet destinations'),
-        ]
+
+SAMPLE_DATA_PEER_GROUPS = [
+    ('Developers', 'All developers'),
+    ('Testers', 'All testers'),
+    ('UAT Testers', 'All testers for UAT'),
+    ('Managers', 'All Managers'),
+]
+
+IP_ADDRESS_INTERNET = '0.0.0.0/0'
 
 DICT_DATA_TARGETS = [
-        ('All Targets', 'All targets', '0.0.0.0/0')
+        ('Internet', 'Internet', '0.0.0.0/0'),
+        ]
+
+SAMPLE_DATA_TARGETS = [
+        ('Internet', 'Internet', '0.0.0.0/0'),
+        ('Email Server', 'Email server', '192.168.0.33'),
+        ('Database Server', 'Database server for developers', '192.168.0.34'),
+        ('Git Server', 'Git server for developers', '192.168.0.35'),
+        ('Print Server', 'Print Server', '192.168.0.32'),
         ]
 
 DICT_DATA_SERVER_CONFIGURATION = [
-    ('192.168.2.1', 51820,
-      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-up.sh'), 
-      os.path.join(SCRIPT_DIR, '/wireguard/scripts/post-down.sh')
+    (SERVER_HOST_NAME_DEFAULT, SERVER_HOST_IP_ADDRESS_DEFAULT, PORT_DEFAULT_INTERNAL, PORT_DEFAULT_EXTERNAL,
+      '/app/wireguard/wg0.conf',
+      '/app/wireguard/scripts/post-up.sh', 
+      '/app/wireguard/scripts/post-down.sh'
       )
 ]
 
@@ -104,9 +131,14 @@ def row2dict(row, include_relations = True):
     for k,col in relationships:
         if not include_relations:
             continue
+        if (self_insp.unloaded) and (col.key in self_insp.unloaded):
+            continue
         value = getattr(row, col.key)
         if isinstance(value, (list, tuple)):
-            res[col.key] = [row2dict(item) for item in value]
+            if value:
+                res[col.key] = [row2dict(item) for item in value]
+            else:
+                res[col.key] = []
         else:
             try:
                 res[col.key] = row2dict(value, include_relations = False)
@@ -132,17 +164,31 @@ def dict2row(classType, dictToSave):
             setattr(res, col.key, value)
     return res
 
+def is_network_address(addr):
+    addr = ipaddress.ip_interface(addr)
+    res = int(addr.ip) == int(addr.network.network_address) and addr.network.prefixlen < 32
+    return (res, addr.ip, addr.network)
+
+@logged
+def ensure_folder_exists_for_file(filepath):
+    dir = os.path.dirname(filepath)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        app.logger.warning(f'Directory was missing. Created: {dir}')
+
+def generate_keys():
+    # generate private key
+    private_key = X25519PrivateKey.generate()
+    private_bytes = private_key.private_bytes( encoding = serialization.Encoding.Raw, format = serialization.PrivateFormat.Raw, encryption_algorithm = serialization.NoEncryption())
+    key_private = codecs.encode(private_bytes, 'base64').decode('utf8').strip()
+
+    # derive public key
+    public_bytes = private_key.public_key().public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
+    key_public = codecs.encode(public_bytes, 'base64').decode('utf8').strip()
+    return (key_public, key_private)
+
 class Base(DeclarativeBase):
     pass
-
-@dataclass
-class PeerGroupPeerLink(Base):
-    __tablename__ = "wg_peer_group_peer_link"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
-    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
-    peer_group: Mapped["PeerGroup"] = relationship(lazy = 'joined')
-    peer_id: Mapped[int] = mapped_column(ForeignKey("wg_peer.id"))
-    peer: Mapped["Peer"] = relationship(lazy = 'joined')
 
 @dataclass
 class PeerGroup(Base):
@@ -151,54 +197,30 @@ class PeerGroup(Base):
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group")
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
+    peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
 
 @dataclass
 class Peer(Base):
     __tablename__ = "wg_peer"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
-    device_name:  Mapped[str] = mapped_column(String(255))
-    ip_address_num: Mapped[int] = mapped_column(Integer)
+    ip_address: Mapped[str] = mapped_column(String(255))
+    port: Mapped[int] = mapped_column(Integer)
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer")
+    public_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    private_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer", cascade="all, delete-orphan")
 
-    @hybrid_property
-    def ip_address(self):
-        # TODO: I don't like this. Review later
-        try:
-            return str(ipaddress.ip_address(self.ip_address_num))
-        except ValueError:
-            pass
-
-        return None
-
-    @ip_address.setter
-    def ip_address(self, value):
-        self.ip_address_num = int(ipaddress.ip_address(value))
-
-    def __repr__(self) -> str:
-        return f"Peer(id={self.id!r}, name={self.name!r}, fullname={self.device_name!r})"
-    
 @dataclass
-class TargetGroupTargetLink(Base):
-    __tablename__ = "wg_target_group_target_link"
+class PeerGroupPeerLink(Base):
+    __tablename__ = "wg_peer_group_peer_link"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
-    target_group_id: Mapped[int] = mapped_column(ForeignKey("wg_target_group.id"))
-    target_group: Mapped["TargetGroup"] = relationship(lazy = 'joined')
-    target_id: Mapped[int] = mapped_column(ForeignKey("wg_target.id"))
-    target: Mapped["Target"] = relationship(lazy = 'joined')
-
-@dataclass
-class TargetGroup(Base):
-    __tablename__ = "wg_target_group"
-    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True )
-    name: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(String(255))
-    disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target_group")
-    is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
+    peer_group: Mapped["PeerGroup"] = relationship()
+    peer_id: Mapped[int] = mapped_column(ForeignKey("wg_peer.id"))
+    peer: Mapped["Peer"] = relationship()
 
 @dataclass
 class Target(Base):
@@ -206,40 +228,40 @@ class Target(Base):
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(255))
-    ip_network: Mapped[str] = mapped_column(String(255))
+    ip_address: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
-    target_group_target_links: Mapped[List["TargetGroupTargetLink"]] = relationship(back_populates="target")
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="target", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+        return f"Target(id={self.id!r}, name={self.name!r}, address={self.ip_address!r})"
+
+@dataclass
+class PeerGroupTargetLink(Base):
+    __tablename__ = "wg_peer_group_target_link"
+    id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
+    peer_group_id: Mapped[int] = mapped_column(ForeignKey("wg_peer_group.id"))
+    peer_group: Mapped["PeerGroup"] = relationship()
+    target_id: Mapped[int] = mapped_column(ForeignKey("wg_target.id"))
+    target: Mapped["Target"] = relationship()
 
 @dataclass
 class ServerConfiguration(Base):
     __tablename__ = "wg_server_configuration"
     id: Mapped[int] = mapped_column(primary_key = True, autoincrement=True)
-    ip_address_num: Mapped[int] = mapped_column(Integer)
-    port: Mapped[int] = mapped_column(Integer)
+    ip_address: Mapped[str] = mapped_column(String(255))
+    host_name_external: Mapped[str] = mapped_column(String(255))
+    port_external: Mapped[int] = mapped_column(Integer)
+    port_internal: Mapped[int] = mapped_column(Integer)
+    wireguard_config_path: Mapped[str] = mapped_column(String(255))
     script_path_post_down: Mapped[str] = mapped_column(String(255))
     script_path_post_up: Mapped[str] = mapped_column(String(255))
-
-    @hybrid_property
-    def ip_address(self):
-        # TODO: I don't like this. Review later
-        try:
-            return str(ipaddress.ip_address(self.ip_address_num))
-        except ValueError:
-            pass
-
-        return None
-
-    @ip_address.setter
-    def ip_address(self, value):
-        self.ip_address_num = int(ipaddress.ip_address(value))
-
+    public_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    private_key: Mapped[str] = mapped_column(String(255), nullable = True)
+    peer_default_port : Mapped[int] = mapped_column(Integer)
 
     def __repr__(self) -> str:
-        return f"Target(id={self.id!r}, name={self.name!r}, fullname={self.ip_network!r})"
+        return f"ServerConfiguration(id={self.id!r}, ip_address={self.ip_address!r}, port={self.port!r})"
 
 class DbRepo(object):
     def __init__(self):
@@ -254,17 +276,13 @@ class DbRepo(object):
 
     @logged
     def createDatabase(self):
-        db_dir = os.path.dirname(self.db_file)
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-            app.logger.warning(f'DB directory was missing. Created: {db_dir}')
+        ensure_folder_exists_for_file(self.db_file)
         self.engine = create_engine(f'sqlite:///{DB_FILE}', echo = True)
         Base.metadata.create_all(self.engine)
 
     @logged
     def createDictionaryData(self):
         self.createDictionaryDataPeerGroups()
-        self.createDictionaryDataTargetGroups()
         self.createDictionaryDataTargets()
         self.createDictionaryDataServerConfiguration()
 
@@ -274,8 +292,17 @@ class DbRepo(object):
             existing_rows = [ r.name for r in session.query( ServerConfiguration ).all() ]
             rows_to_create = [ x for x in DICT_DATA_SERVER_CONFIGURATION if x[0] not in existing_rows]
             for r in rows_to_create:
-                ip_address, port, script_path_post_up, script_path_post_down = r
-                new_row = ServerConfiguration( ip_address = ip_address, port = port, script_path_post_up = script_path_post_up, script_path_post_down = script_path_post_down )
+                host_name_external, ip_address, port_internal, port_external, wireguard_config_path, script_path_post_up, script_path_post_down = r
+                public_key, private_key = generate_keys()
+                new_row = ServerConfiguration(ip_address = ip_address,
+                                              host_name_external = host_name_external,
+                                              port_internal = port_internal,
+                                              port_external = port_external,
+                                              wireguard_config_path = wireguard_config_path,
+                                              script_path_post_up = script_path_post_up, 
+                                              script_path_post_down = script_path_post_down, 
+                                              public_key = public_key, private_key = private_key,
+                                              peer_default_port = PORT_DEFAULT_EXTERNAL )
                 session.add(new_row)
                 session.commit()
         pass
@@ -293,45 +320,53 @@ class DbRepo(object):
                 session.commit()
 
     @logged
-    def createDictionaryDataTargetGroups(self):
-        with Session(self.engine) as session:
-            existing_rows = [ r.name for r in session.query( TargetGroup ).all() ]
-            rows_to_create = [ x for x in DICT_DATA_TARGET_GROUPS if x[0] not in existing_rows]
-
-            for r in rows_to_create:
-                name, description = r
-                new_row = TargetGroup( name = name, description = description, is_inbuilt = True )
-                session.add(new_row)
-                session.commit()
-
-    @logged
     def createDictionaryDataTargets(self):
         with Session(self.engine) as session:
             existing_rows = [ r.name for r in session.query( Target ).all() ]
             rows_to_create = [ x for x in DICT_DATA_TARGETS if x[0] not in existing_rows]
 
             for r in rows_to_create:
-                name, description, ip_network = r
-                new_row = Target( name = name, description = description, ip_network = ip_network, is_inbuilt = True )
+                name, description, ip_address = r
+                new_row = Target( name = name, description = description, ip_address = ip_address, is_inbuilt = True )
                 session.add(new_row)
                 session.commit()
 				
     @logged
     def createSampleData(self):
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( Target ).all() ]
+            rows_to_create = [ x for x in SAMPLE_DATA_TARGETS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description, ip_address = r
+                new_row = Target( name = name, description = description, ip_address = ip_address )
+                session.add(new_row)
+                session.commit()
+
+        with Session(self.engine) as session:
+            existing_rows = [ r.name for r in session.query( PeerGroup ).all() ]
+            rows_to_create = [ x for x in SAMPLE_DATA_PEER_GROUPS if x[0] not in existing_rows]
+
+            for r in rows_to_create:
+                name, description = r
+                new_row = PeerGroup( name = name, description = description)
+                session.add(new_row)
+                session.commit()
+
+
         peers = self.getPeers()
         if not peers:
             with Session(self.engine) as session:
-                SAMPLE_MAX_PEER_GROUPS = 3
                 SAMPLE_MAX_PEERS = 5
-                max_peer_groups = SAMPLE_MAX_PEER_GROUPS
-                for i in range(0,max_peer_groups):
-                    peer_groups = [(f'Peer - {x}', f'Description {x}') for x in range(0,max_peer_groups)]
-                    peer_group = PeerGroup(name = f'Peer Group - {i}' , description = f'Description - {i}', disabled = i == 3)
-                    session.add(peer_group)
-                    session.commit()
+                
+                serverConfiguration = self.getServerConfiguration(1)
+                server_ip_address = ipaddress.ip_interface(serverConfiguration.ip_address)
                 for i in range(0, SAMPLE_MAX_PEERS):
-                    ip_address_num = IP_ADDRESS_BASE + 2 + i
-                    peer = Peer(name = f'Peer - {i}', device_name = f'Device - {i}', ip_address = ip_address_num )
+                    ip_address = server_ip_address.ip + 10 + i
+                    public_key, private_key = generate_keys()
+                    peer = Peer(name = f'Peer - {i}',
+                                ip_address = str(ip_address), port = serverConfiguration.peer_default_port,
+                                public_key = public_key, private_key = private_key)
                     session.add(peer)
                     session.commit()
                 peer_groups = [x for x in session.query( PeerGroup ).all()]
@@ -356,27 +391,47 @@ class DbRepo(object):
             return res
     
     @logged
-    def getPeer(self, id):
+    def getPeer(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(Peer).where(Peer.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            #res['lookup_peer_group'] = [ row2dict(x) for x in self.getPeerGroups() ]
+            stmt = select(Peer).options(joinedload(Peer.peer_group_peer_links)
+                                        .joinedload(PeerGroupPeerLink.peer_group)).where(Peer.id == id)
+            peer = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(peer) if for_api else peer
+            if for_api:
+                # add client side config also.
+                sc = self.getServerConfiguration(1)
+                wg = WireGuardHelper(self)
+                s, c = wg.getWireguardConfigurationsForPeer(sc, peer)
+                res['peer_configuration'] = c
+                # add peer-groups also for lookup but which are not already added
+                lookup_peer_groups = self.getPeerGroups()
+                lookup_peer_groups = [x for x in lookup_peer_groups if x.id not in [link.peer_group.id for link in peer.peer_group_peer_links]]
+                lookup_peer_groups = [PeerGroupPeerLink(peer_group_id = x.id, peer_group = x) for x in lookup_peer_groups]
+                lookup_peer_groups = [row2dict(x) for x in lookup_peer_groups]
+                res['lookup_peer_groups'] = lookup_peer_groups
             return res
 
     @logged
-    def savePeer(self, peerToSave):
+    def savePeer(self, peerToSave, for_api = False):
         with Session(self.engine) as session:
-            stmt = sqlalchemy.select(func.max(Peer.ip_address_num))
-            ip_address_num_max = session.scalars(stmt).unique().all()
-            ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
             peer = dict2row(Peer, peerToSave)
-            if peer.ip_address_num is None:
-                ip_address_num = ip_address_num_max + 1
-                peer.ip_address = ip_address_num
+            if peerToSave['peer_group_peer_links']:
+                for link in peerToSave['peer_group_peer_links']:
+                    peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            else:
+                peer.peer_group_peer_links = []
+            if peer.ip_address is None:
+                # TODO
+                # stmt = sqlalchemy.select(func.max(Peer.ip_address))
+                # ip_address_num_max = session.scalars(stmt).unique().all()
+                # ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
+                #ip_address_num = ip_address_num_max + 1
+                #peer.ip_address = ip_address_num
+                pass
             peer = session.merge(peer)
             session.commit()
-            return peer
+            res = row2dict(peer) if for_api else peer
+            return res
 
     @logged
     def getPeerGroups(self, for_api = False):
@@ -388,45 +443,46 @@ class DbRepo(object):
             return res
 
     @logged
-    def getPeerGroup(self, id):
+    def getPeerGroup(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(PeerGroup).where(PeerGroup.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
+            opts1 = joinedload(PeerGroup.peer_group_peer_links).options(joinedload(PeerGroupPeerLink.peer))
+            opts2 = joinedload(PeerGroup.peer_group_target_links).options(joinedload(PeerGroupTargetLink.target))
+            stmt = select(PeerGroup).options(opts1, opts2).where(PeerGroup.id == id)
+            peerGroup = list(session.scalars(stmt).unique().all())[0]
+            res = row2dict(peerGroup) if for_api else peerGroup
+            if for_api:
+                # add peers also for lookup but which are not already added
+                lookup_peers = self.getPeers()
+                lookup_peers = [x for x in lookup_peers if x.id not in [link.peer.id for link in peerGroup.peer_group_peer_links]]
+                lookup_peers = [PeerGroupPeerLink(peer_id = x.id, peer = x) for x in lookup_peers]
+                lookup_peers = [row2dict(x) for x in lookup_peers]
+                res['lookup_peers'] = lookup_peers
+                # add targets also for lookup but which are not already added
+                lookup_targets = self.getTargets()
+                lookup_targets = [x for x in lookup_targets if x.id not in [link.target.id for link in peerGroup.peer_group_target_links]]
+                lookup_targets = [PeerGroupTargetLink(target_id = x.id, target = x) for x in lookup_targets]
+                lookup_targets = [row2dict(x) for x in lookup_targets]
+                res['lookup_targets'] = lookup_targets
             return res
 
     @logged 
-    def savePeerGroup(self, dictToSave):
+    def savePeerGroup(self, peerGroupToSave, for_api = False):
         with Session(self.engine) as session:
-            item = dict2row(PeerGroup, dictToSave)
-            item = session.merge(item)
+            peerGroup = dict2row(PeerGroup, peerGroupToSave)
+            if peerGroupToSave['peer_group_peer_links']:
+                for link in peerGroupToSave['peer_group_peer_links']:
+                    peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
+            else:
+                peerGroup.peer_group_peer_links = []
+            if peerGroupToSave['peer_group_target_links']:
+                for link in peerGroupToSave['peer_group_target_links']:
+                    peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            else:
+                peerGroup.peer_group_target_links = []
+            peerGroup = session.merge(peerGroup)
             session.commit()
-            return item
-
-    @logged
-    def getTargetGroups(self, for_api = False):
-        with Session(self.engine) as session:
-            stmt = select(TargetGroup)
-            res = session.scalars(stmt).unique().all()
-            res = [row2dict(x) for x in res] if for_api else res
+            res = row2dict(peerGroup) if for_api else peerGroup
             return res
-    
-    @logged
-    def getTargetGroup(self, id):
-        with Session(self.engine) as session:
-            stmt = select(TargetGroup).where(TargetGroup.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            res['lookup_target_group'] = [ row2dict(x) for x in self.getTargetGroups() ]
-            return res
-
-    @logged
-    def saveTargetGroup(self, target_groupToSave):
-        with Session(self.engine) as session:
-            target_group = dict2row(TargetGroup, target_groupToSave)
-            target_group = session.merge(target_group)
-            session.commit()
-            return target_group
 
     @logged
     def getTargets(self, for_api = False):
@@ -437,20 +493,35 @@ class DbRepo(object):
             return res
     
     @logged
-    def getTarget(self, id):
+    def getTarget(self, id, for_api = False):
         with Session(self.engine) as session:
-            stmt = select(Target).where(Target.id == id)
-            res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
-            return res
+            opts = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group))
+            stmt = select(Target).options(opts).where(Target.id == id)
+            all = list(session.scalars(stmt).unique().all())
+            target = all[0] if all else Target()
+            res = row2dict(target) if for_api else target
+            if for_api:
+                # add peers also for lookup but which are not already added
+                lookup_peergroups = self.getPeerGroups()
+                lookup_peergroups = [x for x in lookup_peergroups if x.id not in [link.peer_group.id for link in target.peer_group_target_links]]
+                lookup_peergroups = [PeerGroupTargetLink(peer_group_id = x.id, peer_group = x) for x in lookup_peergroups]
+                lookup_peergroups = [row2dict(x) for x in lookup_peergroups]
+                res['lookup_peergroups'] = lookup_peergroups
+        return res
 
     @logged
-    def saveTarget(self, targetToSave):
+    def saveTarget(self, targetToSave, for_api = False):
         with Session(self.engine) as session:
             target = dict2row(Target, targetToSave)
+            if targetToSave['peer_group_target_links']:
+                for link in targetToSave['peer_group_target_links']:
+                    target.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
+            else:
+                target.peer_group_target_links = []
             target = session.merge(target)
             session.commit()
-            return target
+            res = row2dict(target) if for_api else target
+            return res
 
     @logged
     def getServerConfigurations(self, for_api = False):
@@ -461,25 +532,353 @@ class DbRepo(object):
             return res
     
     @logged
-    def getServerConfiguration(self, id):
+    def getServerConfiguration(self, id, for_api = False):
         with Session(self.engine) as session:
             stmt = select(ServerConfiguration).where(ServerConfiguration.id == id)
             res = list(session.scalars(stmt).unique().all())[0]
-            res = row2dict(res)
+            res = row2dict(res) if for_api else res
             return res
 
     @logged
-    def saveServerConfiguration(self, serverConfigurationToSave):
+    def saveServerConfiguration(self, serverConfigurationToSave, for_api = False):
         with Session(self.engine) as session:
             serverConfiguration = dict2row(ServerConfiguration, serverConfigurationToSave)
+            serverConfiguration.ip_address = serverConfigurationToSave['ip_address']
             serverConfiguration = session.merge(serverConfiguration)
             session.commit()
-            return serverConfiguration
+            res = row2dict(serverConfiguration) if for_api else serverConfiguration
+            return res
+    
+    @logged
+    def getTargetsForIPTablesRules(self):
+        with Session(self.engine) as session:
+            opts_load_peers = joinedload(PeerGroup.peer_group_peer_links).options(joinedload(PeerGroupPeerLink.peer))
+            opts_load_peergroups = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group).options(opts_load_peers))
+            #opts2 = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group).options(joinedload(PeerGroup.peer_group_peer_links)))
+            stmt = select(Target).options(opts_load_peergroups)
+            targets = list(session.scalars(stmt).unique().all())
+            return targets
+
+    
+class WireGuardHelper(object):
+    def __init__(self, dbRepo):
+        self.dbRepo = dbRepo
+
+    @logged
+    def getWireguardConfigurationForServer(self, serverConfiguration):
+        server_config = [
+            f'# Settings for this peer.',
+            f'[Interface]',
+            f'Address = {serverConfiguration.ip_address}',
+            f'ListenPort = {serverConfiguration.port_internal}',
+            f'PrivateKey = {serverConfiguration.private_key}',
+            f'',
+            f'PostUp = {serverConfiguration.script_path_post_up}',
+            f'PostDown = {serverConfiguration.script_path_post_down}',
+            f'',
+            f'',
+            f'',
+        ]
+        res = '\n'.join(server_config)
+        return res
+
+    @logged
+    def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
+        # returns tuple of server-side and client-side configurations
+        peer_config_server_side = [
+            f'# Settings for the peer on the other side of the pipe.',
+            f'# {peer.name}: disabled',
+            f'',
+            ] if peer.disabled else [
+            f'# Settings for the peer on the other side of the pipe.',
+            f'# {peer.name}',
+            f'[Peer]',
+            f'PublicKey = {peer.public_key}',
+            #f'#PresharedKey = <this is optional>',
+            f'AllowedIPs = {peer.ip_address}/32',
+            f'PersistentKeepalive = 25',
+            f'',
+            f'',
+        ]
+        peer_config_server_side = '\n'.join(peer_config_server_side)
+
+        peer_config_client_side = [
+            f'# Settings for this peer.',
+            f'[Interface]',
+            f'Address = {peer.ip_address}',
+            f'ListenPort = {peer.port}',
+            f'PrivateKey = {peer.private_key}',
+            f'DNS = 192.168.0.5',
+            #f'DNS = {serverConfiguration.ip_address}',
+            f'',
+            f'',
+            f'# Settings for the peer on the other side of the pipe.',
+            f'[Peer]',
+            f'PublicKey = {serverConfiguration.public_key}',
+            f'Endpoint = {serverConfiguration.host_name_external}:{serverConfiguration.port_external}',
+            f'AllowedIPs = 0.0.0.0/0',
+        ]
+        peer_config_client_side = '\n'.join(peer_config_client_side)
+        res = (peer_config_server_side, peer_config_client_side)
+        return res
+
+    @logged
+    def getWireguardConfiguration(self):
+        
+        serverConfiguration = self.dbRepo.getServerConfiguration(1)
+        server_config = self.getWireguardConfigurationForServer(serverConfiguration)
+
+        # now generate configs for peers
+        # both for the server side and client side
+        peer_configs = []
+        peers = self.dbRepo.getPeers()
+        for peer in peers:
+            peer_config_server_side, peer_config_client_side = self.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+            server_config += peer_config_server_side
+            peer_configs += [peer_config_client_side]
+
+        res = {}
+        res['server_configuration'] = server_config
+        res['peer_configurations'] = peer_configs
+        return res
+    
+    def get_chain_name(self, target):
+        res = 'chain-' + re.sub(r'[^a-zA-Z0-9]', '', str(target.name))
+        return res
+    
+    @logged
+    def getWireguardIpTablesScript(self):
+        dns_servers = ["192.168.0.5",]
+        # generate post-up script
+        post_up = [
+            f'#!/bin/bash',
+            f'WIREGUARD_INTERFACE=wg0',
+            f'WIREGUARD_LAN=192.168.2.0/24',
+            f'LAN_INTERFACE=eth0',
+            f'LOCAL_LAN=192.168.0.0/24',
+
+            f'echo "***** PostUp: Configuration ******************** "',
+            f'echo "WIREGUARD_LAN: ${{WIREGUARD_LAN}}"',
+            f'echo "LAN_INTERFACE: ${{LAN_INTERFACE}}"',
+            f'echo "LOCAL_LAN    : ${{LOCAL_LAN}}"',
+            f'echo "************************************************ "',
+            f'',
+            f'# clear existing rules and setup defaults',
+            f'iptables --flush',
+            f'iptables --table nat --flush',
+            f'iptables --delete-chain',
+            f'',
+            f'',
+            f'# masquerade traffic related to wg0',
+            f'iptables -t nat -I POSTROUTING -o ${{LAN_INTERFACE}} -j MASQUERADE -s $WIREGUARD_LAN',
+            f'',
+            f'# Accept related or established traffic',
+            f'iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment "Established and related packets."',
+            f'',
+        ]
+
+        for dns_server in dns_servers:
+            rules = [
+                f'# now make all DNS traffic flow to desired DNS server',
+                f'iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to {dns_server}:53',
+                f'',
+                ]
+            post_up += rules
+
+        targets = self.dbRepo.getTargetsForIPTablesRules()
+        peers = self.dbRepo.getPeers()
+
+        chain_name_local_domains = 'chain-local-domains'
+
+        post_up += [f'# create chains for targets',]
+        rules = [
+            f'iptables -N {chain_name_local_domains}',
+        ]
+        post_up += rules
+        for target in targets:
+            if not target.peer_group_target_links:
+                # if there are no links with Peer-Groups, do not create the chain
+                continue
+            chain_name = self.get_chain_name(target)
+            rules = [
+                f'iptables -N {chain_name}',
+            ]
+            post_up += rules
+
+        post_up += [
+                f'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"',
+                f'iptables --append {chain_name_local_domains} -j DROP -m comment --comment "DROP - Everything for local domains"',
+            ]
+
+        # per target FORWARD - host
+        for target in targets:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            if target_is_network_address:
+                continue
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = self.get_chain_name(target)
+                    comment = f'FWD - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append FORWARD --source {pg_peer_link.peer.ip_address} --destination {target_ip_address} -j {chain_name} -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        # per target FORWARD - network - non-Internet only
+        for target in targets:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            if not target_is_network_address:
+                continue
+            if str(target_network_address) == IP_ADDRESS_INTERNET:
+                continue
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = self.get_chain_name(target)
+                    comment = f'FWD - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append FORWARD --source {pg_peer_link.peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        serverConfiguration = self.dbRepo.getServerConfiguration(1)
+        for peer in peers:
+            local_domains = ['192.168.0.0/24']
+            server_ip_address = ipaddress.ip_interface(serverConfiguration.ip_address)
+            targets_to_block = [
+                str(server_ip_address.network),
+            ] + local_domains
+            comment = f'DROP - Everything else on LAN for {peer.name}'
+            rules = [
+                f'iptables --append FORWARD --source {peer.ip_address} --destination {target} -j {chain_name_local_domains} -m comment --comment "{comment} - {target}"' for target in targets_to_block
+                ]
+            post_up += rules
+
+        # per target FORWARD - network - Internet only
+        for target in targets:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            if not target_is_network_address:
+                continue
+            if str(target_network_address) != IP_ADDRESS_INTERNET:
+                continue
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = self.get_chain_name(target)
+                    comment = f'FWD - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append FORWARD --source {pg_peer_link.peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        rules = [
+            f'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"',
+        ]
+        post_up += rules
+
+        # per peer rules now for host addresses only
+        for target in targets:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            if target_is_network_address:
+                continue
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = self.get_chain_name(target)
+                    comment = f'ACCEPT - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}({target_ip_address})'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append {chain_name} --source {pg_peer_link.peer.ip_address} --destination {target_ip_address} -j ACCEPT  -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        # per peer rules now for network addresses only
+        for target in targets:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            if not target_is_network_address:
+                continue
+            for pg_target_link in target.peer_group_target_links:
+                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+                    chain_name = self.get_chain_name(target)
+                    comment = f'ACCEPT - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}({target_ip_address})'
+                    rules = [
+                        f'# {comment}',
+                        f'iptables --append {chain_name} --source {pg_peer_link.peer.ip_address} --destination {target_network_address} -j ACCEPT  -m comment --comment "{comment}"',
+                        f'',
+                    ]
+                    post_up += rules
+
+        rules = [
+            f'# now add DROP rule to all user-defined chains',
+        ]
+        post_up += rules
+
+        for target in targets:
+            if not target.peer_group_target_links:
+                # if there are no links with Peer-Groups, do not create the chain
+                continue
+            chain_name = self.get_chain_name(target)
+            rules = [
+                f'iptables -A {chain_name} -j DROP -m comment --comment "DROP - everything else"',
+            ]
+            post_up += rules
+
+        post_up += ['\n' , 'iptables -n -L -v --line-numbers;' , '\n']
+
+        post_up = '\n'.join(post_up)
+
+        post_down = [
+            f'iptables --flush',
+            f'iptables --table nat --flush',
+            f'iptables --delete-chain',
+            f'',
+            f'iptables -n -L -v --line-numbers',
+        ]
+
+        post_down = '\n'.join(post_down)
+
+        return (post_up, post_down)
+    
+    @logged
+    def generateConfigurationFiles(self):
+        serverConfiguration = self.dbRepo.getServerConfiguration(1)
+        
+        # first save wg0.conf
+        ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
+        configs = self.getWireguardConfiguration();
+        with open(serverConfiguration.wireguard_config_path, 'w') as f:
+            server_config = configs['server_configuration']
+            f.write(f"{server_config}\n")
+
+        # save post-up/post-down scripts        
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
+        ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
+        iptables_scripts_post_up, iptables_scripts_post_down = self.getWireguardIpTablesScript();
+        with open(serverConfiguration.script_path_post_up, 'w') as f:
+            f.write(f"{iptables_scripts_post_up}\n")
+        with open(serverConfiguration.script_path_post_down, 'w') as f:
+            f.write(f"{iptables_scripts_post_down}\n")
 
 @app.route('/test')
 @logged
 def test():
     return 'Hello, World!'
+
+@app.route('/test-qr')
+@logged
+def testqr():
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=5)
+    qr.add_data('Hello, World!')
+    qr.make(fit = True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    byteIO = BytesIO()
+    img.save(byteIO, 'PNG')
+    byteIO.seek(0)
+    return send_file(byteIO, mimetype='image/png')
 
 @app.route('/api/docker/container/list')
 @logged
@@ -523,7 +922,7 @@ def peers():
 @logged
 def peer_get(id):
     db = DbRepo()
-    res = db.getPeer(id)
+    res = db.getPeer(id, for_api = True)
     return res
 
 @app.route('/api/data/peer', methods = ['POST'])
@@ -531,9 +930,26 @@ def peer_get(id):
 def peer_save():
     data = request.json
     db = DbRepo()
-    res = db.savePeer(data)
-    res = {'status': 'ok'}
+    res = db.savePeer(data, True)
     return res
+
+@app.route('/api/data/peer-config-qr/<int:id>', methods = ['GET'])
+@logged
+def peer_get_config_qr(id):
+    db = DbRepo()
+    wg = WireGuardHelper(db)
+    serverConfiguration = db.getServerConfiguration(1)
+    peer = db.getPeer(id)
+    s,c = wg.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=5)
+    qr.add_data(c)
+    qr.make(fit = True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    byteIO = BytesIO()
+    img.save(byteIO, 'PNG')
+    byteIO.seek(0)
+    return send_file(byteIO, mimetype='image/png')
+
 
 @app.route('/api/data/peer_group')
 @logged
@@ -546,7 +962,7 @@ def peers_groups():
 @logged
 def peer_group_get(id):
     db = DbRepo()
-    res = db.getPeerGroup(id)
+    res = db.getPeerGroup(id, for_api = True)
     return res
 
 @app.route('/api/data/peer_group', methods = ['POST'])
@@ -554,31 +970,7 @@ def peer_group_get(id):
 def peers_group_save():
     data = request.json
     db = DbRepo()
-    res = db.savePeerGroup(data)
-    res = {'status': 'ok'}
-    return res
-
-@app.route('/api/data/target_group', methods = ['GET'])
-@logged
-def target_groups():
-    db = DbRepo()
-    res = db.getTargetGroups(for_api = True)
-    return res
-
-@app.route('/api/data/target_group/<int:id>', methods = ['GET'])
-@logged
-def target_group_get(id):
-    db = DbRepo()
-    res = db.getTargetGroup(id)
-    return res
-
-@app.route('/api/data/target_group', methods = ['POST'])
-@logged
-def target_group_save():
-    data = request.json
-    db = DbRepo()
-    res = db.saveTargetGroup(data)
-    res = {'status': 'ok'}
+    res = db.savePeerGroup(data, True)
     return res
 
 @app.route('/api/data/target', methods = ['GET'])
@@ -592,7 +984,7 @@ def targets():
 @logged
 def target_get(id):
     db = DbRepo()
-    res = db.getTarget(id)
+    res = db.getTarget(id, for_api = True)
     return res
 
 @app.route('/api/data/target', methods = ['POST'])
@@ -600,8 +992,7 @@ def target_get(id):
 def target_save():
     data = request.json
     db = DbRepo()
-    res = db.saveTarget(data)
-    res = {'status': 'ok'}
+    res = db.saveTarget(data, True)
     return res
 
 @app.route('/api/data/server_configuration', methods = ['GET'])
@@ -615,7 +1006,7 @@ def server_configurations():
 @logged
 def server_configuration_get(id):
     db = DbRepo()
-    res = db.getServerConfiguration(id)
+    res = db.getServerConfiguration(id, for_api = True)
     return res
 
 @app.route('/api/data/server_configuration', methods = ['POST'])
@@ -623,10 +1014,41 @@ def server_configuration_get(id):
 def server_configuration_save():
     data = request.json
     db = DbRepo()
-    res = db.saveServerConfiguration(data)
+    res = db.saveServerConfiguration(data, True)
+    return res
+
+@app.route('/api/data/wireguard_configuration', methods = ['GET'])
+@logged
+def wireguard_configuration_get():
+    db = DbRepo()
+    wg = WireGuardHelper(db)
+    res = wg.getWireguardConfiguration()
+    return res
+
+@app.route('/api/control/generate_configuration_files', methods = ['GET'])
+@logged
+def generate_configuration_files():
+    db = DbRepo()
+    wg = WireGuardHelper(db)
+    wg.generateConfigurationFiles()
     res = {'status': 'ok'}
     return res
 
+@app.route('/api/control/wireguard_restart', methods = ['GET'])
+@logged
+def wireguard_restart():
+    command = 'wg-quick down /app/wireguard/wg0.conf; wg-quick up /app/wireguard/wg0.conf; sudo conntrack -F; sudo conntrack -F; sudo conntrack -F;'
+    output = ''
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    try:
+        outs, errs = proc.communicate(timeout = 60)
+        output = outs.decode('utf-8') + errs.decode('utf-8')
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    app.logger.warn(f'output: {output}')
+    res = {'status': 'ok', 'output': output }
+    res = jsonify(res)
+    return res
 
 @app.route('/<path:path>', methods=['GET'])
 @logged

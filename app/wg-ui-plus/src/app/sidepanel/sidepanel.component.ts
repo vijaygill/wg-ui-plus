@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { MenuItem  } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
+import { routes } from '../app.routes';
 
 
 @Component({
@@ -31,10 +32,6 @@ export class SidepanelComponent {
           route: '/manage-peers',
         },
         {
-          label: 'Target-Groups',
-          route: '/manage-target-groups',
-        },
-        {
           label: 'Targets',
           route: '/manage-targets',
         },
@@ -54,5 +51,7 @@ export class SidepanelComponent {
     }
   ];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) {
+
+  }
 }

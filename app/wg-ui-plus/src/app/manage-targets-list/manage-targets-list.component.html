@@ -3,7 +3,7 @@
         <tr>
             <th>Id</th>
             <th>Name</th>
-            <th>IP Network</th>
+            <th>IP Address</th>
             <th>Disabled</th>
             <th>Action
                 <p-button icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
@@ -14,7 +14,7 @@
         <tr>
             <td>{{ targetGroup.id }}</td>
             <td>{{ targetGroup.name }}</td>
-            <td>{{ targetGroup.ip_network }}</td>
+            <td>{{ targetGroup.ip_address }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
             <td><p-button icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>
