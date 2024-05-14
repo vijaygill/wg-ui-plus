@@ -165,7 +165,7 @@ export interface DockerContainer {
 export interface ServerConfiguration {
     id: number;
     ip_address: string;
-    host_name: string;
+    host_name_external: string;
     port_internal: number;
     port_external: number;
     wireguard_config_path: string;
