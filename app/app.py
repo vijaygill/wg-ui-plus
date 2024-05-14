@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import random
 from flask import Flask, send_from_directory, send_file
 from flask import request
+from flask import jsonify
 import sqlalchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
@@ -47,15 +48,16 @@ PORT_DEFAULT_INTERNAL = 51820
 SERVER_HOST_NAME_DEFAULT = f'myvpn.duckdns.org'
 SERVER_HOST_IP_ADDRESS_DEFAULT='192.168.2.1/24'
 
+DICT_DATA_PEER_GROUP_EVERYONE = 'Everyone'
+
 DICT_DATA_PEER_GROUPS = [
-    ('All', 'All')
+    ('Everyone', 'All Peers in the system', False, True)
 ]
 
 SAMPLE_DATA_PEER_GROUPS = [
-    ('Developers', 'All developers'),
-    ('Testers', 'All testers'),
-    ('UAT Testers', 'All testers for UAT'),
-    ('Managers', 'All Managers'),
+    ('Developers', 'All developers', True, True),
+    ('Testers', 'All testers', True, True),
+    ('Managers', 'All Managers', True, True),
 ]
 
 IP_ADDRESS_INTERNET = '0.0.0.0/0'
@@ -65,10 +67,9 @@ DICT_DATA_TARGETS = [
         ]
 
 SAMPLE_DATA_TARGETS = [
-        ('Internet', 'Internet', '0.0.0.0/0'),
         ('Email Server', 'Email server', '192.168.0.33'),
         ('Database Server', 'Database server for developers', '192.168.0.34'),
-        ('Git Server', 'Git server for developers', '192.168.0.35'),
+        ('File Server', 'File server for common shared directories', '192.168.0.35'),
         ('Print Server', 'Print Server', '192.168.0.32'),
         ]
 
@@ -198,6 +199,8 @@ class PeerGroup(Base):
     description: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     is_inbuilt: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    allow_modify_peers: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    allow_modify_targets: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_peer_links: Mapped[List["PeerGroupPeerLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
     peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="peer_group", cascade="all, delete-orphan")
 
@@ -314,8 +317,8 @@ class DbRepo(object):
             rows_to_create = [ x for x in DICT_DATA_PEER_GROUPS if x[0] not in existing_rows]
 
             for r in rows_to_create:
-                name, description = r
-                new_row = PeerGroup( name = name, description = description, is_inbuilt = True )
+                name, description, allow_modify_peers, allow_modify_targets = r
+                new_row = PeerGroup( name = name, description = description, is_inbuilt = True, allow_modify_peers = allow_modify_peers, allow_modify_targets = allow_modify_targets )
                 session.add(new_row)
                 session.commit()
 
@@ -348,8 +351,8 @@ class DbRepo(object):
             rows_to_create = [ x for x in SAMPLE_DATA_PEER_GROUPS if x[0] not in existing_rows]
 
             for r in rows_to_create:
-                name, description = r
-                new_row = PeerGroup( name = name, description = description)
+                name, description, allow_modify_peers, allow_modify_targets = r
+                new_row = PeerGroup( name = name, description = description, allow_modify_peers = allow_modify_peers, allow_modify_targets = allow_modify_targets)
                 session.add(new_row)
                 session.commit()
 
@@ -479,6 +482,8 @@ class DbRepo(object):
                     peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
             else:
                 peerGroup.peer_group_target_links = []
+            peerGroup.allow_modify_peers = True
+            peerGroup.allow_modify_targets = True
             peerGroup = session.merge(peerGroup)
             session.commit()
             res = row2dict(peerGroup) if for_api else peerGroup

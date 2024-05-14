@@ -122,6 +122,8 @@ export interface PeerGroup {
     description: string;
     disabled: boolean;
     is_inbuilt: boolean;
+    allow_modify_peers: boolean;
+    allow_modify_targets: boolean;
     peer_group_peer_links: PeerGroupPeerLink[];
     lookup_peers: PeerGroupPeerLink[];
     peer_group_target_links: PeerGroupTargetLink[];
