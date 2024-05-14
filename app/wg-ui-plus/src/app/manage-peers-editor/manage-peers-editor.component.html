@@ -9,13 +9,13 @@
             <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
                     [disabled]="true" /></td>
         </tr>
-        <tr>
+        <!-- <tr>
             <td><label for="portnumber">Port</label></td>
             <td>
                 <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
                     [required]="true" [format]="false" [(ngModel)]="editItem.port" />
             </td>
-        </tr>
+        </tr> -->
         <tr>
             <td><label for="peerDisabled">Disabled</label></td>
             <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
@@ -25,10 +25,9 @@
             <td>
                 <p-pickList id="peerGroups" [source]="editItem.lookup_peer_groups"
                     [target]="editItem.peer_group_peer_links" sourceHeader="Available" targetHeader="Selected"
-                    [dragdrop]="true" [responsive]="true" 
-                    (trackBy)="peerGroupsPickListTrackBy"
-                    [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true">
+                    [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
+                    [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
+                    [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }" breakpoint="1400px">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
@@ -46,24 +45,18 @@
             </td>
         </tr>
         <tr>
+            <td>QR Code</td>
+            <td>
+                <p-image src="/api/data/peer-config-qr/{{editItem.id}}" alt="Image" width="250" />
+            </td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
                     <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
                 </div>
-            </td>
-        </tr>
-        <!-- <tr>
-            <td>Peer Configuration</td>
-            <td>
-                <textarea rows="15" cols="120">{{editItem.peer_configuration}}</textarea>
-            </td>
-        </tr> -->
-        <tr>
-            <td>Peer Configuration</td>
-            <td>
-                <p-image src="/api/data/peer-config-qr/{{editItem.id}}" alt="Image" width="250" />
             </td>
         </tr>
     </tbody>
