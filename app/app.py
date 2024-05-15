@@ -1107,7 +1107,9 @@ def generate_configuration_files():
 @app.route('/api/control/wireguard_restart', methods = ['GET'])
 @logged
 def wireguard_restart():
-    command = 'wg-quick down /app/wireguard/wg0.conf; wg-quick up /app/wireguard/wg0.conf; sudo conntrack -F; sudo conntrack -F; sudo conntrack -F;'
+    db = DbRepo()
+    sc = db.getServerConfiguration(1)
+    command = f'wg-quick down {sc.wireguard_config_path}; wg-quick up {sc.wireguard_config_path}; sudo conntrack -F; sudo conntrack -F; sudo conntrack -F;'
     output = ''
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     try:
