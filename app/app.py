@@ -152,17 +152,29 @@ def row2dict(row, include_relations = True):
         res[k] = value
     return res
 
-def dict2row(classType, dictToSave):
+def dict2row(classType, dictToSave, include_relations = False):
+    insp = inspect(classType)
     res = classType()
-    cols = [ col for col in inspect(classType).mapper.column_attrs if col.key in dictToSave.keys()]
+    cols = [ col for col in insp.mapper.column_attrs if col.key in dictToSave.keys()]
     for col in cols:
         value = dictToSave[col.key]
         # if value is a list/tuple, then get dict2row for each item in it
         # else just set it as simple value
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, (list, tuple, dict)):
             setattr(res, col.key, [dict2row(col.type, item) for item in value])
         else:
             setattr(res, col.key, value)
+
+    relationships = insp.mapper.relationships.items()
+    for key, col in relationships:
+        if not include_relations:
+            continue
+        value = dictToSave[key] if key in dictToSave.keys() else None
+        if col.direction == sqlalchemy.orm.interfaces.ONETOMANY:
+            if value:
+                items = [ dict2row(col.entity.entity,x) for x in value]
+                setattr(res, col.key, items)
+
     return res
 
 def is_network_address(addr):
@@ -398,7 +410,8 @@ class DbRepo(object):
         with Session(self.engine) as session:
             stmt = select(Peer).options(joinedload(Peer.peer_group_peer_links)
                                         .joinedload(PeerGroupPeerLink.peer_group)).where(Peer.id == id)
-            peer = list(session.scalars(stmt).unique().all())[0]
+            peers = list(session.scalars(stmt).unique().all())
+            peer = peers[0] if peers else Peer()
             res = row2dict(peer) if for_api else peer
             if for_api:
                 # add client side config also.
@@ -412,25 +425,38 @@ class DbRepo(object):
                 lookup_peer_groups = [PeerGroupPeerLink(peer_group_id = x.id, peer_group = x) for x in lookup_peer_groups]
                 lookup_peer_groups = [row2dict(x) for x in lookup_peer_groups]
                 res['lookup_peer_groups'] = lookup_peer_groups
+                if (not 'peer_group_peer_links' in res.keys()) or (not res['peer_group_peer_links']):
+                    res['peer_group_peer_links'] = []
             return res
+
+    @logged
+    def validate_peer(self, peerToSave, for_api = False):
+        errors = []
+        peer = dict2row(Peer, peerToSave, True)
+        if (not peer.name) or (len(peer.name.strip()) <= 0):
+            errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
+        if (not peer.peer_group_peer_links) or (len(peer.peer_group_peer_links) <= 0):
+            errors.append({'field': 'peer_group_peer_links', 'type': 'warning', 'message': 'No Peer-Groups added.'})
+        return errors
 
     @logged
     def savePeer(self, peerToSave, for_api = False):
         with Session(self.engine) as session:
-            peer = dict2row(Peer, peerToSave)
-            if ('peer_group_peer_links' in peerToSave.keys()) and peerToSave['peer_group_peer_links']:
-                for link in peerToSave['peer_group_peer_links']:
-                    peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
-            else:
-                peer.peer_group_peer_links = []
+            peer = dict2row(Peer, peerToSave, True)
+            sc = self.getServerConfiguration(1)
             if peer.ip_address is None:
-                # TODO
-                # stmt = sqlalchemy.select(func.max(Peer.ip_address))
-                # ip_address_num_max = session.scalars(stmt).unique().all()
-                # ip_address_num_max = ip_address_num_max[0] if ip_address_num_max else IP_ADDRESS_BASE
-                #ip_address_num = ip_address_num_max + 1
-                #peer.ip_address = ip_address_num
-                pass
+                ip_address = ''
+                peers = self.getPeers()
+                if peers:
+                    ip_address_num_max = max([ int(ipaddress.ip_interface(p.ip_address).ip) for p in self.getPeers()] )
+                    ip_address = ip_address_num_max + 1
+                else:
+                    ip_address = int(ipaddress.ip_interface(sc.ip_address).ip) + 1
+                peer.ip_address = str(ipaddress.ip_address(ip_address))
+            
+            if not peer.port:
+                peer.port = sc.peer_default_port
+
             peer = session.merge(peer)
             session.commit()
             res = row2dict(peer) if for_api else peer
@@ -467,12 +493,16 @@ class DbRepo(object):
                 lookup_targets = [PeerGroupTargetLink(target_id = x.id, target = x) for x in lookup_targets]
                 lookup_targets = [row2dict(x) for x in lookup_targets]
                 res['lookup_targets'] = lookup_targets
+                if (not 'peer_group_peer_links' in res.keys()) or (not res['peer_group_peer_links']):
+                    res['peer_group_peer_links'] = []
+                if (not 'peer_group_target_links' in res.keys()) or (not res['peer_group_target_links']):
+                    res['peer_group_target_links'] = []
             return res
 
     @logged
     def validate_peer_group(self, peerGroupToSave, for_api = False):
         errors = []
-        peer_group = dict2row(PeerGroup, peerGroupToSave)
+        peer_group = dict2row(PeerGroup, peerGroupToSave, True)
         if (not peer_group.name) or (len(peer_group.name.strip()) <= 0):
             errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
         if (not peer_group.description) or (len(peer_group.description.strip()) <= 0):
@@ -486,17 +516,7 @@ class DbRepo(object):
     @logged
     def savePeerGroup(self, peerGroupToSave, for_api = False):
         with Session(self.engine) as session:
-            peerGroup = dict2row(PeerGroup, peerGroupToSave)
-            if ('peer_group_peer_links' in peerGroupToSave.keys()) and peerGroupToSave['peer_group_peer_links']:
-                for link in peerGroupToSave['peer_group_peer_links']:
-                    peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
-            else:
-                peerGroup.peer_group_peer_links = []
-            if ('peer_group_target_links' in peerGroupToSave.keys()) and peerGroupToSave['peer_group_target_links']:
-                for link in peerGroupToSave['peer_group_target_links']:
-                    peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
-            else:
-                peerGroup.peer_group_target_links = []
+            peerGroup = dict2row(PeerGroup, peerGroupToSave, True)
             peerGroup.allow_modify_self = DICT_DATA_PEER_GROUP_EVERYONE != peerGroup.name
             peerGroup.allow_modify_peers = DICT_DATA_PEER_GROUP_EVERYONE != peerGroup.name
             peerGroup.allow_modify_targets = True
@@ -951,6 +971,9 @@ def peer_get(id):
 def peer_save():
     data = request.json
     db = DbRepo()
+    errors = db.validate_peer(data, for_api = True)
+    if [ x for x in errors if x['type'] == 'error']:
+        return errors, 400
     res = db.savePeer(data, True)
     return res
 

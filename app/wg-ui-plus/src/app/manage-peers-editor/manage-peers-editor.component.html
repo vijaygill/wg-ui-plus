@@ -2,7 +2,10 @@
     <tbody>
         <tr>
             <td><label for="peerName">Name</label></td>
-            <td><input pInputText id="peerName" [(ngModel)]="editItem.name" /></td>
+            <td><input pInputText id="peerName" [(ngModel)]="editItem.name" />
+                <app-validation-errors-display field="name" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
         </tr>
         <tr>
             <td><label for="peerIPAddress">IPAddress</label></td>
@@ -42,9 +45,11 @@
                         </div>
                     </ng-template>
                 </p-pickList>
+                <app-validation-errors-display field="peer_group_peer_links" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
-        <tr>
+        <tr *ngIf="editItem.id">
             <td>QR Code</td>
             <td>
                 <p-image src="/api/data/peer-config-qr/{{editItem.id}}" alt="Image" width="250" />
@@ -56,6 +61,9 @@
                     <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                    &nbsp;
+                    <app-validation-errors-display
+                        [validationResult]="validationResult"></app-validation-errors-display>
                 </div>
             </td>
         </tr>
