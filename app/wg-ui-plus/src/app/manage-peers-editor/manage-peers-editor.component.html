@@ -2,7 +2,9 @@
     <tbody>
         <tr>
             <td><label for="peerName">Name</label></td>
-            <td><input pInputText id="peerName" [(ngModel)]="editItem.name" />
+            <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
+                 pTooltip="Name of the device/computer you wish to connect with VPN." tooltipPosition="top"
+                pAutoFocus [autofocus]="true"/>
                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                 </app-validation-errors-display>
             </td>
@@ -30,7 +32,8 @@
                     [target]="editItem.peer_group_peer_links" sourceHeader="Available" targetHeader="Selected"
                     [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
                     [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
-                    [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }" breakpoint="1400px">
+                    [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }" breakpoint="1400px"
+                    pTooltip="This Peer will have access to all the Targets of selected Peer-Groups." tooltipPosition="top">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
