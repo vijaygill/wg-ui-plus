@@ -17,7 +17,7 @@ export class ValidationErrorsDisplayComponent {
 
   errorList(): Message[] {
     let res: Message[] = [];
-    if (this.validationResult && this.validationResult) {
+    if (this.validationResult) {
       this.validationResult.forEach(validationResultItem => {
         let createMessage = !this.field || this.field == validationResultItem.field;
         if (!createMessage) {
