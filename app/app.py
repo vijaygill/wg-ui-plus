@@ -178,9 +178,11 @@ def dict2row(classType, dictToSave, include_relations = False):
     return res
 
 def is_network_address(addr):
-    addr = ipaddress.ip_interface(addr)
-    res = int(addr.ip) == int(addr.network.network_address) and addr.network.prefixlen < 32
-    return (res, addr.ip, addr.network)
+    ip = ipaddress.ip_interface(str(addr))
+    if isinstance(addr, (ipaddress.IPv4Interface)):
+        ip = addr
+    res = int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
+    return (res, ip.ip, ip.network)
 
 @logged
 def ensure_folder_exists_for_file(filepath):
@@ -599,6 +601,29 @@ class DbRepo(object):
             res = list(session.scalars(stmt).unique().all())[0]
             res = row2dict(res) if for_api else res
             return res
+
+    @logged
+    def validate_server_configuration(self, serverConfigurationToSave, for_api = False):
+        errors = []
+        serverConfiguration = dict2row(ServerConfiguration, serverConfigurationToSave, True)
+
+        if (not serverConfiguration.ip_address) or (len(serverConfiguration.ip_address.strip()) <= 0):
+            errors.append({'field': 'ip_address', 'type': 'error', 'message': 'IP-Address/Network is not provided or is blank.'})
+        else:
+            try:
+                ip_address = ipaddress.ip_interface(serverConfiguration.ip_address)
+                if is_network_address(ip_address)[0]:
+                    errors.append({'field': 'ip_address', 'type': 'error', 'message': f'IP-Address is a network address. "{serverConfiguration.ip_address}" is not a valid value.'})
+            except:
+                errors.append({'field': 'ip_address', 'type': 'error', 'message': 'IP-Address/Network is not valid.'})
+
+        # if (not peer.name) or (len(peer.name.strip()) <= 0):
+        #     errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
+        # if (not peer.peer_group_peer_links) or (len(peer.peer_group_peer_links) <= 0):
+        #     errors.append({'field': 'peer_group_peer_links', 'type': 'warning', 'message': 'No Peer-Groups added.'})
+
+
+        return errors
 
     @logged
     def saveServerConfiguration(self, serverConfigurationToSave, for_api = False):
@@ -1084,6 +1109,9 @@ def server_configuration_get(id):
 def server_configuration_save():
     data = request.json
     db = DbRepo()
+    errors = db.validate_server_configuration(data, for_api = True)
+    if [ x for x in errors if x['type'] == 'error']:
+        return errors, 400
     res = db.saveServerConfiguration(data, True)
     return res
 

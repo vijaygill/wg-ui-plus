@@ -3,32 +3,43 @@
     <tbody>
         <tr>
             <td><label for="ipAddress">IP Address</label></td>
-            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address" /></td>
+            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address"
+                    pTooltip="IP Address of the peer where VPN is running." tooltipPosition="top" pAutoFocus
+                    [autofocus]="true" />
+                <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
         </tr>
         <tr>
             <td><label for="hostNameExternal">Host Name External</label></td>
-            <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external" />
-                <small>Peers connect to this peer from internet using this name.</small>
+            <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
+                    pTooltip="Peers connect to this VPN from internet using this name." tooltipPosition="top" />
+                <app-validation-errors-display field="host_name_external" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
         <tr>
             <td><label for="portExternal">Port External</label></td>
             <td>
                 <p-inputNumber id="portExternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.port_external" />
-                <small>Port exposed on your router. This is forwarded to the host where WG is running.</small>
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_external"
+                    pTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
+                    tooltipPosition="top" />
+                <app-validation-errors-display field="port_external" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
         <tr>
             <td><label for="portInternal">Port Internal</label></td>
             <td>
                 <p-inputNumber id="portInternal" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.port_internal" />
-                <small>Port on the machine where WG is running.</small>
+                    [required]="true" [format]="false" [(ngModel)]="editItem.port_internal"
+                    pTooltip="Port on the host where the VPN is running." tooltipPosition="top" />
+                <app-validation-errors-display field="port_internal" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
-
-        <tr>
+        <!-- <tr>
             <td><label for="wireguardConfigPath">Wireguard Config Path</label></td>
             <td><input pInputText id="wireguardConfigPath" [(ngModel)]="editItem.wireguard_config_path" /></td>
         </tr>
@@ -44,15 +55,14 @@
             <td><label for="peerDefaultPort">Default Peer Port</label></td>
             <td>
                 <p-inputNumber id="peerDefaultPort" inputId="integeronly" [min]="1024" [max]="65535"
-                    [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port" />
-                <small>Default port used in Peer configuration.</small>
+                    [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.peer_default_port"
+                    pTooltip="Default port used in Peer configuration." tooltipPosition="top" />
             </td>
-        </tr>
+        </tr> -->
         <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button icon="pi pi-check" label="Restart Wireguard"
-                        (onClick)="restartWireguard()"></p-button>
+                    <p-button icon="pi pi-check" label="Restart Wireguard" (onClick)="restartWireguard()"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-check" label="Generate Wireguard Configuration Files"
                         (onClick)="generateWireguardConfig()"></p-button>
@@ -63,19 +73,5 @@
                 </div>
             </td>
         </tr>
-        <!-- <tr>
-            <td>Server Configuration</td>
-            <td>
-                <p-tabView>
-                    <p-tabPanel header="Server Configuration">
-                        <textarea rows="15" cols="120">{{wireguardConfiguration.server_configuration}}</textarea>
-                    </p-tabPanel>
-                    <p-tabPanel header="Peer"
-                        *ngFor="let peer_configuration of wireguardConfiguration.peer_configurations">
-                        <textarea rows="15" cols="120">{{peer_configuration}}</textarea>
-                    </p-tabPanel>
-                </p-tabView>
-            </td>
-        </tr> -->
     </tbody>
 </table>
