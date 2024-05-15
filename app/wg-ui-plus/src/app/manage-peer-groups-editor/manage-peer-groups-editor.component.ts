@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-manage-peer-groups-editor',
@@ -25,6 +26,8 @@ export class ManagePeerGroupsEditorComponent {
 
   peerGroup: PeerGroup = {} as PeerGroup;
 
+  errorMessages!: string[];
+
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
@@ -33,9 +36,21 @@ export class ManagePeerGroupsEditorComponent {
   }
 
   ok() {
-    this.webapiService.savePeerGroup(this.peerGroup).subscribe(data => {
-      this.onFinish.emit(true);
-    });
+    this.webapiService.savePeerGroup(this.peerGroup)
+      .subscribe({
+        next: data => {
+        },
+        error: error => {
+          let response = error as HttpErrorResponse;
+          if (response) {
+            this.errorMessages = response.error as string[];
+            //this.messageService.add({ severity: 'warn ', summary: 'Error', detail: this.errorMessages.join(', ') });
+          }
+        },
+        complete: () => {
+          this.onFinish.emit(true);
+        },
+      });
   }
 
   cancel() {

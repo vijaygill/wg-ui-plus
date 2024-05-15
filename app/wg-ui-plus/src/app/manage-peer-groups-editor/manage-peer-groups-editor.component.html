@@ -1,8 +1,15 @@
+<p-toast></p-toast>
 <table class="editor-table">
     <tbody>
         <tr>
             <td><label for="peerGroupName">Name</label></td>
-            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self" />
+            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
+                    [disabled]="!editItem.allow_modify_self" />
+            </td>
+            <td rowspan="999" *ngIf="errorMessages" class="errorColumn">
+                <ul>
+                    <li *ngFor="let msg of errorMessages">{{msg}}</li>
+                </ul>
             </td>
         </tr>
         <tr>
@@ -61,7 +68,8 @@
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ targetGroupLink.target.description }} ({{ targetGroupLink.target.ip_address }})
+                                        {{ targetGroupLink.target.description }} ({{ targetGroupLink.target.ip_address
+                                        }})
                                     </small>
                                 </div>
                             </div>

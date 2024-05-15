@@ -418,7 +418,7 @@ class DbRepo(object):
     def savePeer(self, peerToSave, for_api = False):
         with Session(self.engine) as session:
             peer = dict2row(Peer, peerToSave)
-            if peerToSave['peer_group_peer_links']:
+            if ('peer_group_peer_links' in peerToSave.keys()) and peerToSave['peer_group_peer_links']:
                 for link in peerToSave['peer_group_peer_links']:
                     peer.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
             else:
@@ -451,7 +451,8 @@ class DbRepo(object):
             opts1 = joinedload(PeerGroup.peer_group_peer_links).options(joinedload(PeerGroupPeerLink.peer))
             opts2 = joinedload(PeerGroup.peer_group_target_links).options(joinedload(PeerGroupTargetLink.target))
             stmt = select(PeerGroup).options(opts1, opts2).where(PeerGroup.id == id)
-            peerGroup = list(session.scalars(stmt).unique().all())[0]
+            peerGroups = list(session.scalars(stmt).unique().all())
+            peerGroup = peerGroups[0] if peerGroups else PeerGroup(allow_modify_self = True,allow_modify_peers = True,allow_modify_targets = True)
             res = row2dict(peerGroup) if for_api else peerGroup
             if for_api:
                 # add peers also for lookup but which are not already added
@@ -468,16 +469,26 @@ class DbRepo(object):
                 res['lookup_targets'] = lookup_targets
             return res
 
-    @logged 
+    @logged
+    def validate_peer_group(self, peerGroupToSave, for_api = False):
+        errors = []
+        peer_group = dict2row(PeerGroup, peerGroupToSave)
+        if (not peer_group.name) or (len(peer_group.name.strip()) <= 0):
+            errors.append('Name is not provided or is blank.')
+        if (not peer_group.description) or (len(peer_group.description.strip()) <= 0):
+            errors.append('Description is not provided or is blank.')
+        return errors
+
+    @logged
     def savePeerGroup(self, peerGroupToSave, for_api = False):
         with Session(self.engine) as session:
             peerGroup = dict2row(PeerGroup, peerGroupToSave)
-            if peerGroupToSave['peer_group_peer_links']:
+            if ('peer_group_peer_links' in peerGroupToSave.keys()) and peerGroupToSave['peer_group_peer_links']:
                 for link in peerGroupToSave['peer_group_peer_links']:
                     peerGroup.peer_group_peer_links += [dict2row(PeerGroupPeerLink, link)]
             else:
                 peerGroup.peer_group_peer_links = []
-            if peerGroupToSave['peer_group_target_links']:
+            if ('peer_group_target_links' in peerGroupToSave.keys()) and peerGroupToSave['peer_group_target_links']:
                 for link in peerGroupToSave['peer_group_target_links']:
                     peerGroup.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
             else:
@@ -976,7 +987,10 @@ def peer_group_get(id):
 def peers_group_save():
     data = request.json
     db = DbRepo()
-    res = db.savePeerGroup(data, True)
+    errors = db.validate_peer_group(data, for_api = True)
+    if errors:
+        return errors, 400
+    res = db.savePeerGroup(data, for_api = True)
     return res
 
 @app.route('/api/data/target', methods = ['GET'])
