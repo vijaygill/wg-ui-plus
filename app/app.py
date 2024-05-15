@@ -617,12 +617,6 @@ class DbRepo(object):
             except:
                 errors.append({'field': 'ip_address', 'type': 'error', 'message': 'IP-Address/Network is not valid.'})
 
-        # if (not peer.name) or (len(peer.name.strip()) <= 0):
-        #     errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
-        # if (not peer.peer_group_peer_links) or (len(peer.peer_group_peer_links) <= 0):
-        #     errors.append({'field': 'peer_group_peer_links', 'type': 'warning', 'message': 'No Peer-Groups added.'})
-
-
         return errors
 
     @logged
