@@ -182,3 +182,10 @@ export interface WireguardConfiguration {
     server_configuration: string;
     peer_configurations: string[];
 }
+
+export interface ValidationResultItem {
+    field: string;
+    type: string;
+    message: string;
+}
+

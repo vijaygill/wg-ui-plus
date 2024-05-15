@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 
 @Component({
   selector: 'app-manage-peer-groups-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   providers: [MessageService],
   templateUrl: './manage-peer-groups-editor.component.html',
   styleUrl: './manage-peer-groups-editor.component.scss'
@@ -26,7 +27,7 @@ export class ManagePeerGroupsEditorComponent {
 
   peerGroup: PeerGroup = {} as PeerGroup;
 
-  errorMessages!: string[];
+  validationResult!: any;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
@@ -43,8 +44,7 @@ export class ManagePeerGroupsEditorComponent {
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.errorMessages = response.error as string[];
-            //this.messageService.add({ severity: 'warn ', summary: 'Error', detail: this.errorMessages.join(', ') });
+            this.validationResult = response.error;
           }
         },
         complete: () => {
@@ -59,13 +59,11 @@ export class ManagePeerGroupsEditorComponent {
 
   peersPickListTrackBy(index: number, item: any) {
     let x = item as PeerGroupPeerLink;
-    debugger;
     return x.peer_group.id;
   }
 
   targetsPickListTrackBy(index: number, item: any) {
     let x = item as PeerGroupTargetLink;
-    debugger;
     return x.target.id;
   }
 }

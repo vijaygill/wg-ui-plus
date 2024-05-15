@@ -3,25 +3,30 @@
     <tbody>
         <tr>
             <td><label for="peerGroupName">Name</label></td>
-            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
-                    [disabled]="!editItem.allow_modify_self" />
-            </td>
-            <td rowspan="999" *ngIf="errorMessages" class="errorColumn">
-                <ul>
-                    <li *ngFor="let msg of errorMessages">{{msg}}</li>
-                </ul>
+            <td>
+                <input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
+                    [disabled]="!editItem.allow_modify_self"
+                    pTooltip="Name of the device/computer you wish to connect with VPN." tooltipPosition="top"
+                    pAutoFocus [autofocus]="true" />
+                <app-validation-errors-display field="name" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
         <tr>
             <td> <label for="peerGroupDescription">Description</label></td>
             <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
-                    [disabled]="!editItem.allow_modify_self" /></td>
+                    [disabled]="!editItem.allow_modify_self"
+                    pTooltip="Some helpful description of the device/computer you wish to connect with VPN."
+                    tooltipPosition="top" />
+                <app-validation-errors-display field="description"
+                    [validationResult]="validationResult"></app-validation-errors-display>
+            </td>
         </tr>
         <tr>
             <td><label for="peerGroupDisabled">Disabled</label></td>
             <td>
                 <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"
-                    variant="filled" />
+                    variant="filled" pTooltip="Disabled Peer-Groups are denied access to VPN." tooltipPosition="top" />
             </td>
         </tr>
         <tr>
@@ -36,7 +41,8 @@
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
-                    breakpoint="1400px" [disabled]="!editItem.allow_modify_self" *ngIf="editItem.allow_modify_peers">
+                    breakpoint="1400px" [disabled]="!editItem.allow_modify_self" *ngIf="editItem.allow_modify_peers"
+                    pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
@@ -51,6 +57,8 @@
                         </div>
                     </ng-template>
                 </p-pickList>
+                <app-validation-errors-display field="peers"
+                    [validationResult]="validationResult"></app-validation-errors-display>
             </td>
         </tr>
         <tr>
@@ -60,7 +68,8 @@
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
-                    breakpoint="1400px" *ngIf="editItem.allow_modify_targets">
+                    breakpoint="1400px" *ngIf="editItem.allow_modify_targets"
+                    pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
                     <ng-template let-targetGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
@@ -76,6 +85,8 @@
                         </div>
                     </ng-template>
                 </p-pickList>
+                <app-validation-errors-display field="targets"
+                    [validationResult]="validationResult"></app-validation-errors-display>
             </td>
         </tr>
         <tr>
@@ -84,6 +95,9 @@
                     <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                    &nbsp;
+                    <app-validation-errors-display
+                        [validationResult]="validationResult"></app-validation-errors-display>
                 </div>
             </td>
         </tr>

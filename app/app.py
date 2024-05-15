@@ -474,9 +474,13 @@ class DbRepo(object):
         errors = []
         peer_group = dict2row(PeerGroup, peerGroupToSave)
         if (not peer_group.name) or (len(peer_group.name.strip()) <= 0):
-            errors.append('Name is not provided or is blank.')
+            errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
         if (not peer_group.description) or (len(peer_group.description.strip()) <= 0):
-            errors.append('Description is not provided or is blank.')
+            errors.append({'field': 'description', 'type': 'error', 'message': 'Description is not provided or is blank.'})
+        if (not peer_group.peer_group_peer_links) or (len(peer_group.peer_group_peer_links) <= 0):
+            errors.append({'field': 'peers', 'type': 'warning', 'message': 'No peers added.'})
+        if (not peer_group.peer_group_target_links) or (len(peer_group.peer_group_target_links) <= 0):
+            errors.append({'field': 'targets', 'type': 'warning', 'message': 'No targets added.'})
         return errors
 
     @logged
@@ -988,7 +992,7 @@ def peers_group_save():
     data = request.json
     db = DbRepo()
     errors = db.validate_peer_group(data, for_api = True)
-    if errors:
+    if [ x for x in errors if x['type'] == 'error']:
         return errors, 400
     res = db.savePeerGroup(data, for_api = True)
     return res
