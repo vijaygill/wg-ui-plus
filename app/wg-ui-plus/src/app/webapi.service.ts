@@ -145,6 +145,7 @@ export interface Target {
     ip_address: string;
     disabled: boolean;
     allow_modify_self: boolean;
+    allow_modify_peer_groups: boolean;
     peer_group_target_links: PeerGroupTargetLink[];
     lookup_peergroups: PeerGroupTargetLink[];
 }

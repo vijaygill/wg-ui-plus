@@ -246,6 +246,7 @@ class Target(Base):
     ip_address: Mapped[str] = mapped_column(String(255))
     disabled: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     allow_modify_self: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
+    allow_modify_peer_groups: Mapped[Boolean] = mapped_column(Boolean, nullable = True)
     peer_group_target_links: Mapped[List["PeerGroupTargetLink"]] = relationship(back_populates="target", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
@@ -342,7 +343,7 @@ class DbRepo(object):
 
             for r in rows_to_create:
                 name, description, ip_address = r
-                new_row = Target( name = name, description = description, ip_address = ip_address, allow_modify_self = True )
+                new_row = Target( name = name, description = description, ip_address = ip_address, allow_modify_self = False, allow_modify_peer_groups = True )
                 session.add(new_row)
                 session.commit()
 				
@@ -538,8 +539,11 @@ class DbRepo(object):
         with Session(self.engine) as session:
             opts = joinedload(Target.peer_group_target_links).options(joinedload(PeerGroupTargetLink.peer_group))
             stmt = select(Target).options(opts).where(Target.id == id)
-            all = list(session.scalars(stmt).unique().all())
-            target = all[0] if all else Target()
+            targets = list(session.scalars(stmt).unique().all())
+            target = targets[0] if targets else Target()
+            if target.allow_modify_self is None:
+                target.allow_modify_self = True
+            target.allow_modify_peer_groups = True
             res = row2dict(target) if for_api else target
             if for_api:
                 # add peers also for lookup but which are not already added
@@ -548,17 +552,33 @@ class DbRepo(object):
                 lookup_peergroups = [PeerGroupTargetLink(peer_group_id = x.id, peer_group = x) for x in lookup_peergroups]
                 lookup_peergroups = [row2dict(x) for x in lookup_peergroups]
                 res['lookup_peergroups'] = lookup_peergroups
+                if (not 'peer_group_target_links' in res.keys()) or (not res['peer_group_target_links']):
+                    res['peer_group_target_links'] = []
         return res
+    
+    @logged
+    def validate_target(self, targetToSave, for_api = False):
+        errors = []
+        target = dict2row(Target, targetToSave, True)
+        if (not target.name) or (len(target.name.strip()) <= 0):
+            errors.append({'field': 'name', 'type': 'error','message': 'Name is not provided or is blank.'})
+        if (not target.description) or (len(target.description.strip()) <= 0):
+            errors.append({'field': 'description', 'type': 'error', 'message': 'Description is not provided or is blank.'})
+        if (not target.ip_address) or (len(target.ip_address.strip()) <= 0):
+            errors.append({'field': 'ip_address', 'type': 'error', 'message': 'IP-Address/Network is not provided or is blank.'})
+        else:
+            try:
+                ip_address = ipaddress.ip_interface(target.ip_address)
+            except:
+                errors.append({'field': 'ip_address', 'type': 'error', 'message': 'IP-Address/Network is not valid.'})
+        if (not target.peer_group_target_links) or (len(target.peer_group_target_links) <= 0):
+            errors.append({'field': 'peer_groups', 'type': 'warning', 'message': 'No targets added.'})
+        return errors
 
     @logged
     def saveTarget(self, targetToSave, for_api = False):
         with Session(self.engine) as session:
-            target = dict2row(Target, targetToSave)
-            if targetToSave['peer_group_target_links']:
-                for link in targetToSave['peer_group_target_links']:
-                    target.peer_group_target_links += [dict2row(PeerGroupTargetLink, link)]
-            else:
-                target.peer_group_target_links = []
+            target = dict2row(Target, targetToSave, True)
             target = session.merge(target)
             session.commit()
             res = row2dict(target) if for_api else target
@@ -1039,6 +1059,9 @@ def target_get(id):
 def target_save():
     data = request.json
     db = DbRepo()
+    errors = db.validate_target(data, for_api = True)
+    if [ x for x in errors if x['type'] == 'error']:
+        return errors, 400
     res = db.saveTarget(data, True)
     return res
 
