@@ -72,8 +72,9 @@ SAMPLE_DATA_PEER_GROUPS = [
 
 IP_ADDRESS_INTERNET = '0.0.0.0/0'
 
+DICT_DATA_TARGET_INTERNET = 'Internet'
 DICT_DATA_TARGETS = [
-        ('Internet', 'Internet', '0.0.0.0/0'),
+        (DICT_DATA_TARGET_INTERNET, 'Internet', '0.0.0.0/0'),
         ]
 
 SAMPLE_DATA_TARGETS = [

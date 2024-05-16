@@ -58,8 +58,8 @@ class DbHelper(object):
 
     @logged
     def createDictionaryData(self):
-        self.createDictionaryDataPeerGroups()
         self.createDictionaryDataTargets()
+        self.createDictionaryDataPeerGroups()
         self.createDictionaryDataServerConfiguration()
 
     @logged
@@ -92,6 +92,11 @@ class DbHelper(object):
             for r in rows_to_create:
                 name, description, allow_modify_peers, allow_modify_targets = r
                 new_row = PeerGroup( name = name, description = description, allow_modify_self = True, allow_modify_peers = allow_modify_peers, allow_modify_targets = allow_modify_targets )
+                if name == DICT_DATA_PEER_GROUP_EVERYONE:
+                    # if PeerGroup is everyone, link Internet by default
+                    stmt = select(Target).where(Target.name == DICT_DATA_TARGET_INTERNET)
+                    target_internet = list(session.scalars(stmt).unique().all())[0]
+                    new_row.peer_group_target_links = [PeerGroupTargetLink(target = target_internet, target_id = target_internet.id, peer_group = new_row)]
                 session.add(new_row)
                 session.commit()
 
@@ -175,11 +180,6 @@ class DbHelper(object):
             peer = peers[0] if peers else Peer()
             res = row2dict(peer) if for_api else peer
             if for_api:
-                # add client side config also.
-                sc = self.getServerConfiguration(1)
-                wg = WireGuardHelper(self)
-                s, c = wg.getWireguardConfigurationsForPeer(sc, peer)
-                res['peer_configuration'] = c
                 # add peer-groups also for lookup but which are not already added
                 lookup_peer_groups = self.getPeerGroups()
                 lookup_peer_groups = [x for x in lookup_peer_groups if x.id not in [link.peer_group.id for link in peer.peer_group_peer_links]]
