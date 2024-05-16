@@ -46,6 +46,8 @@ RUN apt install -y tcpdump
 RUN apt install -y sudo
 RUN apt install -y conntrack
 
+RUN pip install --break-system-packages --upgrade colorlog
+
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
 RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf

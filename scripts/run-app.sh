@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd /wg-ui-plus/app
+cd /wg-ui-plus/app/webapp/
 ./app.py
