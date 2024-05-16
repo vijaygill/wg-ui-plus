@@ -121,7 +121,9 @@ export interface PeerGroup {
     name: string;
     description: string;
     disabled: boolean;
-    is_inbuilt: boolean;
+    allow_modify_self: boolean;
+    allow_modify_peers: boolean;
+    allow_modify_targets: boolean;
     peer_group_peer_links: PeerGroupPeerLink[];
     lookup_peers: PeerGroupPeerLink[];
     peer_group_target_links: PeerGroupTargetLink[];
@@ -142,7 +144,8 @@ export interface Target {
     description: string;
     ip_address: string;
     disabled: boolean;
-    is_inbuilt: boolean;
+    allow_modify_self: boolean;
+    allow_modify_peer_groups: boolean;
     peer_group_target_links: PeerGroupTargetLink[];
     lookup_peergroups: PeerGroupTargetLink[];
 }
@@ -180,3 +183,10 @@ export interface WireguardConfiguration {
     server_configuration: string;
     peer_configurations: string[];
 }
+
+export interface ValidationResultItem {
+    field: string;
+    type: string;
+    message: string;
+}
+

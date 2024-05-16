@@ -1,25 +1,37 @@
+<p-toast></p-toast>
 <table class="editor-table">
     <tbody>
         <tr>
             <td><label for="peerGroupName">Name</label></td>
-            <td><input pInputText id="peerGroupName" [(ngModel)]="editItem.name" [disabled]="editItem.is_inbuilt" />
+            <td>
+                <input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
+                    [disabled]="!editItem.allow_modify_self"
+                    pTooltip="Name of the Peer-Group." tooltipPosition="top"
+                    pAutoFocus [autofocus]="true" />
+                <app-validation-errors-display field="name" [validationResult]="validationResult">
+                </app-validation-errors-display>
             </td>
         </tr>
         <tr>
             <td> <label for="peerGroupDescription">Description</label></td>
             <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
-                    [disabled]="editItem.is_inbuilt" /></td>
+                    [disabled]="!editItem.allow_modify_self"
+                    pTooltip="Some helpful description."
+                    tooltipPosition="top" />
+                <app-validation-errors-display field="description"
+                    [validationResult]="validationResult"></app-validation-errors-display>
+            </td>
         </tr>
         <tr>
             <td><label for="peerGroupDisabled">Disabled</label></td>
             <td>
-                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="editItem.is_inbuilt"
-                    variant="filled" />
+                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"
+                    variant="filled" pTooltip="Disabled Peer-Groups are denied access to VPN." tooltipPosition="top" />
             </td>
         </tr>
         <tr>
             <td colspan="2">
-                <span *ngIf="editItem.is_inbuilt">In-built Peer-Groups are read-only.</span>
+                <span *ngIf="!editItem.allow_modify_self">Only changing access to targets is allowed.</span>
             </td>
         </tr>
         <tr>
@@ -28,7 +40,9 @@
                 <p-pickList id="peers" [source]="editItem.lookup_peers" [target]="editItem.peer_group_peer_links"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true">
+                    [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
+                    breakpoint="1400px" [disabled]="!editItem.allow_modify_self" *ngIf="editItem.allow_modify_peers"
+                    pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
@@ -36,13 +50,15 @@
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ peerGroupLink.peer.name }}
+                                        {{ peerGroupLink.peer.ip_address }}
                                     </small>
                                 </div>
                             </div>
                         </div>
                     </ng-template>
                 </p-pickList>
+                <app-validation-errors-display field="peers"
+                    [validationResult]="validationResult"></app-validation-errors-display>
             </td>
         </tr>
         <tr>
@@ -51,7 +67,9 @@
                 <p-pickList id="target" [source]="editItem.lookup_targets" [target]="editItem.peer_group_target_links"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true">
+                    [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
+                    breakpoint="1400px" *ngIf="editItem.allow_modify_targets"
+                    pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
                     <ng-template let-targetGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
@@ -59,22 +77,27 @@
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ targetGroupLink.target.name }}
+                                        {{ targetGroupLink.target.description }} ({{ targetGroupLink.target.ip_address
+                                        }})
                                     </small>
                                 </div>
                             </div>
                         </div>
                     </ng-template>
                 </p-pickList>
+                <app-validation-errors-display field="targets"
+                    [validationResult]="validationResult"></app-validation-errors-display>
             </td>
         </tr>
         <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"
-                        [disabled]="editItem.is_inbuilt"></p-button>
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                     &nbsp;
                     <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                    &nbsp;
+                    <app-validation-errors-display
+                        [validationResult]="validationResult"></app-validation-errors-display>
                 </div>
             </td>
         </tr>

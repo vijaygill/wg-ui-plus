@@ -52,13 +52,16 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 //import { ToggleButtonModule } from 'primeng/togglebutton';
 //import { ToolbarModule } from 'primeng/toolbar';
-//import { TooltipModule } from 'primeng/tooltip';
+import { TooltipModule } from 'primeng/tooltip';
 //import { TreeModule } from 'primeng/tree';
 //import { TreeSelectModule } from 'primeng/treeselect';
 //import { TreeTableModule } from 'primeng/treetable';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
+import { ValidationErrorsDisplayComponent } from './validation-errors-display/validation-errors-display.component';
+import { AutoFocusModule } from 'primeng/autofocus';
 
 let modules = [
+    AutoFocusModule ,
     ButtonModule, CardModule, CheckboxModule,
     DataViewModule, DialogModule, DividerModule,
     DragDropModule,
@@ -69,7 +72,9 @@ let modules = [
     MenuModule,
     MessagesModule,
     PickListModule,
-    TableModule, TabViewModule, ToastModule
+    TableModule, TabViewModule, ToastModule,
+    TooltipModule,
+    ValidationErrorsDisplayComponent,
 ];
 
 @NgModule({

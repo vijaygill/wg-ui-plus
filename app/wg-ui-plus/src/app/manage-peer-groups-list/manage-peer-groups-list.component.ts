@@ -33,8 +33,9 @@ export class ManagePeerGroupsListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      let peerGroup = {} as PeerGroup;
-      this.onNewItem.emit(peerGroup);
+      this.webapiService.getPeerGroup(0).subscribe(peerGroup => {
+        this.onNewItem.emit(peerGroup);
+      });
     }
   }
 

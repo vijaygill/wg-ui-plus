@@ -4,11 +4,13 @@ import { ServerConfiguration, WebapiService, WireguardConfiguration } from '../w
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
+import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-manage-server-configuration',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
+  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
@@ -16,6 +18,8 @@ import { AppSharedModule } from '../app-shared.module';
 export class ManageServerConfigurationComponent {
 
   editItem: ServerConfiguration = {} as ServerConfiguration;
+
+  validationResult!: any;
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
@@ -31,27 +35,40 @@ export class ManageServerConfigurationComponent {
   }
 
   ok() {
-    this.webapiService.saveServerConfiguration(this.editItem).subscribe(data => {
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
-    });
+    this.webapiService.saveServerConfiguration(this.editItem)
+      .subscribe({
+        next: data => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
+          this.validationResult = null;
+        },
+        error: error => {
+          let response = error as HttpErrorResponse;
+          if (response) {
+            this.validationResult = response.error;
+          }
+        },
+        complete: () => {
+        },
+      });
   }
+
 
   cancel() {
     this.refreshData();
-    this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.'});
+    this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
   }
 
-  wireguardConfiguration : WireguardConfiguration = {} as WireguardConfiguration;
+  wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;
 
-  generateWireguardConfig(){
+  generateWireguardConfig() {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.'});
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.' });
     });
   }
 
-  restartWireguard(){
+  restartWireguard() {
     this.webapiService.wireguardRestart().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.'});
+      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.' });
     });
   }
 

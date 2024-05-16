@@ -33,8 +33,9 @@ export class ManageTargetsListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      let peer = {} as Target;
-      this.onNewItem.emit(peer);
+      this.webapiService.getTarget(0).subscribe(target => {
+        this.onNewItem.emit(target);
+      });
     }
   }
 
