@@ -142,26 +142,21 @@ class DbHelper(object):
                 
                 serverConfiguration = self.getServerConfiguration(1)
                 server_ip_address = ipaddress.ip_interface(serverConfiguration.ip_address)
+                stmt = select(PeerGroup).where(PeerGroup.name == DICT_DATA_PEER_GROUP_EVERYONE)
+                pg_everyone = list(session.scalars(stmt).unique().all())[0]
+                # also add peer to everyone group
+
                 for i in range(0, SAMPLE_MAX_PEERS):
                     ip_address = server_ip_address.ip + 10 + i
                     public_key, private_key = generate_keys()
-                    peer = Peer(name = f'Peer - {i}',
+                    new_row = Peer(name = f'Peer - {i}',
                                 ip_address = str(ip_address), port = serverConfiguration.peer_default_port,
                                 public_key = public_key, private_key = private_key)
-                    session.add(peer)
+                    peer_peergroup_link = PeerGroupPeerLink(peer_group = pg_everyone, peer = new_row)
+                    new_row.peer_group_peer_links = [peer_peergroup_link]
+                    session.add(new_row)
                     session.commit()
-                peer_groups = [x for x in session.query( PeerGroup ).all()]
-                peers = [x for x in session.query( Peer ).all()]
-                for peer in peers:
-                    pgp_link = PeerGroupPeerLink(peer = peer, peer_group = peer_groups[0])
-                    session.add(pgp_link)
-                    session.commit()
-                    rnd = random.randrange(1, 100)
-                    if rnd > 50:
-                        pgp_link = PeerGroupPeerLink(peer = peer, peer_group = peer_groups[2])
-                        session.add(pgp_link)
-                        session.commit()
-                
+
 
     @logged
     def getPeers(self, for_api = False):
@@ -217,6 +212,17 @@ class DbHelper(object):
             
             if not peer.port:
                 peer.port = sc.peer_default_port
+            
+            # also add peer to everyone group
+            stmt = select(PeerGroup).where(PeerGroup.name == DICT_DATA_PEER_GROUP_EVERYONE)
+            pg_everyone = list(session.scalars(stmt).unique().all())[0]
+            peer_peergroup_link = PeerGroupPeerLink(peer_group = pg_everyone, peer = peer)
+            if not peer.peer_group_peer_links:
+                peer.peer_group_peer_links = [peer_peergroup_link]
+            else:
+                existing = [x for x in peer.peer_group_peer_links if x.peer_group.id == pg_everyone.id]
+                if not existing:
+                    peer.peer_group_peer_links += [peer_peergroup_link]
 
             peer = session.merge(peer)
             session.commit()

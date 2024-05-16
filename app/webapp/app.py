@@ -40,6 +40,7 @@ from common import *
 from utils import *
 from models import *
 from dbhelper import DbHelper
+from wireguardhelper import WireGuardHelper
 
 app = Flask(__name__, static_folder = BASE_DIR,  )
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
