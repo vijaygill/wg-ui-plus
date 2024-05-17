@@ -48,7 +48,7 @@ def set_logging_verbose():
 
 SCRIPT_DIR = pathlib.Path().resolve() 
 
-DB_FILE = '/app/data/wg-ui-plus.db'
+DB_FILE = '/data/wg-ui-plus.db'
 
 SAMPLE_MAX_PEER_GROUPS = 3
 SAMPLE_MAX_PEERS = 5
@@ -86,19 +86,11 @@ SAMPLE_DATA_TARGETS = [
 
 DICT_DATA_SERVER_CONFIGURATION = [
     (SERVER_HOST_NAME_DEFAULT, SERVER_HOST_IP_ADDRESS_DEFAULT, PORT_DEFAULT_INTERNAL, PORT_DEFAULT_EXTERNAL,
-      '/app/wireguard/wg0.conf',
-      '/app/wireguard/scripts/post-up.sh', 
-      '/app/wireguard/scripts/post-down.sh'
+      '/config/wireguard/wg0.conf',
+      '/config/wireguard/scripts/post-up.sh', 
+      '/config/wireguard/scripts/post-down.sh'
       )
 ]
 
-USE_SSR = False # Will get SSR working some other time
-
-BASE_DIR_INFOS = [
-        ( os.path.join(SCRIPT_DIR, '../wg-ui-plus/dist/wg-ui-plus/browser'), 'index.html'),
-        ( os.path.join(SCRIPT_DIR, '../wg-ui-plus/dist/wg-ui-plus/server'), 'index.server.html'),
-        ]
-
-BASE_DIR_INFO = BASE_DIR_INFOS[1] if USE_SSR else BASE_DIR_INFOS[0]
-
-BASE_DIR, INDEX_RESOURCE = BASE_DIR_INFO
+FLASK_BASE_DIR = '/clientapp'
+FLASK_INDEX_RESOURCE = 'index.html'

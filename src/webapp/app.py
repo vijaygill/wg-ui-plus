@@ -42,7 +42,7 @@ from models import *
 from dbhelper import DbHelper
 from wireguardhelper import WireGuardHelper
 
-app = Flask(__name__, static_folder = BASE_DIR,  )
+app = Flask(__name__, static_folder = FLASK_BASE_DIR,  )
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
@@ -254,17 +254,17 @@ def wireguard_restart():
 @logged
 def serve_static_files(path):
     app.logger.info(f'serve_static_files: {path}')
-    return send_from_directory(BASE_DIR, path)
+    return send_from_directory(FLASK_BASE_DIR, path)
 
 @app.route('/')
 @logged
 def index():
-    return app.send_static_file(INDEX_RESOURCE)
+    return app.send_static_file(FLASK_INDEX_RESOURCE)
 
 @app.errorhandler(404)
 def not_found_error(error):
-    return app.send_static_file(INDEX_RESOURCE)
+    return app.send_static_file(FLASK_INDEX_RESOURCE)
 
 if __name__ == "__main__":
-    print(f'Flask base dir = {BASE_DIR}')
+    print(f'Flask base dir = {FLASK_BASE_DIR}')
     app.run(host = '0.0.0.0', port = 80)

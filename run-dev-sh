@@ -9,7 +9,8 @@ runing_container=`docker container ls | grep ${CONTAINER_DEV_APP}`
 
 if [ "${runing_container}" = "" ]
 then
-    echo "First run the dev-app container by running run-dev-app.sh."
+    echo "First run the dev-app container by running run-dev-app.sh in another terminal."
+    echo "Shell terminal is opened using the same container."
 else
     docker exec -it ${CONTAINER_DEV_APP} bash
 fi

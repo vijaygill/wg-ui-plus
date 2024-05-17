@@ -1,5 +1,5 @@
-app/data
-app/wireguard
-app/.coverage
+data
+config
+src/.coverage
 __pycache__/
 junit/

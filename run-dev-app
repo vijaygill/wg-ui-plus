@@ -18,7 +18,10 @@ docker run -it --rm \
     -p "1196:51820/udp" \
     -p "13080:80" \
     -v "${BASE_DIR}":/wg-ui-plus \
-    -v "${BASE_DIR}/app":/app \
+    -v "${BASE_DIR}/src":/app \
+    -v "${BASE_DIR}/src/clientapp/dist/wg-ui-plus/browser":/clientapp \
+    -v "${BASE_DIR}/data":/data \
+    -v "${BASE_DIR}/config":/config \
     -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
     -v /lib/modules:/lib/modules:ro \
     -v /tmp:/tmp \

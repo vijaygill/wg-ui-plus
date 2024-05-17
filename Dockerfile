@@ -52,9 +52,9 @@ RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoe
 
 RUN echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
 
-RUN mkdir -p /app && chown $UID:$GID /app
+RUN mkdir -p /app /clientapp /data /config && chown $UID:$GID /app /clientapp /data /config
 
-VOLUME /app
+VOLUME /app /clientapp /data /config
 
 USER $UNAME
 
