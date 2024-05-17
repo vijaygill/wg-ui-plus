@@ -95,8 +95,8 @@ DICT_DATA_SERVER_CONFIGURATION = [
 USE_SSR = False # Will get SSR working some other time
 
 BASE_DIR_INFOS = [
-        ('wg-ui-plus/dist/wg-ui-plus/browser', 'index.html'),
-        ('wg-ui-plus/dist/wg-ui-plus/server', 'index.server.html'),
+        ( os.path.join(SCRIPT_DIR, '../wg-ui-plus/dist/wg-ui-plus/browser'), 'index.html'),
+        ( os.path.join(SCRIPT_DIR, '../wg-ui-plus/dist/wg-ui-plus/server'), 'index.server.html'),
         ]
 
 BASE_DIR_INFO = BASE_DIR_INFOS[1] if USE_SSR else BASE_DIR_INFOS[0]

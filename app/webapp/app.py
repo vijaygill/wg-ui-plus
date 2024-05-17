@@ -266,4 +266,5 @@ def not_found_error(error):
     return app.send_static_file(INDEX_RESOURCE)
 
 if __name__ == "__main__":
+    print(f'Flask base dir = {BASE_DIR}')
     app.run(host = '0.0.0.0', port = 80)
