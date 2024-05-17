@@ -33,3 +33,17 @@ jobs:
         run: |
           pip install ruff
           ruff --output-format=github .
+  build-angular:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          apt-get update -y
+          apt-get install -y npm
+          npm install -g @angular/cli
+      - name: Build build-angular
+        run: |
+          cd app/wg-ui-plus
+          ng build
