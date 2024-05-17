@@ -51,6 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install -g @angular/cli
+          npm install -g @angular-devkit/build-angular
           # - name: Build Angular app
           # run: |
           cd app/wg-ui-plus
