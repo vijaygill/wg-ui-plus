@@ -51,12 +51,14 @@ jobs:
       - name: Install dependencies
         run: |
           npm install -g @angular/cli
-          cd app/wg-ui-plus
-          npm install
+          pushd app/wg-ui-plus > /dev/null
+            npm install
+          popd > /dev/null
       - name: Build Angular app
         run: |
           pwd
-          cd app/wg-ui-plus
-          ng build
-          BUILD_RESULT="${?}"
-          echo "Build exit code is ${BUILD_RESULT}"
+          pushd app/wg-ui-plus > /dev/null
+            ng build
+            BUILD_RESULT="${?}"
+            echo "Build exit code is ${BUILD_RESULT}"
+          popd > /dev/null
