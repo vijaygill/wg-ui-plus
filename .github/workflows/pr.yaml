@@ -20,7 +20,7 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
         run: |
-          apt-get install -i python3-cryptography
+          apt-get install -y python3-cryptography
           python -m pip install --upgrade pip
           pip install colorlog
           pip install docker
