@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["pypy3.10", "3.9", "3.10", "3.11", "3.12"]
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -42,7 +41,6 @@ jobs:
           ruff --output-format=github .
   build-angular:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,12 +48,12 @@ jobs:
           node-version: '18'
       - name: Install dependencies
         run: |
-          npm install @angular/cli
+          npm install -g @angular/cli
           cd app/wg-ui-plus
           npm install
-      - name: Build Angular app
-        run: |
-          cd app/wg-ui-plus
+          # - name: Build Angular app
+          # run: |
+          # cd app/wg-ui-plus
           ng build
           BUILD_RESULT="${?}"
           echo "Build exit code is ${BUILD_RESULT}"
