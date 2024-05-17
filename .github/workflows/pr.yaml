@@ -18,21 +18,24 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      - name: Install dependencies
+      - name: Install application dependencies
         run: |
           sudo apt-get install -y python3-cryptography
+          sudo apt-get install -y sqlite3
           python -m pip install --upgrade pip
-          pip install --break-system-packages --upgrade  colorlog
-          pip install --break-system-packages --upgrade  docker
-          pip install --break-system-packages --upgrade  Flask
-          pip install --break-system-packages --upgrade  pytest
-          pip install --break-system-packages --upgrade  pytest-cov
-          pip install --break-system-packages --upgrade  qrcode
-          pip install --break-system-packages --upgrade  sqlalchemy
-        # TODO probably look to use 'pip install -r requirements.txt' see https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-      - name: Test with pytest
-        run: |
+          pip install colorlog
+          pip install docker
+          pip install Flask
+          pip install pytest
+          pip install pytest-cov
+          pip install qrcode
+          pip install sqlalchemy
+          # TODO probably look to use 'pip install -r requirements.txt' see https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+      - name: Install test dependencies
+        run : |
           pip install pytest pytest-cov
+      - name: Run test
+        run: |
           cd app/webapp
           ../../scripts/run-tests.sh
       - name: Lint with Ruff
