@@ -3,21 +3,38 @@
 IMAGE_NAME='test_wguiplus'
 IMAGE_LATEST="${IMAGE_NAME}:latest"
 
+FORCE_BUILD='FALSE'
+
+while getopts 'f' OPTION ; do
+    case "${OPTION}" in
+        f) FORCE_BUILD='TRUE' ;;
+    esac
+done
+
 build_image () {
 	echo "[INFO] Builing image ${IMAGE_LATEST}"
 	# Using '--no-cache' here because we want to ensure the image is totally rebuilt
-	docker build --tag "${IMAGE_LATEST}" --no-cache .
+	SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+	# docker build --tag "${IMAGE_LATEST}" --no-cache --file "${SCRIPT_DIR}/Dockerfile" "${SCRIPT_DIR}/../../.."
+	docker build --tag "${IMAGE_LATEST}" --file "${SCRIPT_DIR}/Dockerfile" "${SCRIPT_DIR}/../../.."
+	BUILD_RESULT="${?}"
+	if [[ "${BUILD_RESULT}" != '0' ]]; then
+		echo "[ERROR] Building the docker image failed!"
+		exit "${BUILD_RESULT}"
+	fi
 }
 
 LOCAL_IMAGE_LISTING_COUNT=$(docker image ls "${IMAGE_NAME}:latest" | tail +2 | wc -l)
 
-if [[ "${LOCAL_IMAGE_LISTING_COUNT}" -eq 0 ]]; then
+if [[ "${FORCE_BUILD}" == 'TRUE' ]]; then
+	build_image
+elif [[ "${LOCAL_IMAGE_LISTING_COUNT}" -eq 0 ]]; then
 	echo '[INFO] Local image no yet built'
 	build_image
 elif [[ "${LOCAL_IMAGE_LISTING_COUNT}" -eq 1 ]]; then
-	echo '[INFO] Local image already existed'
+	echo '[INFO] Local image already exists'
 else
-	echo '[ERROR] More than one image exists local, no idea what to do now!'
+	echo '[ERROR] More than one image exists locally, no idea what to do now!'
 fi
 
 CONTAINER='wguiplus_upgrade_test'
@@ -25,8 +42,8 @@ echo '[INFO] Starting container to check for upgrades'
 SIMULATED_UPGRADE_RESULTS=$(docker run -it --rm --name "${CONTAINER}" "${IMAGE_LATEST}" apk -U upgrade --simulate)
 UPGRADEABLE_PACKAGES=$(echo ${SIMULATED_UPGRADE_RESULTS} | grep --only-matching 'Upgrading' | wc -l)
 if [[ "${UPGRADEABLE_PACKAGES}" -eq 0 ]]; then
-	echo '[INFO] No pacakges detected as upgradable'
+	echo '[INFO] No packages detected as up-gradable'
 else
-	echo "[INFO] Detected ${UPGRADEABLE_PACKAGES} pacakges that can be upgraded"
+	echo "[INFO] Detected ${UPGRADEABLE_PACKAGES} packages that can be upgraded"
 	build_image
 fi
