@@ -22,14 +22,13 @@ jobs:
         run: |
           sudo apt-get install -y python3-cryptography
           python -m pip install --upgrade pip
-          pip install colorlog
-          pip install docker
-          pip install Flask
-          pip install Flask
-          pip install pytest
-          pip install pytest-cov
-          pip install qrcode
-          pip install sqlalchemy
+          pip install --break-system-packages --upgrade  colorlog
+          pip install --break-system-packages --upgrade  docker
+          pip install --break-system-packages --upgrade  Flask
+          pip install --break-system-packages --upgrade  pytest
+          pip install --break-system-packages --upgrade  pytest-cov
+          pip install --break-system-packages --upgrade  qrcode
+          pip install --break-system-packages --upgrade  sqlalchemy
         # TODO probably look to use 'pip install -r requirements.txt' see https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
       - name: Test with pytest
         run: |
