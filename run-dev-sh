@@ -4,12 +4,8 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
 source ${BASE_DIR}/build-dev
 
-
-runing_container=`docker container ls | grep ${CONTAINER_DEV_APP}`
-
-if [ "${runing_container}" = "" ]
-then
-    echo "First run the dep-app container."
+if [[ $(docker container ls | grep "${CONTAINER_DEV_APP}" | wc -l) == '0' ]]; then
+    echo 'App container is not running, first run ./run-dev-app'
 else
-    docker exec -it ${CONTAINER_DEV_APP} bash
+    docker exec -it "${CONTAINER_DEV_APP}" bash
 fi
