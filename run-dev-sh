@@ -22,7 +22,6 @@ docker run -it --rm \
     --cap-add=NET_ADMIN \
     --cap-add=SYS_MODULE \
     --dns 192.168.0.5 \
-    --name wg-ui-dev-sh \
     --privileged \
     --sysctl net.ipv4.conf.all.src_valid_mark=1 \
     --sysctl net.ipv4.ip_forward=1 \
@@ -37,3 +36,5 @@ docker run -it --rm \
     -v /tmp:/tmp \
     -v /var/run/docker.sock:/var/run/docker.sock \
     wg-ui-plus-dev bash
+
+#    -p "8000:8000/tcp" \
