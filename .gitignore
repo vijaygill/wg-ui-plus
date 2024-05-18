@@ -4,3 +4,5 @@ temp
 src/.coverage
 __pycache__/
 junit/
+*.db
+
