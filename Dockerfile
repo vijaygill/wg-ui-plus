@@ -46,7 +46,7 @@ RUN apt install -y tcpdump
 RUN apt install -y sudo
 RUN apt install -y conntrack
 
-RUN pip install --break-system-packages --upgrade colorlog
+RUN pip install --break-system-packages --upgrade colorlog Django
 
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
