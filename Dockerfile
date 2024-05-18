@@ -58,5 +58,5 @@ VOLUME /app /clientapp /data /config
 
 USER $UNAME
 
-WORKDIR /wg-ui-plus/app
+WORKDIR /wg-ui-plus/src
 
