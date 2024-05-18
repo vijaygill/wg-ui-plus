@@ -43,7 +43,7 @@ class Target(models.Model):
   ip_address = models.CharField(max_length = 255, null = True, blank=True)
   port = models.IntegerField(null = True, blank=True)
   allow_modify_self = models.BooleanField(null = True)
-  allow_modify_peergroups = models.BooleanField(null = True)
+  allow_modify_peer_groups = models.BooleanField(null = True)
   peer_groups = models.ManyToManyField('PeerGroup', blank=True)
 
   def __str__(self):
