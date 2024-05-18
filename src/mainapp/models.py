@@ -7,10 +7,10 @@ from django.dispatch import receiver
 class PeerGroup(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True)
-  disabled = models.BooleanField(null = True)
-  allow_modify_self = models.BooleanField(null = True)
-  allow_modify_peers = models.BooleanField(null = True)
-  allow_modify_targets = models.BooleanField(null = True)
+  disabled = models.BooleanField(null = True, default = True)
+  allow_modify_self = models.BooleanField(null = True, default = True)
+  allow_modify_peers = models.BooleanField(null = True, default = True)
+  allow_modify_targets = models.BooleanField(null = True, default = True)
   peers = models.ManyToManyField('Peer', blank=True)
   targets = models.ManyToManyField('Target', blank=True)
 
@@ -20,7 +20,7 @@ class PeerGroup(models.Model):
 class Peer(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True)
-  disabled = models.BooleanField(null = True)
+  disabled = models.BooleanField(null = True, default = True)
   ip_address = models.CharField(max_length = 255, null = True, blank=True)
   port = models.IntegerField(null = True, blank=True)
   public_key = models.CharField(max_length = 255, null = True, blank=True)
@@ -39,11 +39,11 @@ class Peer(models.Model):
 class Target(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True, blank=True)
-  disabled = models.BooleanField(null = True)
+  disabled = models.BooleanField(null = True, default = False)
   ip_address = models.CharField(max_length = 255, null = True, blank=True)
   port = models.IntegerField(null = True, blank=True)
-  allow_modify_self = models.BooleanField(null = True)
-  allow_modify_peer_groups = models.BooleanField(null = True)
+  allow_modify_self = models.BooleanField(null = True, default = True)
+  allow_modify_peer_groups = models.BooleanField(null = True, default = True)
   peer_groups = models.ManyToManyField('PeerGroup', blank=True)
 
   def __str__(self):
