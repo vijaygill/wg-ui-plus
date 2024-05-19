@@ -7,7 +7,7 @@ from django.dispatch import receiver
 class PeerGroup(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True)
-  disabled = models.BooleanField(null = True, default = True)
+  disabled = models.BooleanField(null = True, default = False)
   allow_modify_self = models.BooleanField(null = True, default = True)
   allow_modify_peers = models.BooleanField(null = True, default = True)
   allow_modify_targets = models.BooleanField(null = True, default = True)
@@ -20,7 +20,7 @@ class PeerGroup(models.Model):
 class Peer(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True)
-  disabled = models.BooleanField(null = True, default = True)
+  disabled = models.BooleanField(null = True, default = False)
   ip_address = models.CharField(max_length = 255, null = True, blank=True)
   port = models.IntegerField(null = True, blank=True)
   public_key = models.CharField(max_length = 255, null = True, blank=True)
@@ -49,4 +49,18 @@ class Target(models.Model):
   def __str__(self):
      return f"{self.name} - {self.description}"
 
+class ServerConfiguration(models.Model):
+  ip_address= models.CharField(max_length = 255)
+  host_name_external= models.CharField(max_length = 255)
+  port_external= models.IntegerField()
+  port_internal= models.IntegerField()
+  wireguard_config_path= models.CharField(max_length = 255)
+  script_path_post_down= models.CharField(max_length = 255)
+  script_path_post_up= models.CharField(max_length = 255)
+  public_key= models.CharField(max_length = 255, null = True, blank = True)
+  private_key= models.CharField(max_length = 255, null = True, blank = True)
+  peer_default_port = models.IntegerField()
+
+  def __str__(self):
+     return f"{self.host_name_external} - {self.port_external}"
 
