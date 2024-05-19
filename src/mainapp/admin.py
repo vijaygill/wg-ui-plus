@@ -32,6 +32,10 @@ class PeerGroupAdmin(admin.ModelAdmin):
           res += ['targets']
     return res
 
+  def has_delete_permission(self, request, obj=None):
+     return not (obj and not obj.allow_modify_self)
+
+
 class TargetAdmin(admin.ModelAdmin):
   def get_list_display(self, request):
     return ("name", "description", "ip_address", "port", "disabled")
@@ -53,10 +57,10 @@ class TargetAdmin(admin.ModelAdmin):
 
 class ServerConfigurationAdmin(admin.ModelAdmin):
   def get_list_display(self, request):
-    return ("ip_address", "host_name_external", "port_external", "port_internal")
+    return ("host_name_external", "ip_address", "port_external", "port_internal")
   
   def get_fields(self, request, obj=None):
-    return ['ip_address', "host_name_external",
+    return ["host_name_external", 'ip_address',
             "port_external", 'port_internal', 
             'peer_default_port',
             'wireguard_config_path', 'script_path_post_down' , 'script_path_post_up']
@@ -65,6 +69,9 @@ class ServerConfigurationAdmin(admin.ModelAdmin):
     res = ['wireguard_config_path', 'script_path_post_down' , 'script_path_post_up']
     return res
   
+  def has_add_permission(self, request):
+     return False
+
   def has_delete_permission(self, request, obj=None):
      return False
 
