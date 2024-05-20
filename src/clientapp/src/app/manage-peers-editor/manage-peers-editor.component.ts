@@ -20,8 +20,17 @@ export class ManagePeersEditorComponent {
   get editItem(): Peer { return this.peer; }
   set editItem(value: Peer) {
     this.peer = value;
+    debugger;
     this.webapiService.getPeer(value.id).subscribe(data => {
       this.peer = data;
+      if (this.peer) {
+        this.webapiService.getPeerGroupList().subscribe(lookup => {
+          let lookupItems = this.peer.peer_groups ?
+            lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id))
+            : lookup;
+          this.peer.peer_groups_lookup = lookupItems;
+        });
+      }
     });
   }
 

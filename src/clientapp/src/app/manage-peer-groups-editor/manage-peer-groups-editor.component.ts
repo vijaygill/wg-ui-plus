@@ -22,6 +22,20 @@ export class ManagePeerGroupsEditorComponent {
     this.peerGroup = value;
     this.webapiService.getPeerGroup(value.id).subscribe(data => {
       this.peerGroup = data;
+      if (this.peerGroup) {
+        this.webapiService.getPeerList().subscribe(lookup => {
+          let lookupItems = this.peerGroup.peers ?
+            lookup.filter(x => !this.peerGroup.peers.some(y => y.id === x.id))
+            : lookup;
+          this.peerGroup.peers = lookupItems;
+        });
+        this.webapiService.getTargetList().subscribe(lookup => {
+          let lookupItems = this.peerGroup.targets ?
+            lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
+            : lookup;
+          this.peerGroup.targets_lookup = lookupItems;
+        });
+      }
     });
   }
 

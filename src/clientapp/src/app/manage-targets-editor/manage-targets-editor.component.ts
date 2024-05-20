@@ -21,6 +21,14 @@ export class ManageTargetsEditorComponent {
     this.target = value;
     this.webapiService.getTarget(value.id).subscribe(data => {
       this.target = data;
+      if (this.target) {
+        this.webapiService.getPeerGroupList().subscribe(lookup => {
+          let lookupItems = this.target.peer_groups ?
+            lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id))
+            : lookup;
+          this.target.peer_groups_lookup = lookupItems;
+        });
+      }
     });
   }
 
