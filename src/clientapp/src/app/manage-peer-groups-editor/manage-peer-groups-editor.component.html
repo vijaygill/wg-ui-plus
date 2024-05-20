@@ -40,7 +40,7 @@
                 <p-pickList id="peers" [source]="editItem.peers_lookup" [target]="editItem.peers"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
+                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                     breakpoint="1400px" [disabled]="!editItem.allow_modify_self" 
                     pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
                     <ng-template let-peerGroupLink pTemplate="item">
@@ -67,7 +67,7 @@
                 <p-pickList id="target" [source]="editItem.targets_lookup" [target]="editItem.targets"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '30rem' }" [targetStyle]="{ height: '30rem' }"
+                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                     breakpoint="1400px" *ngIf="editItem.allow_modify_targets"
                     pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
                     <ng-template let-targetGroupLink pTemplate="item">
