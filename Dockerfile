@@ -47,6 +47,9 @@ RUN apt install -y sudo
 RUN apt install -y conntrack
 
 RUN pip install --break-system-packages --upgrade colorlog Django
+RUN pip install --break-system-packages --upgrade djangorestframework django-cors-headers
+RUN pip install --break-system-packages --upgrade django-spa
+RUN pip install --break-system-packages --upgrade drf-standardized-errors
 
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 

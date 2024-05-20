@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ContentChild, Input, OnInit, TemplateRef } from '@angular/core';
 import { Message } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
-import { ValidationResultItem } from '../webapi.service';
+import { ServerValidationError } from '../webapi.service';
 
 @Component({
   selector: 'app-validation-errors-display',
@@ -13,23 +13,24 @@ import { ValidationResultItem } from '../webapi.service';
 })
 export class ValidationErrorsDisplayComponent {
   @Input() field!: string;
-  @Input() validationResult!: ValidationResultItem[];
+  @Input() validationResult!: ServerValidationError;
 
   errorList(): Message[] {
     let res: Message[] = [];
-    if (this.validationResult) {
-      this.validationResult.forEach(validationResultItem => {
-        let createMessage = !this.field || this.field == validationResultItem.field;
+    if (this.validationResult && this.validationResult.errors) {
+      this.validationResult.errors.forEach(validationResultItem => {
+        let createMessage = !this.field || this.field == validationResultItem.attr;
         if (!createMessage) {
           return;
         }
-        if (!validationResultItem.message) {
+        if (!validationResultItem.detail) {
           return;
         }
-        let severity = 'error' == validationResultItem.type ? 'error'
-          : 'warning' == validationResultItem.type ? 'warn'
-            : 'info';
-        let message = { severity: severity, detail: validationResultItem.message } as Message;
+        // let severity = 'error' == validationResultItem.type ? 'error'
+        //   : 'warning' == validationResultItem.type ? 'warn'
+        //     : 'info';
+        let severity = 'error';
+        let message = { severity: severity, detail: validationResultItem.detail } as Message;
         res.push(message);
       }
       );

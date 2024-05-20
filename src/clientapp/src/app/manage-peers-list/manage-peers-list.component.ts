@@ -33,9 +33,11 @@ export class ManagePeersListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      this.webapiService.getPeer(0).subscribe(peer => {
-        this.onNewItem.emit(peer);
-      });
+      let peer = {} as Peer;
+      this.onNewItem.emit(peer);
+      // this.webapiService.getPeer(0).subscribe(peer => {
+      //   this.onNewItem.emit(peer);
+      // });
     }
   }
 

@@ -1,25 +1,26 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { PercentPipe } from '@angular/common';
 
 @Injectable({
     providedIn: 'root'
 })
 export class WebapiService {
 
-    private urlPeerGroupList = '/api/data/peer_group';
-    private urlPeerGroupSave = '/api/data/peer_group';
+    private urlPeerGroupList = '/api/v1/peer_group';
+    private urlPeerGroupSave = '/api/v1/peer_group/';
 
-    private urlPeerList = '/api/data/peer';
-    private urlPeerSave = '/api/data/peer';
+    private urlPeerList = '/api/v1/peer/';
+    private urlPeerSave = '/api/v1/peer/';
 
-    private urlTargetList = '/api/data/target';
-    private urlTargetSave = '/api/data/target';
+    private urlTargetList = '/api/v1/target';
+    private urlTargetSave = '/api/v1/target/';
 
-    private urlServerConfigurationList = '/api/data/server_configuration';
-    private urlServerConfigurationSave = '/api/data/server_configuration';
+    private urlServerConfigurationList = '/api/v1/server_configuration';
+    private urlServerConfigurationSave = '/api/v1/server_configuration/';
 
-    private urlGetWireguardConfiguration = '/api/data/wireguard_configuration';
+    private urlGetWireguardConfiguration = '/api/v1/wireguard_configuration';
 
     private urlControlWireguardRestart = '/api/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/control/generate_configuration_files';
@@ -39,7 +40,10 @@ export class WebapiService {
     }
 
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
-        return this.http.post<PeerGroup>(this.urlPeerGroupSave, item);
+        var res = item.id == 0
+            ? this.http.post<PeerGroup>(this.urlPeerGroupSave, item)
+            : this.http.post<PeerGroup>(this.urlPeerGroupSave + item.id + '/', item);
+        return res;
     }
 
     getPeerList(): Observable<Peer[]> {
@@ -47,11 +51,14 @@ export class WebapiService {
     }
 
     getPeer(id: number): Observable<Peer> {
-        return this.http.get<Peer>(this.urlPeerList + '/' + id);
+        return this.http.get<Peer>(this.urlPeerList + '/' + id + '/');
     }
 
     savePeer(item: Peer): Observable<Peer> {
-        return this.http.post<Peer>(this.urlPeerSave, item);
+        var res = item.id
+            ? this.http.put<Peer>(this.urlPeerSave + item.id + '/', item)
+            : this.http.post<Peer>(this.urlPeerList, item);
+        return res;
     }
 
     getTargetList(): Observable<Target[]> {
@@ -59,11 +66,14 @@ export class WebapiService {
     }
 
     getTarget(id: number): Observable<Target> {
-        return this.http.get<Target>(this.urlTargetList + '/' + id);
+        return this.http.get<Target>(this.urlTargetList + id + '/');
     }
 
     saveTarget(item: Target): Observable<Target> {
-        return this.http.post<Target>(this.urlTargetSave, item);
+        var res = item.id == 0
+            ? this.http.post<Target>(this.urlTargetSave, item)
+            : this.http.post<Target>(this.urlTargetSave + item.id + '/', item);
+        return res;
     }
 
     getServerConfigurationList(): Observable<ServerConfiguration[]> {
@@ -75,7 +85,10 @@ export class WebapiService {
     }
 
     saveServerConfiguration(item: ServerConfiguration): Observable<ServerConfiguration> {
-        return this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item);
+        var res = item.id == 0
+            ? this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item)
+            : this.http.put<ServerConfiguration>(this.urlServerConfigurationSave + item.id + '/', item);
+        return res;
     }
 
     getWireguardConfiguration(): Observable<WireguardConfiguration> {
@@ -106,14 +119,15 @@ export class WebapiService {
 export interface Peer {
     id: number;
     name: string;
+    description: string;
     ip_address: string;
     port: number;
     disabled: boolean;
     public_key: string;
     private_key: string;
     peer_configuration: string;
-    peer_group_peer_links: PeerGroupPeerLink[];
-    lookup_peer_groups: PeerGroupPeerLink[];
+    peer_groups: PeerGroup[];
+    peer_groups_lookup: PeerGroup[];
 }
 
 export interface PeerGroup {
@@ -124,18 +138,10 @@ export interface PeerGroup {
     allow_modify_self: boolean;
     allow_modify_peers: boolean;
     allow_modify_targets: boolean;
-    peer_group_peer_links: PeerGroupPeerLink[];
-    lookup_peers: PeerGroupPeerLink[];
-    peer_group_target_links: PeerGroupTargetLink[];
-    lookup_targets: PeerGroupTargetLink[];
-}
-
-export interface PeerGroupPeerLink {
-    id: number;
-    peer_group_id: number;
-    peer_group: PeerGroup;
-    peer_id: number;
-    peer: Peer;
+    targets: Target[];
+    targets_lookup: Target[];
+    peers: Peer[];
+    peers_lookup: Peer[];
 }
 
 export interface Target {
@@ -146,16 +152,8 @@ export interface Target {
     disabled: boolean;
     allow_modify_self: boolean;
     allow_modify_peer_groups: boolean;
-    peer_group_target_links: PeerGroupTargetLink[];
-    lookup_peergroups: PeerGroupTargetLink[];
-}
-
-export interface PeerGroupTargetLink {
-    id: number;
-    peer_group_id: number;
-    peer_group: PeerGroup;
-    target_id: number;
-    target: Target;
+    peer_groups: PeerGroup[];
+    peer_groups_lookup: PeerGroup[];
 }
 
 export interface DockerContainer {
@@ -184,9 +182,14 @@ export interface WireguardConfiguration {
     peer_configurations: string[];
 }
 
-export interface ValidationResultItem {
-    field: string;
+
+export interface ServerValidationError {
     type: string;
-    message: string;
+    errors: ServerValidationErrorItem[];
 }
 
+export interface ServerValidationErrorItem {
+    code: string;
+    detail: string;
+    attr: string;
+}

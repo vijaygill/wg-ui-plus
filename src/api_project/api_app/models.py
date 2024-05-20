@@ -25,12 +25,12 @@ class Peer(models.Model):
   port = models.IntegerField(null = True, blank=True)
   public_key = models.CharField(max_length = 255, null = True, blank=True)
   private_key = models.CharField(max_length = 255, null = True, blank=True)
-  peer_groups = models.ManyToManyField('PeerGroup', blank=True)
+  peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.peers.through, )
 
   def __str__(self):
      return f"{self.name} - {self.description}"
   
-  def save(self, force_insert=False, force_update=False):
+  def save(self, force_insert=False, force_update=False, **kwargs):
     pg = PeerGroup.objects.filter(name = 'Everyone')
     if pg:
       self.peer_group.add(pg[0])
@@ -44,7 +44,7 @@ class Target(models.Model):
   port = models.IntegerField(null = True, blank=True)
   allow_modify_self = models.BooleanField(null = True, default = True)
   allow_modify_peer_groups = models.BooleanField(null = True, default = True)
-  peer_groups = models.ManyToManyField('PeerGroup', blank=True)
+  peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.targets.through, )
 
   def __str__(self):
      return f"{self.name} - {self.description}"

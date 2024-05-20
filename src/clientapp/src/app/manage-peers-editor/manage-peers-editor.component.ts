@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Peer, PeerGroup, PeerGroupPeerLink, WebapiService } from '../webapi.service';
+import { Peer, PeerGroup, ServerValidationError, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { CommonModule } from '@angular/common';
@@ -27,7 +27,7 @@ export class ManagePeersEditorComponent {
 
   peer: Peer = {} as Peer;
 
-  validationResult!: any;
+  validationResult!: ServerValidationError;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
@@ -41,7 +41,7 @@ export class ManagePeersEditorComponent {
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.validationResult = response.error;
+            this.validationResult = response.error as ServerValidationError;
           }
         },
         complete: () => {
@@ -55,8 +55,7 @@ export class ManagePeersEditorComponent {
   }
 
   peerGroupsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroupPeerLink;
-    debugger;
-    return x.peer.id;
+    let x = item as PeerGroup;
+    return x.id;
   }
 }

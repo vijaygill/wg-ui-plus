@@ -51,8 +51,8 @@
         <tr>
             <td><label for="target">Peer-Groups</label></td>
             <td>
-                <p-pickList id="target" [source]="editItem.lookup_peergroups"
-                    [target]="editItem.peer_group_target_links" sourceHeader="Available" targetHeader="Selected"
+                <p-pickList id="target" [source]="editItem.peer_groups_lookup"
+                    [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
                     [dragdrop]="true" [responsive]="true" (trackBy)="targetsPickListTrackBy"
                     [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
                     [disabled]="!editItem.allow_modify_peer_groups"
@@ -60,11 +60,11 @@
                     <ng-template let-targetGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ targetGroupLink.peer_group.name }}</span>
+                                <span class="font-bold">{{ targetGroupLink.name }}</span>
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ targetGroupLink.peer_group.description }}
+                                        {{ targetGroupLink.description }}
                                     </small>
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PeerGroupTargetLink, Target, WebapiService } from '../webapi.service';
+import { PeerGroup, Target, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,8 +54,7 @@ export class ManageTargetsEditorComponent {
   }
 
   targetsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroupTargetLink;
-    debugger;
-    return x.peer_group.id;
+    let x = item as PeerGroup;
+    return x.id;
   }
 }

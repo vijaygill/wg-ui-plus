@@ -35,7 +35,6 @@ class PeerGroupAdmin(admin.ModelAdmin):
   def has_delete_permission(self, request, obj=None):
      return not (obj and not obj.allow_modify_self)
 
-
 class TargetAdmin(admin.ModelAdmin):
   def get_list_display(self, request):
     return ("name", "description", "ip_address", "port", "disabled")
