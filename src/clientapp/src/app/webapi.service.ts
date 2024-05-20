@@ -8,86 +8,77 @@ import { PercentPipe } from '@angular/common';
 })
 export class WebapiService {
 
-    private urlPeerGroupList = '/api/v1/peer_group';
-    private urlPeerGroupSave = '/api/v1/peer_group/';
+    private urlPeerGroup = '/api/v1/peer_group/';
 
-    private urlPeerList = '/api/v1/peer/';
-    private urlPeerSave = '/api/v1/peer/';
+    private urlPeer = '/api/v1/peer/';
 
-    private urlTargetList = '/api/v1/target';
-    private urlTargetSave = '/api/v1/target/';
+    private urlTarget = '/api/v1/target/';
 
-    private urlServerConfigurationList = '/api/v1/server_configuration';
-    private urlServerConfigurationSave = '/api/v1/server_configuration/';
+    private urlServerConfiguration = '/api/v1/server_configuration/';
 
-    private urlGetWireguardConfiguration = '/api/v1/wireguard_configuration';
-
-    private urlControlWireguardRestart = '/api/control/wireguard_restart';
-    private urlControlGenerateConfigurationFiles = '/api/control/generate_configuration_files';
-
-    private urlDockerContainerList = '/api/docker/container/list';
-    private urlDockerContainerStart = '/api/docker/container/start';
-    private urlDockerContainerStop = '/api/docker/container/stop';
+    private urlGetWireguardConfiguration = '/api/v1/control/wireguard_configuration';
+    private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
+    private urlControlGenerateConfigurationFiles = '/api/v1/control/generate_configuration_files';
 
     constructor(private http: HttpClient) { }
 
     getPeerGroupList(): Observable<PeerGroup[]> {
-        return this.http.get<PeerGroup[]>(this.urlPeerGroupList);
+        return this.http.get<PeerGroup[]>(this.urlPeerGroup);
     }
 
     getPeerGroup(id: number): Observable<PeerGroup> {
-        return this.http.get<PeerGroup>(this.urlPeerGroupList + '/' + id);
+        return this.http.get<PeerGroup>(this.urlPeerGroup + '/' + id);
     }
 
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
-        var res = item.id == 0
-            ? this.http.post<PeerGroup>(this.urlPeerGroupSave, item)
-            : this.http.post<PeerGroup>(this.urlPeerGroupSave + item.id + '/', item);
+        var res = item.id
+            ? this.http.put<PeerGroup>(this.urlPeerGroup + item.id + '/', item)
+            : this.http.post<PeerGroup>(this.urlPeerGroup, item);
         return res;
     }
 
     getPeerList(): Observable<Peer[]> {
-        return this.http.get<Peer[]>(this.urlPeerList);
+        return this.http.get<Peer[]>(this.urlPeer);
     }
 
     getPeer(id: number): Observable<Peer> {
-        return this.http.get<Peer>(this.urlPeerList + '/' + id + '/');
+        return this.http.get<Peer>(this.urlPeer + id + '/');
     }
 
     savePeer(item: Peer): Observable<Peer> {
         var res = item.id
-            ? this.http.put<Peer>(this.urlPeerSave + item.id + '/', item)
-            : this.http.post<Peer>(this.urlPeerList, item);
+            ? this.http.put<Peer>(this.urlPeer + item.id + '/', item)
+            : this.http.post<Peer>(this.urlPeer, item);
         return res;
     }
 
     getTargetList(): Observable<Target[]> {
-        return this.http.get<Target[]>(this.urlTargetList);
+        return this.http.get<Target[]>(this.urlTarget);
     }
 
     getTarget(id: number): Observable<Target> {
-        return this.http.get<Target>(this.urlTargetList + id + '/');
+        return this.http.get<Target>(this.urlTarget + id + '/');
     }
 
     saveTarget(item: Target): Observable<Target> {
-        var res = item.id == 0
-            ? this.http.post<Target>(this.urlTargetSave, item)
-            : this.http.post<Target>(this.urlTargetSave + item.id + '/', item);
+        var res = item.id
+            ? this.http.put<Target>(this.urlTarget + item.id + '/', item)
+            : this.http.post<Target>(this.urlTarget, item);
         return res;
     }
 
     getServerConfigurationList(): Observable<ServerConfiguration[]> {
-        return this.http.get<ServerConfiguration[]>(this.urlServerConfigurationList);
+        return this.http.get<ServerConfiguration[]>(this.urlServerConfiguration);
     }
 
     getServerConfiguration(id: number): Observable<ServerConfiguration> {
-        return this.http.get<ServerConfiguration>(this.urlServerConfigurationList + '/' + id);
+        return this.http.get<ServerConfiguration>(this.urlServerConfiguration + id);
     }
 
     saveServerConfiguration(item: ServerConfiguration): Observable<ServerConfiguration> {
-        var res = item.id == 0
-            ? this.http.post<ServerConfiguration>(this.urlServerConfigurationSave, item)
-            : this.http.put<ServerConfiguration>(this.urlServerConfigurationSave + item.id + '/', item);
+        var res = item.id
+            ? this.http.put<ServerConfiguration>(this.urlServerConfiguration + item.id + '/', item)
+            : this.http.post<ServerConfiguration>(this.urlServerConfiguration, item);
         return res;
     }
 
@@ -102,22 +93,13 @@ export class WebapiService {
     wireguardRestart(): Observable<any> {
         return this.http.get<any>(this.urlControlWireguardRestart);
     }
-
-    getDockerContainerList(): Observable<DockerContainer[]> {
-        return this.http.get<DockerContainer[]>(this.urlDockerContainerList);
-    }
-
-    startDockerContainer(name: string): Observable<DockerContainer[]> {
-        return this.http.get<DockerContainer[]>(this.urlDockerContainerStart + '?name=' + name);
-    }
-
-    stopDockerContainer(name: string): Observable<DockerContainer[]> {
-        return this.http.get<DockerContainer[]>(this.urlDockerContainerStop + '?name=' + name);
-    }
 }
 
-export interface Peer {
+export interface Entity {
     id: number;
+}
+
+export interface Peer extends Entity {
     name: string;
     description: string;
     ip_address: string;
@@ -130,8 +112,7 @@ export interface Peer {
     peer_groups_lookup: PeerGroup[];
 }
 
-export interface PeerGroup {
-    id: number;
+export interface PeerGroup extends Entity {
     name: string;
     description: string;
     disabled: boolean;
@@ -144,8 +125,7 @@ export interface PeerGroup {
     peers_lookup: Peer[];
 }
 
-export interface Target {
-    id: number;
+export interface Target extends Entity {
     name: string;
     description: string;
     ip_address: string;
@@ -154,13 +134,6 @@ export interface Target {
     allow_modify_peer_groups: boolean;
     peer_groups: PeerGroup[];
     peer_groups_lookup: PeerGroup[];
-}
-
-export interface DockerContainer {
-    id: string;
-    name: string;
-    short_id: string;
-    status: string;
 }
 
 export interface ServerConfiguration {

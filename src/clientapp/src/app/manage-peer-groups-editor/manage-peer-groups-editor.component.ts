@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PeerGroup, Target, WebapiService } from '../webapi.service';
+import { PeerGroup, ServerValidationError, Target, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -27,7 +27,7 @@ export class ManagePeerGroupsEditorComponent {
 
   peerGroup: PeerGroup = {} as PeerGroup;
 
-  validationResult!: any;
+  validationResult!: ServerValidationError;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
@@ -44,7 +44,7 @@ export class ManagePeerGroupsEditorComponent {
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.validationResult = response.error;
+            this.validationResult = response.error as ServerValidationError;
           }
         },
         complete: () => {

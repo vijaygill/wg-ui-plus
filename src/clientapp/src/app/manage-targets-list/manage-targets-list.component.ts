@@ -33,9 +33,8 @@ export class ManageTargetsListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      this.webapiService.getTarget(0).subscribe(target => {
-        this.onNewItem.emit(target);
-      });
+      let target = {} as Target;
+      this.onNewItem.emit(target);
     }
   }
 

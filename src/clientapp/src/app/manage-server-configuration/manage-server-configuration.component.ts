@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ServerConfiguration, WebapiService, WireguardConfiguration } from '../webapi.service';
+import { ServerConfiguration, ServerValidationError, WebapiService, WireguardConfiguration } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -19,7 +19,7 @@ export class ManageServerConfigurationComponent {
 
   editItem: ServerConfiguration = {} as ServerConfiguration;
 
-  validationResult!: any;
+  validationResult!: ServerValidationError;
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
@@ -39,12 +39,12 @@ export class ManageServerConfigurationComponent {
       .subscribe({
         next: data => {
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
-          this.validationResult = null;
+          this.validationResult = { type: '', errors: [] } as ServerValidationError;
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.validationResult = response.error;
+            this.validationResult = response.error as ServerValidationError;
           }
         },
         complete: () => {
