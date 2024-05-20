@@ -110,6 +110,7 @@ export interface Peer extends Entity {
     peer_configuration: string;
     peer_groups: PeerGroup[];
     peer_groups_lookup: PeerGroup[];
+    peer_group_ids: number[];
 }
 
 export interface PeerGroup extends Entity {

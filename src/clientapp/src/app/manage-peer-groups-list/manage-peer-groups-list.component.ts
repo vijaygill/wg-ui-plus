@@ -33,7 +33,11 @@ export class ManagePeerGroupsListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      let peerGroup = {} as PeerGroup;
+      let peerGroup = {
+        allow_modify_peers: true,
+        allow_modify_targets: true,
+        allow_modify_self: true,
+      } as PeerGroup;
       this.onNewItem.emit(peerGroup);
     }
   }

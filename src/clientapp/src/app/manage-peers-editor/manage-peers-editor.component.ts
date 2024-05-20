@@ -20,7 +20,6 @@ export class ManagePeersEditorComponent {
   get editItem(): Peer { return this.peer; }
   set editItem(value: Peer) {
     this.peer = value;
-    debugger;
     this.webapiService.getPeer(value.id).subscribe(data => {
       this.peer = data;
       if (this.peer) {
@@ -43,6 +42,10 @@ export class ManagePeersEditorComponent {
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
   ok() {
+    if (!this.peer) {
+      return;
+    }
+    this.peer.peer_group_ids = this.peer.peer_groups ? this.peer.peer_groups.map(x => x.id) : [];
     this.webapiService.savePeer(this.peer)
       .subscribe({
         next: data => {
