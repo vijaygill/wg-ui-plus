@@ -41,7 +41,7 @@ export class ManageTargetsEditorComponent {
   getLookupData() {
     this.webapiService.getPeerGroupList().subscribe(lookup => {
       let lookupItems = this.target.peer_groups ?
-        lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id))
+        lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
         : lookup;
       this.target.peer_groups_lookup = lookupItems;
     });

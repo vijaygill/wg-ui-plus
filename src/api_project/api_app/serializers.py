@@ -79,6 +79,12 @@ class PeerGroupSerializer(serializers.ModelSerializer):
         res = instance.name == PEER_GROUP_EVERYONE_NAME
         return res
 
+class TargetHeirarchySerializer(serializers.ModelSerializer):
+    class Meta:
+       model = Target
+       fields = '__all__'
+       depth = 2
+
 class TargetSerializer(serializers.ModelSerializer):
     peer_group_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=PeerGroup.objects.all(), source='peer_groups')
     class Meta:

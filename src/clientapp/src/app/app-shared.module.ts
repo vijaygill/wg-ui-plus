@@ -27,7 +27,7 @@ import { MessagesModule } from 'primeng/messages';
 //import { MeterGroupModule } from 'primeng/metergroup';
 //import { MultiSelectModule } from 'primeng/multiselect';
 //import { OrderListModule } from 'primeng/orderlist';
-//import { OrganizationChartModule } from 'primeng/organizationchart';
+import { OrganizationChartModule } from 'primeng/organizationchart';
 //import { PaginatorModule } from 'primeng/paginator';
 //import { PanelMenuModule } from 'primeng/panelmenu';
 //import { PanelModule } from 'primeng/panel';
@@ -71,6 +71,7 @@ let modules = [
     ListboxModule,
     MenuModule,
     MessagesModule,
+    OrganizationChartModule,
     PickListModule,
     TableModule, TabViewModule, ToastModule,
     TooltipModule,

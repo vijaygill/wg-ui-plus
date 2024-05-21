@@ -5,12 +5,14 @@ from django.urls import path,include,re_path
 from . import views
 
 from .views import TargetViewSet, PeerGroupViewSet, PeerViewSet, ServerConfigurationViewSet
+from .views import TargetHeirarchyViewSet
 
 router = DefaultRouter()
 router.register(r'peer', PeerViewSet)
 router.register(r'peer_group', PeerGroupViewSet)
 router.register(r'target', TargetViewSet)
 router.register(r'server_configuration', ServerConfigurationViewSet)
+router.register(r'target_heirarchy', TargetHeirarchyViewSet, 'target_heirarchy')
 
 urlpatterns = [
     path('api/v1/data/', include(router.urls)),

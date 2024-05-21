@@ -9,6 +9,7 @@ import { ManageTargetsComponent } from './manage-targets/manage-targets.componen
 import { ManageServerConfigurationComponent } from './manage-server-configuration/manage-server-configuration.component';
 
 export const routes: Routes = [
+    { path: '', component: HomeComponent },
     { path: 'home', component: HomeComponent },
     { path: 'about', component: AboutComponent },
     { path: 'manage-peer-groups', component: ManagePeerGroupsComponent },

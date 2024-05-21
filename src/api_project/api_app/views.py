@@ -16,6 +16,7 @@ from .serializers import TargetSerializer
 from .serializers import PeerGroupSerializer
 from .serializers import PeerSerializer, PeerWithQrSerializer
 from .serializers import ServerConfigurationSerializer
+from .serializers import TargetHeirarchySerializer
 
 from .wireguardhelper import WireGuardHelper
 
@@ -28,6 +29,11 @@ class PeerViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return PeerWithQrSerializer
         return super().get_serializer_class()
+
+class TargetHeirarchyViewSet(viewsets.ModelViewSet):
+    queryset = Target.objects.all()
+    serializer_class = TargetHeirarchySerializer
+    permission_classes = [AllowAny]
 
 class PeerGroupViewSet(viewsets.ModelViewSet):
     queryset = PeerGroup.objects.all()

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { PercentPipe } from '@angular/common';
+import { TreeNode } from 'primeng/api';
+import { expand, map } from 'rxjs/operators'
 
 @Injectable({
     providedIn: 'root'
@@ -9,16 +10,13 @@ import { PercentPipe } from '@angular/common';
 export class WebapiService {
 
     private urlPeerGroup = '/api/v1/data/peer_group/';
-
     private urlPeer = '/api/v1/data/peer/';
-
     private urlTarget = '/api/v1/data/target/';
-
     private urlServerConfiguration = '/api/v1/data/server_configuration/';
-
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
     private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
+    private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/'
 
     constructor(private http: HttpClient) { }
 
@@ -103,6 +101,50 @@ export class WebapiService {
     wireguardRestart(): Observable<any> {
         return this.http.get<any>(this.urlControlWireguardRestart);
     }
+
+    getTargetHeirarchy(): Observable<TreeNode[]> {
+        return this.http.get<Target[]>(this.urlPeerGroupHeirarchy)
+            .pipe(map(targets => {
+                let items = targets.map(target => {
+                    return {
+                        label: target.name,
+                        expanded: true,
+                        data: {
+                            details: target.ip_address,
+                        },
+                        children: target.peer_groups.map(peer_group => {
+                            return {
+                                label: peer_group.name,
+                                expanded: true,
+                                data: {
+                                    details: '',
+                                },
+                                children: peer_group.peers.map(peer => {
+                                    return {
+                                        label: peer.name,
+                                        expanded: true,
+                                        data: {
+                                            details: peer.ip_address,
+                                        },
+                                    } as TreeNode
+                                })
+                            } as TreeNode
+                        })
+                    } as TreeNode
+                }
+                );
+                let parentItem = {
+                    label: 'VPN',
+                    expanded: true,
+                    data: {
+                        details: 'VPN running on your server',
+                    },
+                    children: items,
+                } as TreeNode;
+                let res = [parentItem];
+                return res;
+            }));
+    }
 }
 
 export interface Entity {
@@ -121,7 +163,7 @@ export interface Peer extends Entity {
     peer_groups: PeerGroup[];
     peer_groups_lookup: PeerGroup[];
     peer_group_ids: number[];
-    qr : string;
+    qr: string;
     target_names: string;
 }
 
@@ -185,3 +227,4 @@ export interface ServerValidationErrorItem {
     detail: string;
     attr: string;
 }
+
