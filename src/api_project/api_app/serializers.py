@@ -5,14 +5,31 @@ import qrcode
 from rest_framework import serializers 
 from .models import Peer, PeerGroup, Target, ServerConfiguration
 from .wireguardhelper import WireGuardHelper
+from  .db_seed import PEER_GROUP_EVERYONE_NAME
 
 logger = logging.getLogger(__name__)
 
 class PeerSerializer(serializers.ModelSerializer):
+    target_names = serializers.SerializerMethodField('get_target_names')
     class Meta:
         model = Peer
         fields = '__all__'
         depth = 1
+    
+    def get_target_names(self, instance):
+        res = []
+        for peer_group in instance.peer_groups.all():
+            for target in peer_group.targets.all():
+                res += [ target ]
+
+        peer_group_everyone = PeerGroup.objects.filter(name = PEER_GROUP_EVERYONE_NAME )[0]
+        if peer_group_everyone:
+            for target in peer_group_everyone.targets.all():
+                res += [ target ]
+
+        res = [f'{x.name}' for x in res]
+        res = ', '.join(res)
+        return res
 
 class PeerWithQrSerializer(serializers.ModelSerializer):
     peer_group_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=PeerGroup.objects.all(), source='peer_groups')

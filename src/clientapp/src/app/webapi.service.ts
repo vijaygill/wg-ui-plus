@@ -122,6 +122,7 @@ export interface Peer extends Entity {
     peer_groups_lookup: PeerGroup[];
     peer_group_ids: number[];
     qr : string;
+    target_names: string;
 }
 
 export interface PeerGroup extends Entity {

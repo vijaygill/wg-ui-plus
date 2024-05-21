@@ -9,10 +9,12 @@ PORT_DEFAULT_EXTERNAL = 1196
 PORT_DEFAULT_INTERNAL = '51820'
 PORT_DEFAULT_PEER = PORT_DEFAULT_EXTERNAL
 UPSTREAM_DNS_SERVER_DEFAULT = '192.168.0.5'
+PEER_GROUP_EVERYONE_NAME = 'EveryOne'
 
 def populate_dictionary_data(apps, schema_editor):
     PeerGroup = apps.get_model('api_app', 'PeerGroup')
-    peer_group = PeerGroup(name = 'EveryOne', description = 'All peers in the system',
+    peer_group = PeerGroup(name = PEER_GROUP_EVERYONE_NAME,
+                           description = 'All peers in the system',
                            allow_modify_self = False,
                            allow_modify_peers = False,
                            allow_modify_targets = True,)
