@@ -139,6 +139,7 @@ export interface PeerGroup extends Entity {
     peer_ids: number[];
     target_ids: number[];
     target_names: string;
+    is_everyone_group: boolean;
 }
 
 export interface Target extends Entity {

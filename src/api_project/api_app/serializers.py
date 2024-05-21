@@ -65,6 +65,7 @@ class PeerGroupSerializer(serializers.ModelSerializer):
     peer_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Peer.objects.all(), source='peers')
     target_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Target.objects.all(), source='targets')
     target_names = serializers.SerializerMethodField('get_target_names')
+    is_everyone_group = serializers.SerializerMethodField('get_is_everyone_group')
     class Meta:
        model = PeerGroup
        fields = '__all__'
@@ -73,6 +74,9 @@ class PeerGroupSerializer(serializers.ModelSerializer):
         res = [f'{x.name}' for x in instance.targets.all()]
         res.sort()
         res = ', '.join(res)
+        return res
+    def get_is_everyone_group(self, instance):
+        res = instance.name == PEER_GROUP_EVERYONE_NAME
         return res
 
 class TargetSerializer(serializers.ModelSerializer):
