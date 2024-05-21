@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { Peer, WebapiService } from '../webapi.service';
+import { Peer, PeerGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,7 +33,10 @@ export class ManagePeersListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      let peer = {} as Peer;
+      let peer = {
+        peer_group_ids: [] as number[],
+        peer_groups: [] as PeerGroup[],
+      } as Peer;
       this.onNewItem.emit(peer);
     }
   }

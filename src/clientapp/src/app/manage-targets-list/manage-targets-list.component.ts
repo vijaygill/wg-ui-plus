@@ -3,7 +3,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
-import { Target, WebapiService } from '../webapi.service';
+import { PeerGroup, Target, WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-targets-list',
@@ -36,6 +36,8 @@ export class ManageTargetsListComponent {
       let target = {
         allow_modify_self: true,
         allow_modify_peer_groups: true,
+        peer_group_ids: [] as number[],
+        peer_groups: [] as PeerGroup[],
       } as Target;
       this.onNewItem.emit(target);
     }
