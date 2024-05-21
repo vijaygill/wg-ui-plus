@@ -8,17 +8,17 @@ import { PercentPipe } from '@angular/common';
 })
 export class WebapiService {
 
-    private urlPeerGroup = '/api/v1/peer_group/';
+    private urlPeerGroup = '/api/v1/data/peer_group/';
 
-    private urlPeer = '/api/v1/peer/';
+    private urlPeer = '/api/v1/data/peer/';
 
-    private urlTarget = '/api/v1/target/';
+    private urlTarget = '/api/v1/data/target/';
 
-    private urlServerConfiguration = '/api/v1/server_configuration/';
+    private urlServerConfiguration = '/api/v1/data/server_configuration/';
 
-    private urlGetWireguardConfiguration = '/api/v1/control/wireguard_configuration';
+    private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
     private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
-    private urlControlGenerateConfigurationFiles = '/api/v1/control/generate_configuration_files';
+    private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
 
     constructor(private http: HttpClient) { }
 
@@ -27,10 +27,14 @@ export class WebapiService {
     }
 
     getPeerGroup(id: number): Observable<PeerGroup> {
-        return this.http.get<PeerGroup>(this.urlPeerGroup + '/' + id);
+        return this.http.get<PeerGroup>(this.urlPeerGroup + id);
     }
 
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
+        if (item) {
+            item.peer_ids = item.peers ? item.peers.map(x => x.id) : [];
+            item.target_ids = item.targets ? item.targets.map(x => x.id) : [];
+        }
         var res = item.id
             ? this.http.put<PeerGroup>(this.urlPeerGroup + item.id + '/', item)
             : this.http.post<PeerGroup>(this.urlPeerGroup, item);
@@ -46,6 +50,9 @@ export class WebapiService {
     }
 
     savePeer(item: Peer): Observable<Peer> {
+        if (item) {
+            item.peer_group_ids = item.peer_groups ? item.peer_groups.map(x => x.id) : [];
+        }
         var res = item.id
             ? this.http.put<Peer>(this.urlPeer + item.id + '/', item)
             : this.http.post<Peer>(this.urlPeer, item);
@@ -61,6 +68,9 @@ export class WebapiService {
     }
 
     saveTarget(item: Target): Observable<Target> {
+        if (item) {
+            item.peer_group_ids = item.peer_groups ? item.peer_groups.map(x => x.id) : [];
+        }
         var res = item.id
             ? this.http.put<Target>(this.urlTarget + item.id + '/', item)
             : this.http.post<Target>(this.urlTarget, item);
@@ -111,6 +121,7 @@ export interface Peer extends Entity {
     peer_groups: PeerGroup[];
     peer_groups_lookup: PeerGroup[];
     peer_group_ids: number[];
+    qr : string;
 }
 
 export interface PeerGroup extends Entity {
@@ -124,6 +135,8 @@ export interface PeerGroup extends Entity {
     targets_lookup: Target[];
     peers: Peer[];
     peers_lookup: Peer[];
+    peer_ids: number[];
+    target_ids: number[];
 }
 
 export interface Target extends Entity {
@@ -135,11 +148,12 @@ export interface Target extends Entity {
     allow_modify_peer_groups: boolean;
     peer_groups: PeerGroup[];
     peer_groups_lookup: PeerGroup[];
+    peer_group_ids: number[];
 }
 
 export interface ServerConfiguration {
     id: number;
-    ip_address: string;
+    network_address: string;
     host_name_external: string;
     port_internal: number;
     port_external: number;
@@ -149,6 +163,7 @@ export interface ServerConfiguration {
     public_key: string;
     private_key: string;
     peer_default_port: number;
+    upstream_dns_ip_address: string;
 }
 
 export interface WireguardConfiguration {

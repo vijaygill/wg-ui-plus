@@ -19,17 +19,15 @@ export class ManageTargetsEditorComponent {
   get editItem(): Target { return this.target; }
   set editItem(value: Target) {
     this.target = value;
-    this.webapiService.getTarget(value.id).subscribe(data => {
-      this.target = data;
-      if (this.target) {
-        this.webapiService.getPeerGroupList().subscribe(lookup => {
-          let lookupItems = this.target.peer_groups ?
-            lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id))
-            : lookup;
-          this.target.peer_groups_lookup = lookupItems;
-        });
-      }
-    });
+    if (this.target.id) {
+      this.webapiService.getTarget(value.id).subscribe(data => {
+        this.target = data;
+        this.getLookupData();
+      });
+    }
+    else {
+      this.getLookupData();
+    }
   }
 
   target: Target = {} as Target;
@@ -39,6 +37,15 @@ export class ManageTargetsEditorComponent {
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+
+  getLookupData() {
+    this.webapiService.getPeerGroupList().subscribe(lookup => {
+      let lookupItems = this.target.peer_groups ?
+        lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id))
+        : lookup;
+      this.target.peer_groups_lookup = lookupItems;
+    });
+  }
 
   ok() {
     this.webapiService.saveTarget(this.target)

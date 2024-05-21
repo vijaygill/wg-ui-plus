@@ -145,3 +145,32 @@ REST_FRAMEWORK = {
 
 STATIC_ROOT='/wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser'
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler",
+                    "formatter": "verbose",},
+        # "file": {
+        #     "class": "logging.FileHandler",
+        #     "filename": "general.log",
+        #     "formatter": "verbose",
+        # },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console", ],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
+        },
+        "django.server": {
+            "handlers": ["console", ],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
+        }
+    },
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        }
+    },
+}

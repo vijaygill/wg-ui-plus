@@ -20,23 +20,15 @@ export class ManagePeerGroupsEditorComponent {
   get editItem(): PeerGroup { return this.peerGroup; }
   set editItem(value: PeerGroup) {
     this.peerGroup = value;
-    this.webapiService.getPeerGroup(value.id).subscribe(data => {
-      this.peerGroup = data;
-      if (this.peerGroup) {
-        this.webapiService.getPeerList().subscribe(lookup => {
-          let lookupItems = this.peerGroup.peers ?
-            lookup.filter(x => !this.peerGroup.peers.some(y => y.id === x.id))
-            : lookup;
-          this.peerGroup.peers = lookupItems;
-        });
-        this.webapiService.getTargetList().subscribe(lookup => {
-          let lookupItems = this.peerGroup.targets ?
-            lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
-            : lookup;
-          this.peerGroup.targets_lookup = lookupItems;
-        });
-      }
-    });
+    if (this.peerGroup.id) {
+      this.webapiService.getPeerGroup(value.id).subscribe(data => {
+        this.peerGroup = data;
+        this.getLookupData();
+      });
+    }
+    else {
+      this.getLookupData();
+    }
   }
 
   peerGroup: PeerGroup = {} as PeerGroup;
@@ -47,7 +39,21 @@ export class ManagePeerGroupsEditorComponent {
 
   constructor(private messageService: MessageService, private webapiService: WebapiService) { }
 
-  ngOnInit() {
+  getLookupData() {
+    if (this.peerGroup) {
+      this.webapiService.getPeerList().subscribe(lookup => {
+        let lookupItems = this.peerGroup.peers ?
+          lookup.filter(x => !this.peerGroup.peers.some(y => y.id === x.id))
+          : lookup;
+        this.peerGroup.peers_lookup = lookupItems;
+      });
+      this.webapiService.getTargetList().subscribe(lookup => {
+        let lookupItems = this.peerGroup.targets ?
+          lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
+          : lookup;
+        this.peerGroup.targets_lookup = lookupItems;
+      });
+    }
   }
 
   ok() {

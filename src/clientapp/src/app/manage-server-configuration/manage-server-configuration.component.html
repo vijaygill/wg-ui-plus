@@ -2,11 +2,11 @@
 <table class="editor-table">
     <tbody>
         <tr>
-            <td><label for="ipAddress">IP Address</label></td>
-            <td><input pInputText id="ipAddress" [(ngModel)]="editItem.ip_address"
-                    pTooltip="IP Address of the peer where VPN is running." tooltipPosition="top" pAutoFocus
+            <td><label for="ipAddress">Network Address</label></td>
+            <td><input pInputText id="networkAddress" [(ngModel)]="editItem.network_address"
+                    pTooltip="Network address of the VPN." tooltipPosition="top" pAutoFocus
                     [autofocus]="true" />
-                <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
+                <app-validation-errors-display field="network_address" [validationResult]="validationResult">
                 </app-validation-errors-display>
             </td>
         </tr>
@@ -36,6 +36,14 @@
                     [required]="true" [format]="false" [(ngModel)]="editItem.port_internal"
                     pTooltip="Port on the host where the VPN is running." tooltipPosition="top" />
                 <app-validation-errors-display field="port_internal" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="upstreamDnsServer">Upstream DNS Server</label></td>
+            <td><input pInputText id="upstreamDnsServer" [(ngModel)]="editItem.upstream_dns_ip_address"
+                    pTooltip="Upstream DNS server for the peers." tooltipPosition="top" />
+                <app-validation-errors-display field="upstream_dns_ip_address" [validationResult]="validationResult">
                 </app-validation-errors-display>
             </td>
         </tr>

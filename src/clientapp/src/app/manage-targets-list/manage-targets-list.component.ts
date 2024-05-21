@@ -33,7 +33,10 @@ export class ManageTargetsListComponent {
 
   newItem(): void {
     if (this.onNewItem) {
-      let target = {} as Target;
+      let target = {
+        allow_modify_self: true,
+        allow_modify_peer_groups: true,
+      } as Target;
       this.onNewItem.emit(target);
     }
   }

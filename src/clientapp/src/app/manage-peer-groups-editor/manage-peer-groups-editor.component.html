@@ -46,11 +46,11 @@
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
                             <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ peerGroupLink.peer.name }}</span>
+                                <span class="font-bold">{{ peerGroupLink.name }}</span>
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ peerGroupLink.peer.ip_address }}
+                                        {{ peerGroupLink.description }} ({{ peerGroupLink.ip_address }})
                                     </small>
                                 </div>
                             </div>
@@ -77,8 +77,7 @@
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-tag text-sm"></i>
                                     <small>
-                                        {{ targetGroupLink.description }} ({{ targetGroupLink.ip_address
-                                        }})
+                                        {{ targetGroupLink.description }} ({{ targetGroupLink.ip_address }})
                                     </small>
                                 </div>
                             </div>

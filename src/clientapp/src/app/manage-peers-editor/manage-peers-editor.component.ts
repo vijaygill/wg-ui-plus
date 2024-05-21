@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { nextTick } from 'process';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-manage-peers-editor',
@@ -20,17 +21,15 @@ export class ManagePeersEditorComponent {
   get editItem(): Peer { return this.peer; }
   set editItem(value: Peer) {
     this.peer = value;
-    this.webapiService.getPeer(value.id).subscribe(data => {
-      this.peer = data;
-      if (this.peer) {
-        this.webapiService.getPeerGroupList().subscribe(lookup => {
-          let lookupItems = this.peer.peer_groups ?
-            lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id))
-            : lookup;
-          this.peer.peer_groups_lookup = lookupItems;
-        });
-      }
-    });
+    if (value.id) {
+      this.webapiService.getPeer(value.id).subscribe(data => {
+        this.peer = data;
+        this.getLookupData();
+      });
+    }
+    else {
+      this.getLookupData();
+    }
   }
 
   peer: Peer = {} as Peer;
@@ -39,13 +38,31 @@ export class ManagePeersEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+  constructor(private messageService: MessageService, private webapiService: WebapiService
+  ) {
+
+  }
+
+  getLookupData() {
+    if (this.peer) {
+      this.webapiService.getPeerGroupList().subscribe(lookup => {
+        let lookupItems = this.peer.peer_groups ?
+          lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id))
+          : lookup;
+        this.peer.peer_groups_lookup = lookupItems;
+      });
+    }
+  }
+
+  getQrCode() {
+    let imagePath = 'data:image/jpg;base64,' + this.editItem.qr;
+    return imagePath;
+  }
 
   ok() {
     if (!this.peer) {
       return;
     }
-    this.peer.peer_group_ids = this.peer.peer_groups ? this.peer.peer_groups.map(x => x.id) : [];
     this.webapiService.savePeer(this.peer)
       .subscribe({
         next: data => {

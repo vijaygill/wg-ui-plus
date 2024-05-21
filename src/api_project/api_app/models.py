@@ -1,7 +1,55 @@
+import datetime
+import ipaddress
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 
+from .wireguardhelper import generate_keys
+
+def is_network_address(value, throw_exception = True):
+    ip = None
+    res = False
+    try:
+      ip = ipaddress.ip_interface(str(value))
+      if isinstance(value, (ipaddress.IPv4Interface)):
+          ip = value
+      res = int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
+    except:
+       res = False
+    if throw_exception:
+      if not res:
+        raise ValidationError(
+              f'{value} is not a valid network address. Example 192.168.2.0/24.',
+              params={"value": value},
+          )
+    return res;
+
+def is_single_address(value, throw_exception = True):
+    ip = None
+    res = False
+    try:
+      ip = ipaddress.ip_interface(str(value))
+      if isinstance(value, (ipaddress.IPv4Interface)):
+          ip = value
+      res = ip.network.prefixlen == 32
+    except:
+       res = False
+    if throw_exception:
+      if not res:
+        raise ValidationError(
+              f'{value} is not a valid IP address. Example 192.168.0.10.',
+              params={"value": value},
+          )
+    return res
+
+def is_network_or_single_address(value):
+  res = is_network_address(value, False) or is_single_address(value, False)
+  if not res:
+    raise ValidationError(
+          f'{value} is not a valid IP address or network address. Example 192.168.0.10 Or 192.168.0.0/24.',
+          params={"value": value},
+      )
 
 # Create your models here.
 class PeerGroup(models.Model):
@@ -11,6 +59,7 @@ class PeerGroup(models.Model):
   allow_modify_self = models.BooleanField(null = True, default = True)
   allow_modify_peers = models.BooleanField(null = True, default = True)
   allow_modify_targets = models.BooleanField(null = True, default = True)
+  last_changed_datetime = models.DateTimeField(auto_now = True,)
   peers = models.ManyToManyField('Peer', blank=True)
   targets = models.ManyToManyField('Target', blank=True)
 
@@ -25,42 +74,64 @@ class Peer(models.Model):
   port = models.IntegerField(null = True, blank=True)
   public_key = models.CharField(max_length = 255, null = True, blank=True)
   private_key = models.CharField(max_length = 255, null = True, blank=True)
+  last_changed_datetime = models.DateTimeField(auto_now = True, )
   peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.peers.through, )
 
   def __str__(self):
      return f"{self.name} - {self.description}"
-  
+
   def save(self, force_insert=False, force_update=False, **kwargs):
-    pg = PeerGroup.objects.filter(name = 'Everyone')
-    if pg:
-      self.peer_group.add(pg[0])
-    super(Peer, self).save(force_insert, force_update)
+    sc = ServerConfiguration.objects.all()[0]
+    if (not self.private_key) or (not self.public_key):
+      public_key, private_key = generate_keys()
+      self.public_key = public_key
+      self.private_key = private_key
+    if not self.port:
+      self.port = sc.peer_default_port
+    if not self.ip_address:
+      peers = Peer.objects.all()
+      sc_intf = ipaddress.ip_interface(sc.network_address)
+      ip_address_pool = [x for x in sc_intf.network.hosts()]
+      if peers:
+          ip_addresses_to_exclude = [ ipaddress.ip_interface(p.ip_address).ip for p in peers if p.ip_address ]
+          ip_address_pool = [x for x in ip_address_pool if x not in ip_addresses_to_exclude]
+      self.ip_address = ip_address_pool[1]
+    super().save(force_insert, force_update)
 
 class Target(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True, blank=True)
   disabled = models.BooleanField(null = True, default = False)
-  ip_address = models.CharField(max_length = 255, null = True, blank=True)
+  ip_address = models.CharField(max_length = 255, null = False, blank = False, validators=[is_network_or_single_address])
   port = models.IntegerField(null = True, blank=True)
   allow_modify_self = models.BooleanField(null = True, default = True)
   allow_modify_peer_groups = models.BooleanField(null = True, default = True)
+  last_changed_datetime = models.DateTimeField(auto_now = True, )
   peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.targets.through, )
 
   def __str__(self):
      return f"{self.name} - {self.description}"
 
 class ServerConfiguration(models.Model):
-  ip_address= models.CharField(max_length = 255)
+  network_address= models.CharField(max_length = 255, validators=[is_network_address])
   host_name_external= models.CharField(max_length = 255)
   port_external= models.IntegerField()
   port_internal= models.IntegerField()
+  upstream_dns_ip_address = models.CharField(max_length = 255, null = False, blank= False, validators=[is_single_address])
   wireguard_config_path= models.CharField(max_length = 255)
   script_path_post_down= models.CharField(max_length = 255)
   script_path_post_up= models.CharField(max_length = 255)
   public_key= models.CharField(max_length = 255, null = True, blank = True)
   private_key= models.CharField(max_length = 255, null = True, blank = True)
   peer_default_port = models.IntegerField()
+  last_changed_datetime = models.DateTimeField(auto_now = True,)
 
   def __str__(self):
      return f"{self.host_name_external} - {self.port_external}"
 
+  def save(self, force_insert=False, force_update=False, **kwargs):
+    if (not self.private_key) or (not self.public_key):
+      public_key, private_key = generate_keys()
+      self.public_key = public_key
+      self.private_key = private_key
+    super().save(force_insert, force_update)

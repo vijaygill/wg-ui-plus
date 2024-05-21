@@ -62,10 +62,10 @@
                 </app-validation-errors-display>
             </td>
         </tr>
-        <tr *ngIf="editItem.id">
+        <tr *ngIf="editItem.qr">
             <td>QR Code</td>
             <td>
-                <p-image src="/api/data/peer-config-qr/{{editItem.id}}" alt="Image" width="250" />
+                <img height="320px" [src]="getQrCode()" />
             </td>
         </tr>
         <tr>
