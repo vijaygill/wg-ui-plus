@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'api_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'wg_ui_plus.db',
+        'NAME':  '/data/wg_ui_plus.db',
     }
 }
 
