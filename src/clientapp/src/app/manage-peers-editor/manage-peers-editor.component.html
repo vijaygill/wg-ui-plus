@@ -1,83 +1,92 @@
-<table class="editor-table">
+<table style="width: 100%;">
+    <colgroup>
+        <col style="width:100%;"/>
+        <col style="width:240px;min-width:240px;max-width:240px;"/>
+    </colgroup>
     <tbody>
         <tr>
-            <td><label for="peerName">Name</label></td>
-            <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
-                    pTooltip="Name of the device/computer you wish to connect with VPN." tooltipPosition="top"
-                    pAutoFocus [autofocus]="true" />
-                <app-validation-errors-display field="name" [validationResult]="validationResult">
-                </app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="peerDescription">Description</label></td>
-            <td><input pInputText id="peerpeerDescription" [(ngModel)]="editItem.description"
-                    pTooltip="Some description of the device/computer you wish to connect with VPN."
-                    tooltipPosition="top" />
-                <app-validation-errors-display field="description" [validationResult]="validationResult">
-                </app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="peerIPAddress">IPAddress</label></td>
-            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
-                    [disabled]="true" /></td>
-        </tr>
-        <!-- <tr>
-            <td><label for="portnumber">Port</label></td>
             <td>
-                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
-            </td>
-        </tr> -->
-        <tr>
-            <td><label for="peerDisabled">Disabled</label></td>
-            <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
-        </tr>
-        <tr>
-            <td><label for="peerGroups">Groups</label></td>
-            <td>
-                <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
-                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                    (trackBy)="peerGroupsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="1400px"
-                    pTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
-                    tooltipPosition="top">
-                    <ng-template let-peerGroupLink pTemplate="item">
-                        <div class="flex flex-wrap p-2 align-items-center gap-3">
-                            <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ peerGroupLink.name }}</span>
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-tag text-sm"></i>
-                                    <small>
-                                        {{ peerGroupLink.description }}
-                                    </small>
+                <table class="editor-table">
+                    <tbody>
+                        <tr>
+                            <td><label for="peerName">Name</label></td>
+                            <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
+                                    pTooltip="Name of the device/computer you wish to connect with VPN." tooltipPosition="top"
+                                    pAutoFocus [autofocus]="true" />
+                                <app-validation-errors-display field="name" [validationResult]="validationResult">
+                                </app-validation-errors-display>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="peerDescription">Description</label></td>
+                            <td><input pInputText id="peerpeerDescription" [(ngModel)]="editItem.description"
+                                    pTooltip="Some description of the device/computer you wish to connect with VPN."
+                                    tooltipPosition="top" />
+                                <app-validation-errors-display field="description" [validationResult]="validationResult">
+                                </app-validation-errors-display>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="peerIPAddress">IPAddress</label></td>
+                            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
+                                    [disabled]="true" /></td>
+                        </tr>
+                        <!-- <tr>
+                            <td><label for="portnumber">Port</label></td>
+                            <td>
+                                <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
+                                    [required]="true" [format]="false" [(ngModel)]="editItem.port" />
+                            </td>
+                        </tr> -->
+                        <tr>
+                            <td><label for="peerDisabled">Disabled</label></td>
+                            <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
+                        </tr>
+                        <tr>
+                            <td><label for="peerGroups">Groups</label></td>
+                            <td>
+                                <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
+                                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+                                    (trackBy)="peerGroupsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
+                                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+                                    breakpoint="1400px"
+                                    pTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
+                                    tooltipPosition="top">
+                                    <ng-template let-peerGroupLink pTemplate="item">
+                                        <div class="flex flex-wrap p-2 align-items-center gap-3">
+                                            <div class="flex-1 flex flex-column gap-2">
+                                                <span class="font-bold">{{ peerGroupLink.name }}</span>
+                                                <div class="flex align-items-center gap-2">
+                                                    <i class="pi pi-tag text-sm"></i>
+                                                    <small>
+                                                        {{ peerGroupLink.description }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </p-pickList>
+                                <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+                                </app-validation-errors-display>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div style="width:100%;align-items: center; text-align: center;">
+                                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                                    &nbsp;
+                                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                                    &nbsp;
+                                    <app-validation-errors-display
+                                        [validationResult]="validationResult"></app-validation-errors-display>
                                 </div>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-pickList>
-                <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
-                </app-validation-errors-display>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </td>
-        </tr>
-        <tr *ngIf="editItem.qr">
-            <td>QR Code</td>
             <td>
-                <img height="320px" [src]="getQrCode()" />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                    &nbsp;
-                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-                    &nbsp;
-                    <app-validation-errors-display
-                        [validationResult]="validationResult"></app-validation-errors-display>
-                </div>
+                <img *ngIf="editItem.qr" height="320px" [src]="getQrCode()" />
             </td>
         </tr>
     </tbody>
