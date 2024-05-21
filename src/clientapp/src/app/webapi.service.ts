@@ -108,23 +108,28 @@ export class WebapiService {
                 let items = targets.map(target => {
                     return {
                         label: target.name,
+                        type: 'target',
                         expanded: true,
                         data: {
-                            details: target.ip_address,
-                        },
+                            details: target.description,
+                            ip_address: target.ip_address,
+        },
                         children: target.peer_groups.map(peer_group => {
                             return {
                                 label: peer_group.name,
                                 expanded: true,
+                                type: 'peerGroup',
                                 data: {
-                                    details: '',
+                                    details: peer_group.description,
                                 },
                                 children: peer_group.peers.map(peer => {
                                     return {
                                         label: peer.name,
                                         expanded: true,
+                                        type: 'peer',
                                         data: {
-                                            details: peer.ip_address,
+                                            details: peer.description,
+                                            ip_address: peer.ip_address,
                                         },
                                     } as TreeNode
                                 })

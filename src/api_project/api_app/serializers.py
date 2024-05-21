@@ -10,7 +10,7 @@ from  .db_seed import PEER_GROUP_EVERYONE_NAME
 logger = logging.getLogger(__name__)
 
 class PeerSerializer(serializers.ModelSerializer):
-    target_names = serializers.SerializerMethodField('get_target_names')
+    target_names = serializers.SerializerMethodField('get_target_names', read_only=True,)
     class Meta:
         model = Peer
         fields = '__all__'
@@ -34,8 +34,8 @@ class PeerSerializer(serializers.ModelSerializer):
 
 class PeerWithQrSerializer(serializers.ModelSerializer):
     peer_group_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=PeerGroup.objects.all(), source='peer_groups')
-    qr = serializers.SerializerMethodField('get_qr')
-    configuration = serializers.SerializerMethodField('get_configuration')
+    qr = serializers.SerializerMethodField('get_qr', read_only=True,)
+    configuration = serializers.SerializerMethodField('get_configuration', read_only=True,)
 
     class Meta:
         model = Peer
@@ -64,8 +64,8 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
 class PeerGroupSerializer(serializers.ModelSerializer):
     peer_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Peer.objects.all(), source='peers')
     target_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Target.objects.all(), source='targets')
-    target_names = serializers.SerializerMethodField('get_target_names')
-    is_everyone_group = serializers.SerializerMethodField('get_is_everyone_group')
+    target_names = serializers.SerializerMethodField('get_target_names', read_only=True,)
+    is_everyone_group = serializers.SerializerMethodField('get_is_everyone_group', read_only=True,)
     class Meta:
        model = PeerGroup
        fields = '__all__'
