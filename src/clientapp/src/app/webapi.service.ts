@@ -138,6 +138,7 @@ export interface PeerGroup extends Entity {
     peers_lookup: Peer[];
     peer_ids: number[];
     target_ids: number[];
+    target_names: string;
 }
 
 export interface Target extends Entity {

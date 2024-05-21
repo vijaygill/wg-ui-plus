@@ -28,6 +28,7 @@ class PeerSerializer(serializers.ModelSerializer):
                 res += [ target ]
 
         res = [f'{x.name}' for x in res]
+        res.sort()
         res = ', '.join(res)
         return res
 
@@ -63,10 +64,16 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
 class PeerGroupSerializer(serializers.ModelSerializer):
     peer_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Peer.objects.all(), source='peers')
     target_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=Target.objects.all(), source='targets')
+    target_names = serializers.SerializerMethodField('get_target_names')
     class Meta:
        model = PeerGroup
        fields = '__all__'
        depth = 1
+    def get_target_names(self, instance):
+        res = [f'{x.name}' for x in instance.targets.all()]
+        res.sort()
+        res = ', '.join(res)
+        return res
 
 class TargetSerializer(serializers.ModelSerializer):
     peer_group_ids = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=PeerGroup.objects.all(), source='peer_groups')
