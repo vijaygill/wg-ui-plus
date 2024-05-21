@@ -142,7 +142,7 @@ class WireGuardHelper(object):
     
     @logged
     def getWireguardIpTablesScript(self, serverConfiguration, targets, peers):
-        dns_servers = ["192.168.0.5",]
+        dns_servers = [serverConfiguration.upstream_dns_ip_address]
         # generate post-up script
         post_up = [
             f'#!/bin/bash',
