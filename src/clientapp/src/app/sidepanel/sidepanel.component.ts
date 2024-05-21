@@ -39,10 +39,10 @@ export class SidepanelComponent {
           label: 'Server Configuration',
           route: '/manage-server-configuration',
         },
-        {
-          label: 'Test',
-          route: '/test-page',
-        },
+        // {
+        //   label: 'Test',
+        //   route: '/test-page',
+        // },
         {
           label: 'About',
           route: '/about',
