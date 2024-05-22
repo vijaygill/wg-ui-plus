@@ -11,6 +11,8 @@ import qrcode
 import subprocess
 import re
 import logging
+from django.template import Template, Context
+
 
 IP_ADDRESS_INTERNET = '0.0.0.0/0'
 
@@ -54,67 +56,77 @@ def generate_keys():
     return (key_public, key_private)
 
 class WireGuardHelper(object):
+
+    @logged
+    def render_template(self, template, context):
+        template = Template(template)
+        res = template.render(context)
+        return res
+
     @logged
     def getWireguardConfigurationForServer(self, serverConfiguration):
-        server_config = [
-            f'# Settings for this peer.',
-            f'[Interface]',
-            f'Address = {serverConfiguration.network_address}',
-            f'ListenPort = {serverConfiguration.port_internal}',
-            f'PrivateKey = {serverConfiguration.private_key}',
-            f'',
-            f'PostUp = {serverConfiguration.script_path_post_up}',
-            f'PostDown = {serverConfiguration.script_path_post_down}',
-            f'',
-            f'',
-            f'',
-        ]
-        res = '\n'.join(server_config)
+        template="""
+# Settings for Server.
+[Interface]
+Address = {{serverConfiguration.network_address}}
+ListenPort = {{serverConfiguration.port_internal}}
+PrivateKey = {{serverConfiguration.private_key}}
+
+PostUp = {{serverConfiguration.script_path_post_up}}
+PostDown = {{serverConfiguration.script_path_post_down}}
+
+"""
+        context = Context({"serverConfiguration": serverConfiguration})
+        res = self.render_template(template, context)
         return res
 
     @logged
     def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
         # returns tuple of server-side and client-side configurations
-        peer_config_server_side = [
-            f'# Settings for the peer on the other side of the pipe.',
-            f'# {peer.name}: disabled',
-            f'',
-            ] if peer.disabled else [
-            f'# Settings for the peer on the other side of the pipe.',
-            f'# {peer.name}',
-            f'[Peer]',
-            f'PublicKey = {peer.public_key}',
-            #f'#PresharedKey = <this is optional>',
-            f'AllowedIPs = {peer.ip_address}/32',
-            f'PersistentKeepalive = 25',
-            f'',
-            f'',
-        ]
-        peer_config_server_side = '\n'.join(peer_config_server_side)
+        template_disabled="""
+# Server-side settings for the client.
+# {{peer.name}}: disabled
+"""
+        template="""
+# Server-side settings for the client.
+# {{peer.name}}
+[Peer]
+PublicKey = {{peer.public_key}}
+AllowedIPs = {{peer.ip_address}}/32
+PersistentKeepalive = 25
+#PresharedKey = <this is optional>
 
+"""
+        context = Context({"peer": peer})
+        peer_config_server_side = self.render_template(template_disabled, context) if peer.disabled else self.render_template(template, context)
+
+        template_disabled="""
+# Client-side settings for the peer on the other side of the pipe.
+# {{peer.name}}: disabled
+
+"""
+
+        template="""
+# Settings for this client.
+[Interface]
+Address = {{peer.ip_address}}
+ListenPort = {{peer_port}}
+PrivateKey = {{peer.private_key}}
+DNS = {{serverConfiguration.upstream_dns_ip_address}}
+
+
+# Settings for the peer on the other side of the pipe.
+[Peer]
+PublicKey = {{serverConfiguration.public_key}}
+Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
+AllowedIPs = 0.0.0.0/0
+"""
         peer_port = peer.port if peer.port else serverConfiguration.peer_default_port
+        context = Context({"serverConfiguration": serverConfiguration,
+                           "peer": peer,
+                           "peer_port": peer_port})
+        peer_config_client_side = self.render_template(template_disabled, context) if peer.disabled else self.render_template(template, context)
 
-        peer_config_client_side = [
-            f'# Settings for the peer on the other side of the pipe.',
-            f'# {peer.name}: disabled',
-            f'',
-            ] if peer.disabled else [
-            f'# Settings for this peer.',
-            f'[Interface]',
-            f'Address = {peer.ip_address}',
-            f'ListenPort = {peer_port}',
-            f'PrivateKey = {peer.private_key}',
-            f'DNS = 192.168.0.5',
-            #f'DNS = {serverConfiguration.network_address}',
-            f'',
-            f'',
-            f'# Settings for the peer on the other side of the pipe.',
-            f'[Peer]',
-            f'PublicKey = {serverConfiguration.public_key}',
-            f'Endpoint = {serverConfiguration.host_name_external}:{serverConfiguration.port_external}',
-            f'AllowedIPs = 0.0.0.0/0',
-        ]
-        peer_config_client_side = '\n'.join(peer_config_client_side)
         res = (peer_config_server_side, peer_config_client_side)
         return res
 
@@ -206,7 +218,7 @@ class WireGuardHelper(object):
             target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
             if target_is_network_address:
                 continue
-            for peer_group in target.peer_groups:
+            for peer_group in target.peer_groups.all():
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
@@ -280,13 +292,13 @@ class WireGuardHelper(object):
             target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
             if target_is_network_address:
                 continue
-            for pg_target_link in target.peer_group_target_links:
-                for pg_peer_link in pg_target_link.peer_group.peer_group_peer_links:
+            for peer_group in target.peer_groups.all():
+                for peer in peer_group.peers.all():
                     chain_name = self.get_chain_name(target)
-                    comment = f'ACCEPT - {pg_peer_link.peer.name} => {pg_target_link.peer_group.name} => {target.name}({target_ip_address})'
+                    comment = f'ACCEPT - {peer.name} => {peer_group.name} => {target.name}({target_ip_address})'
                     rules = [
                         f'# {comment}',
-                        f'iptables --append {chain_name} --source {pg_peer_link.peer.ip_address} --destination {target_ip_address} -j ACCEPT  -m comment --comment "{comment}"',
+                        f'iptables --append {chain_name} --source {peer.ip_address} --destination {target_ip_address} -j ACCEPT  -m comment --comment "{comment}"',
                         f'',
                     ]
                     post_up += rules
