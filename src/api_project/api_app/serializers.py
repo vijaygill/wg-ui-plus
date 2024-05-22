@@ -28,6 +28,7 @@ class PeerSerializer(serializers.ModelSerializer):
                 res += [ target ]
 
         res = [f'{x.name}' for x in res]
+        res = list(set(res))
         res.sort()
         res = ', '.join(res)
         return res
@@ -72,6 +73,7 @@ class PeerGroupSerializer(serializers.ModelSerializer):
        depth = 1
     def get_target_names(self, instance):
         res = [f'{x.name}' for x in instance.targets.all()]
+        res = list(set(res))
         res.sort()
         res = ', '.join(res)
         return res

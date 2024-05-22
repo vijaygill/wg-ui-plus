@@ -43,6 +43,12 @@ html {
         "footer footer";
 }
 
+table {
+    td {
+        vertical-align: top;
+    }
+}
+
 .editor-table {
     min-width: 50%;
     // max-width: 70%;
