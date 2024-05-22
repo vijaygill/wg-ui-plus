@@ -16,7 +16,7 @@ RUN apt-get update -y \
 		python3 \
 		python-is-python3 \
 		npm \
-		sqlite3
+		sqlite3 wireguard wireguard-tools python3-cryptography net-tools iproute2 iptables openresolv libcap2-bin libcap2 iptraf-ng procps tcpdump sudo conntrack
 
 RUN npm install -g @angular/cli
 
@@ -24,32 +24,9 @@ RUN npm install -g @angular/cli
 # Can we maybe extract this list of packages out to a file so we only have to change in one place?
 RUN pip install --break-system-packages --upgrade \
 	docker \
-	Flask \
 	pytest \
 	pytest-cov \
-	sqlalchemy
-
-RUN apt-get install -y python3-cryptography
-
-RUN pip install --break-system-packages --upgrade qrcode
-
-RUN apt install -y wireguard wireguard-tools
-
-RUN apt install -y net-tools iproute2 iptables openresolv
-
-RUN apt install -y libcap2-bin libcap2
-
-RUN apt install -y iptraf-ng
-
-RUN apt install -y procps 
-RUN apt install -y tcpdump
-RUN apt install -y sudo
-RUN apt install -y conntrack
-
-RUN pip install --break-system-packages --upgrade colorlog Django
-RUN pip install --break-system-packages --upgrade djangorestframework django-cors-headers
-RUN pip install --break-system-packages --upgrade django-spa
-RUN pip install --break-system-packages --upgrade drf-standardized-errors
+	sqlalchemy qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors
 
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
