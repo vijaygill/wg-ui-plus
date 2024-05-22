@@ -170,6 +170,7 @@ export interface Peer extends Entity {
     peer_group_ids: number[];
     qr: string;
     target_names: string;
+    configuration: string;
 }
 
 export interface PeerGroup extends Entity {

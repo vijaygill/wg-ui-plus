@@ -1,7 +1,7 @@
 <table style="width: 100%;">
     <colgroup>
-        <col style="width:100%;"/>
-        <col style="width:240px;min-width:240px;max-width:240px;"/>
+        <col style="width:100%;" />
+        <col style="width:180px;min-width:180px;max-width:180px;" />
     </colgroup>
     <tbody>
         <tr>
@@ -11,8 +11,8 @@
                         <tr>
                             <td><label for="peerName">Name</label></td>
                             <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
-                                    pTooltip="Name of the device/computer you wish to connect with VPN." tooltipPosition="top"
-                                    pAutoFocus [autofocus]="true" />
+                                    pTooltip="Name of the device/computer you wish to connect with VPN."
+                                    tooltipPosition="top" pAutoFocus [autofocus]="true" />
                                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                                 </app-validation-errors-display>
                             </td>
@@ -22,7 +22,8 @@
                             <td><input pInputText id="peerpeerDescription" [(ngModel)]="editItem.description"
                                     pTooltip="Some description of the device/computer you wish to connect with VPN."
                                     tooltipPosition="top" />
-                                <app-validation-errors-display field="description" [validationResult]="validationResult">
+                                <app-validation-errors-display field="description"
+                                    [validationResult]="validationResult">
                                 </app-validation-errors-display>
                             </td>
                         </tr>
@@ -45,10 +46,11 @@
                         <tr>
                             <td><label for="peerGroups">Groups</label></td>
                             <td>
-                                <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
-                                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                                    (trackBy)="peerGroupsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+                                <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup"
+                                    [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
+                                    [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
+                                    [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
+                                    [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                                     breakpoint="1400px"
                                     pTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
                                     tooltipPosition="top">
@@ -66,7 +68,8 @@
                                         </div>
                                     </ng-template>
                                 </p-pickList>
-                                <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+                                <app-validation-errors-display field="peer_groups"
+                                    [validationResult]="validationResult">
                                 </app-validation-errors-display>
                             </td>
                         </tr>
@@ -75,7 +78,8 @@
                                 <div style="width:100%;align-items: center; text-align: center;">
                                     <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                                     &nbsp;
-                                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                                    <p-button icon="pi pi-times" label="Cancel" severity="danger"
+                                        (onClick)="cancel()"></p-button>
                                     &nbsp;
                                     <app-validation-errors-display
                                         [validationResult]="validationResult"></app-validation-errors-display>
@@ -86,7 +90,10 @@
                 </table>
             </td>
             <td>
-                <img *ngIf="editItem.qr" height="320px" [src]="getQrCode()" />
+                <img width="180px" [src]="getQrCode()" />
+                <span>
+                    <pre style="height: 100%;width: 100%;">{{editItem.configuration}}</pre>
+                </span>
             </td>
         </tr>
     </tbody>
