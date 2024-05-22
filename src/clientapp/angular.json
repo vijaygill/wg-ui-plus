@@ -18,7 +18,10 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/wg-ui-plus",
-            "index": "src/index.html",
+            "index": {
+              "input": "src/index.html",
+              "output": "index.html"
+            },
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
