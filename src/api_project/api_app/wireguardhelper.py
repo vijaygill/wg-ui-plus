@@ -220,6 +220,7 @@ AllowedIPs = 0.0.0.0/0
                 continue
             for peer_group in target.peer_groups.all():
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
+                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
                     comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
@@ -239,6 +240,7 @@ AllowedIPs = 0.0.0.0/0
                 continue
             for peer_group in target.peer_groups.all():
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
+                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
                     comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
@@ -272,6 +274,7 @@ AllowedIPs = 0.0.0.0/0
                 continue
             for peer_group in target.peer_groups.all():
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
+                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
                     comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
@@ -310,6 +313,7 @@ AllowedIPs = 0.0.0.0/0
                 continue
             for peer_group in target.peer_groups.all():
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
+                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
                     comment = f'ACCEPT - {peer.name} => {peer_group.name} => {target.name}({target_ip_address})'
