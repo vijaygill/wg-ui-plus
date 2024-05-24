@@ -42,8 +42,8 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 
 ## Usage
 Clone this repo and simply run "./run-dev-app".
-It will build docker image image for dev so be patient.
-One it finishes, just point your browser at the host where this application is running and it listens on port 8000. For example in my case it is "http://orangepi5-plus:8000/" (I am using an OrangePi5-plus for devlopment).
+It will build docker image for dev so be patient.
+Once it finishes, just point your browser at the host where this application is running and it listens on port 8000. For example in my case it is "http://orangepi5-plus:8000/" (I am using an OrangePi5-plus for devlopment).
 The web UI is only using `HTTP`, and thus not secured; to run this securely you should use a reverse proxy to handle `HTTPS`.
 
 ## Development guide
