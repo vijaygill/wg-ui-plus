@@ -219,11 +219,12 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_group in target.peer_groups.all():
-                peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
-                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
+                if (peer_group.name != 'EveryOne') and peer_group.disabled:
+                    continue
+                peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD1 - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_ip_address} -j {chain_name} -m comment --comment "{comment}"',
@@ -239,31 +240,18 @@ AllowedIPs = 0.0.0.0/0
             if str(target_network_address) == IP_ADDRESS_INTERNET:
                 continue
             for peer_group in target.peer_groups.all():
-                peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
-                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
+                if (peer_group.name != 'EveryOne') and peer_group.disabled:
+                    continue
+                peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD2 - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
                         f'',
                     ]
                     post_up += rules
-
-        # for peer in peers:
-        #     local_networks = []
-        #     if serverConfiguration.local_networks:
-        #         local_networks = [x for x in serverConfiguration.local_networks.split(',') if x]
-        #     server_ip_address = ipaddress.ip_interface(serverConfiguration.network_address)
-        #     targets_to_block = [
-        #         str(server_ip_address.network),
-        #     ] + local_networks
-        #     comment = f'DROP - Everything else on LAN for {peer.name}'
-        #     rules = [
-        #         f'iptables --append FORWARD --source {peer.ip_address} --destination {target} -j {chain_name_local_domains} -m comment --comment "{comment} - {target}"' for target in targets_to_block
-        #         ]
-        #     post_up += rules
 
         local_networks = []
         if serverConfiguration.local_networks:
@@ -288,11 +276,12 @@ AllowedIPs = 0.0.0.0/0
             if not target.peer_groups:
                 continue
             for peer_group in target.peer_groups.all():
-                peer_group_peers = peers if peer_group.name == 'EveryOne' else peer_group.peers.all()
-                peer_group_peers = [x for x in peer_group_peers if ((x.disabled is None) or (not x.disabled)) ]
+                if (peer_group.name != 'EveryOne') and peer_group.disabled:
+                    continue
+                peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD3 - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
