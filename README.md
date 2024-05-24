@@ -1,6 +1,6 @@
 # WireGuard UI Plus
 
-A Dockerised UI to manage a WireGuard VPN Server.
+A Dockerised UI to run and manage a WireGuard VPN in the same container.
 
 ## Features
 
