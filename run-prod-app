@@ -1,0 +1,23 @@
+#!/bin/bash
+
+BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
+
+source ${BASE_DIR}/build-prod
+
+docker run -it --rm \
+    --cap-add CAP_NET_ADMIN \
+    --cap-add NET_ADMIN \
+    --cap-add SYS_MODULE \
+    --cap-add=NET_ADMIN \
+    --cap-add=SYS_MODULE \
+    --dns 192.168.0.5 \
+    --privileged \
+    --sysctl net.ipv4.conf.all.src_valid_mark=1 \
+    --sysctl net.ipv4.ip_forward=1 \
+    -p "1196:51820/udp" \
+    -p "8000:8000" \
+    -v "${BASE_DIR}/data":/data \
+    -v "${BASE_DIR}/config":/config \
+    -v /lib/modules:/lib/modules:ro \
+    -v /tmp:/tmp \
+    wg-ui-plus-prod
