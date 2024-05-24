@@ -1,0 +1,80 @@
+@import "primeng/resources/themes/viva-dark/theme.css";
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.item {
+    border-style: hidden;
+    border-color: yellow;
+}
+
+.item-header {
+    grid-area: header;
+}
+
+.item-main {
+    grid-area: main;
+}
+
+.item-sidebar {
+    grid-area: sidebar;
+}
+
+.item-footer {
+    grid-area: footer;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: min-content auto;
+    grid-template-rows: min-content auto min-content;
+    grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+}
+
+table {
+    td {
+        vertical-align: top;
+    }
+}
+
+.editor-table {
+    min-width: 50%;
+    // max-width: 70%;
+
+    td:nth-child(1) {
+        width: auto;
+        text-wrap: nowrap;
+        vertical-align: top;
+    }
+
+    td:nth-child(2) {
+        width: 100%;
+        vertical-align: top;
+
+        input {
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+        }
+    }
+
+    td.errorColumn {
+        vertical-align: top;
+        text-wrap: nowrap;
+    }
+
+}

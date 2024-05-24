@@ -1,0 +1,35 @@
+<div>
+	<p-organizationChart [value]="items">
+		<ng-template let-node pTemplate="target">
+			<div class="p-2 text-center">
+				<div class="p-2">
+					{{ node.label }}
+				</div>
+				<div>
+					<small>
+						{{ node.data.ip_address }}
+					</small>
+				</div>
+			</div>
+		</ng-template>
+		<ng-template let-node pTemplate="peerGroup">
+			<div class="p-2 text-center">
+				<div class="p-2">
+					{{ node.label }}
+				</div>
+			</div>
+		</ng-template>
+		<ng-template let-node pTemplate="peer">
+			<div class="p-2 text-center">
+				<div class="p-2">
+					{{ node.label }}
+				</div>
+				<div>
+					<small>
+						{{ node.data.ip_address }}
+					</small>
+				</div>
+			</div>
+		</ng-template>
+	</p-organizationChart>
+</div>

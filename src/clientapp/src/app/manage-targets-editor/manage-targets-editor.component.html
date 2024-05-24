@@ -1,0 +1,88 @@
+<table class="editor-table">
+    <tbody>
+        <tr>
+            <td>
+                <label for="targetName">Name</label>
+            </td>
+            <td><input pInputText id="targetName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self"
+                    pTooltip="Network or a host allowed to be accessed via VPN." tooltipPosition="top" pAutoFocus
+                    [autofocus]="true" />
+                <app-validation-errors-display field="name" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDescription">Description</label>
+            </td>
+            <td>
+                <input pInputText id="targetDescription" [(ngModel)]="editItem.description"
+                    [disabled]="!editItem.allow_modify_self" pTooltip="Suitable description." tooltipPosition="top" />
+                <app-validation-errors-display field="description" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetIPAddress">IP Address/Network</label>
+            <td>
+                <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address"
+                    [disabled]="!editItem.allow_modify_self"
+                    pTooltip="IP Address (xxx.xxx.xxx.xxx) / Network (xxx.xxx.xxx.xxx/N) you wish to allow access to via the VPN."
+                    tooltipPosition="top" />
+                <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="targetDisabled">Disabled</label>
+            </td>
+            <td>
+                <p-checkbox id="targetDisabled" [binary]="true" [(ngModel)]="editItem.disabled"
+                    [disabled]="!editItem.allow_modify_self" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <span *ngIf="!editItem.allow_modify_self">In-built Targets are read-only.</span>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="target">Peer-Groups</label></td>
+            <td>
+                <p-pickList id="target" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
+                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+                    (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
+                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+                    breakpoint="1400px" [disabled]="!editItem.allow_modify_peer_groups"
+                    pTooltip="Selected Peer-Groups will have access to this Target." tooltipPosition="top">
+                    <ng-template let-targetGroupLink pTemplate="item">
+                        <div class="flex flex-wrap p-2 align-items-center gap-3">
+                            <div class="flex-1 flex flex-column gap-2">
+                                <span class="font-bold">{{ targetGroupLink.name }}</span>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-tag text-sm"></i>
+                                    <small>
+                                        {{ targetGroupLink.description }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-pickList>
+                <app-validation-errors-display field="peer_groups"
+                    [validationResult]="validationResult"></app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                    &nbsp;
+                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

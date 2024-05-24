@@ -11,17 +11,19 @@ docker run -it --rm \
     --cap-add=NET_ADMIN \
     --cap-add=SYS_MODULE \
     --dns 192.168.0.5 \
-    --name wg-ui-dev-sh \
     --privileged \
     --sysctl net.ipv4.conf.all.src_valid_mark=1 \
     --sysctl net.ipv4.ip_forward=1 \
     -p "1196:51820/udp" \
     -p "13080:80" \
+    -p "8000:8000" \
     -v "${BASE_DIR}":/wg-ui-plus \
-    -v "${BASE_DIR}/app":/app \
+    -v "${BASE_DIR}/src":/app \
+    -v "${BASE_DIR}/src/clientapp/dist/wg-ui-plus/browser":/clientapp \
+    -v "${BASE_DIR}/data":/data \
+    -v "${BASE_DIR}/config":/config \
     -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
     -v /lib/modules:/lib/modules:ro \
     -v /tmp:/tmp \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    --name wg-ui-dev-app \
     wg-ui-plus-dev /wg-ui-plus/scripts/run-app.sh
