@@ -208,6 +208,7 @@ export interface ServerConfiguration {
     host_name_external: string;
     port_internal: number;
     port_external: number;
+    local_networks: string;
     wireguard_config_path: string;
     script_path_post_down: string;
     script_path_post_up: string;

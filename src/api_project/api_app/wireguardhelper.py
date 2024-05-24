@@ -251,17 +251,32 @@ AllowedIPs = 0.0.0.0/0
                     ]
                     post_up += rules
 
-        for peer in peers:
-            local_domains = ['192.168.0.0/24']
-            server_ip_address = ipaddress.ip_interface(serverConfiguration.network_address)
-            targets_to_block = [
-                str(server_ip_address.network),
-            ] + local_domains
-            comment = f'DROP - Everything else on LAN for {peer.name}'
-            rules = [
-                f'iptables --append FORWARD --source {peer.ip_address} --destination {target} -j {chain_name_local_domains} -m comment --comment "{comment} - {target}"' for target in targets_to_block
-                ]
-            post_up += rules
+        # for peer in peers:
+        #     local_networks = []
+        #     if serverConfiguration.local_networks:
+        #         local_networks = [x for x in serverConfiguration.local_networks.split(',') if x]
+        #     server_ip_address = ipaddress.ip_interface(serverConfiguration.network_address)
+        #     targets_to_block = [
+        #         str(server_ip_address.network),
+        #     ] + local_networks
+        #     comment = f'DROP - Everything else on LAN for {peer.name}'
+        #     rules = [
+        #         f'iptables --append FORWARD --source {peer.ip_address} --destination {target} -j {chain_name_local_domains} -m comment --comment "{comment} - {target}"' for target in targets_to_block
+        #         ]
+        #     post_up += rules
+
+        local_networks = []
+        if serverConfiguration.local_networks:
+            local_networks = [x for x in serverConfiguration.local_networks.split(',') if x]
+        server_ip_address = ipaddress.ip_interface(serverConfiguration.network_address)
+        targets_to_block = [
+            str(server_ip_address.network),
+        ] + local_networks
+        rules = [
+            f'iptables --append FORWARD --destination {target} -j {chain_name_local_domains} -m comment --comment "DROP - Everything going to - {target}"' for target in targets_to_block
+            ]
+        post_up += rules
+
 
         # per target FORWARD - network - Internet only
         for target in targets:
