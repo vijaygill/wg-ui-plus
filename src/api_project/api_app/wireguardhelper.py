@@ -224,7 +224,7 @@ AllowedIPs = 0.0.0.0/0
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD1 - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_ip_address} -j {chain_name} -m comment --comment "{comment}"',
@@ -245,7 +245,7 @@ AllowedIPs = 0.0.0.0/0
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD2 - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
@@ -281,7 +281,7 @@ AllowedIPs = 0.0.0.0/0
                 peer_group_peers = peers if peer_group.name == 'EveryOne' else [x for x in peer_group.peers.all() if ((x.disabled is None) or (not x.disabled)) ]
                 for peer in peer_group_peers:
                     chain_name = self.get_chain_name(target)
-                    comment = f'FWD3 - {peer.name} => {peer_group.name} => {target.name}'
+                    comment = f'FWD - {peer.name} => {peer_group.name} => {target.name}'
                     rules = [
                         f'# {comment}',
                         f'iptables --append FORWARD --source {peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
