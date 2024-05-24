@@ -19,4 +19,5 @@ docker run -it --rm \
     -v "${BASE_DIR}/config":/config \
     -v /lib/modules:/lib/modules:ro \
     -v /tmp:/tmp \
+    --name wg-ui-plus-prod \
     wg-ui-plus-prod
