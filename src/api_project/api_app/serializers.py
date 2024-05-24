@@ -18,16 +18,16 @@ class PeerSerializer(serializers.ModelSerializer):
     
     def get_target_names(self, instance):
         res = []
-        for peer_group in instance.peer_groups.all():
+        for peer_group in [x for x in instance.peer_groups.all() if not x.disabled]:
             for target in peer_group.targets.all():
-                res += [ target ]
+                res += [ (target, peer_group) ]
 
         peer_group_everyone = PeerGroup.objects.filter(name = PEER_GROUP_EVERYONE_NAME )[0]
         if peer_group_everyone:
             for target in peer_group_everyone.targets.all():
-                res += [ target ]
+                res += [ (target, peer_group_everyone) ]
 
-        res = [f'{x.name}' for x in res]
+        res = [f'{x[0].name} ({x[1].name})' for x in res]
         res = list(set(res))
         res.sort()
         res = ', '.join(res)
