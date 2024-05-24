@@ -111,15 +111,17 @@ export class WebapiService {
                         type: 'target',
                         expanded: true,
                         data: {
+                            disabled: target.disabled,
                             details: target.description,
                             ip_address: target.ip_address,
-        },
+                        },
                         children: target.peer_groups.map(peer_group => {
                             return {
                                 label: peer_group.name,
                                 expanded: true,
                                 type: 'peerGroup',
                                 data: {
+                                    disabled: peer_group.disabled,
                                     details: peer_group.description,
                                 },
                                 children: peer_group.peers.map(peer => {
@@ -128,6 +130,7 @@ export class WebapiService {
                                         expanded: true,
                                         type: 'peer',
                                         data: {
+                                            disabled: peer.disabled,
                                             details: peer.description,
                                             ip_address: peer.ip_address,
                                         },
@@ -208,6 +211,7 @@ export interface ServerConfiguration {
     host_name_external: string;
     port_internal: number;
     port_external: number;
+    local_networks: string;
     wireguard_config_path: string;
     script_path_post_down: string;
     script_path_post_up: string;

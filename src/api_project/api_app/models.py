@@ -17,13 +17,27 @@ def is_network_address(value, throw_exception = True):
       res = int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
     except:
        res = False
-    if throw_exception:
-      if not res:
-        raise ValidationError(
-              f'{value} is not a valid network address. Example 192.168.2.0/24.',
-              params={"value": value},
+    if (not res) and throw_exception:
+      raise ValidationError(
+            f'{value} is not a valid network address. Example 192.168.2.0/24.',
+            params={"value": value},
+        )
+    return res
+
+def are_network_addresses(value, throw_exception = True):
+    res = False
+    if value:
+        parts = [x for x in value.split(',') if x]
+        parts_result = [ ( x, is_network_address(x, throw_exception=False) ) for x in parts ]
+        bad_values = [ x[0] for x in parts_result if not x[1]]
+        error_message = 'Invalid value: ' + ', '.join(bad_values)
+        res = not bad_values
+        if (not res ) and throw_exception:
+            raise ValidationError(
+              f'{error_message}',
+              params={"value": bad_values},
           )
-    return res;
+    return res
 
 def is_single_address(value, throw_exception = True):
     ip = None
@@ -114,10 +128,11 @@ class Target(models.Model):
 
 class ServerConfiguration(models.Model):
   network_address= models.CharField(max_length = 255, validators=[is_network_address])
-  host_name_external= models.CharField(max_length = 255)
-  port_external= models.IntegerField()
-  port_internal= models.IntegerField()
+  host_name_external= models.CharField(max_length = 255, null = False, blank= False)
+  port_external= models.IntegerField(null = False)
+  port_internal= models.IntegerField(null = False)
   upstream_dns_ip_address = models.CharField(max_length = 255, null = False, blank= False, validators=[is_single_address])
+  local_networks = models.CharField(max_length = 512, null = True, blank = True, validators=[are_network_addresses])
   wireguard_config_path= models.CharField(max_length = 255)
   script_path_post_down= models.CharField(max_length = 255)
   script_path_post_up= models.CharField(max_length = 255)

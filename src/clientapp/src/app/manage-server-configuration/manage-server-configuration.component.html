@@ -40,6 +40,14 @@
             </td>
         </tr>
         <tr>
+            <td><label for="localNetworks">Local Networks</label></td>
+            <td><input pInputText id="localNetworks" [(ngModel)]="editItem.local_networks"
+                    pTooltip="Comma separated list of local networks that you want to keep safe from clients." tooltipPosition="top" />
+                <app-validation-errors-display field="local_networks" [validationResult]="validationResult">
+                </app-validation-errors-display>
+            </td>
+        </tr>
+        <tr>
             <td><label for="upstreamDnsServer">Upstream DNS Server</label></td>
             <td><input pInputText id="upstreamDnsServer" [(ngModel)]="editItem.upstream_dns_ip_address"
                     pTooltip="Upstream DNS server for the peers." tooltipPosition="top" />
