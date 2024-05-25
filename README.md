@@ -1,6 +1,6 @@
 # WireGuard UI Plus
 
-A Dockerised UI to manage a WireGuard VPN Server.
+A Dockerised UI to run and manage a WireGuard VPN in the same container.
 
 ## Features
 
@@ -36,9 +36,13 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 * Server Configuration page where you can generate configuration files for WireGuard and IPTables.
   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/567215b8-53a8-4fc6-aadb-cacab239de37)
 
-* And finally, the Peer page where you can see the QR code to add tunnel on your client device.
+* The Peer page where you can see the QR code to add tunnel on your client device.
   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/6ca7a44f-841e-42f7-acda-9d0bbae82fe7)
 
+* And finally, the IPTables rules showing that My mobile is allowed to access LAN and nothing else.
+  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/c0f91f13-9ae1-404b-9dd2-3fc3aa2b0069)
+
+Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled the target "Internet" for "Everyone", hence my mobile phone can access the internet also via the VPN. This could be stopped by removing the Target from EveryOne peer-group in Peer-Group edit page.
 
 ## Usage
 Clone this repo and simply run "./run-dev-app".
