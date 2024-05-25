@@ -1,0 +1,12 @@
+#!/bin/bash
+
+ARG_UNAME=$(whoami)
+ARG_UID=$(id -u)
+ARG_GID=$(id -g)
+ARG_GID_DOCKER=$(getent group docker | cut -d ":" -f3)
+
+CONTAINER_DEV_APP="wg-ui-dev-app"
+
+docker build --target=dev --build-arg UNAME="${ARG_UNAME}" --build-arg UID="${ARG_UID}" --build-arg GID="${ARG_GID}" --build-arg ARG_GID_DOCKER="${ARG_GID_DOCKER}" -t wg-ui-plus-dev -f Dockerfile .
+
+docker build --build-arg UNAME="${ARG_UNAME}" --build-arg UID="${ARG_UID}" --build-arg GID="${ARG_GID}" --build-arg ARG_GID_DOCKER="${ARG_GID_DOCKER}" -t wg-ui-plus-live -f Dockerfile .
