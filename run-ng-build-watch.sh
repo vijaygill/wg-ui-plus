@@ -14,3 +14,4 @@ docker run -it --rm \
   -v /tmp:/tmp \
   --name wg-ui-dev-ng \
   wg-ui-plus-dev /wg-ui-plus/scripts/ng-build.sh
+
