@@ -28,7 +28,7 @@ RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoe
 
 FROM base-dev as builder
 
-RUN git clone https://github.com/vijaygill/wg-ui-plus.git /wg-ui-plus && chown -R $UNAME:$UNAME /wg-ui-plus
+RUN git clone https://github.com/vijaygill/wg-ui-plus.git /wg-ui-plus && cd /wg-ui-plus && git checkout feature/docker-improvements && chown -R $UNAME:$UNAME /wg-ui-plus
 
 RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --prerender=false --deploy-url="/static/" --base-href="/static/"
 
@@ -39,7 +39,7 @@ VOLUME /app /data /config
 USER $UNAME
 WORKDIR /wg-ui-plus/src
 
-FROM python:alpine3.20
+FROM python:alpine3.20 as base-live
 ARG UNAME
 ARG UID
 ARG GID
@@ -52,18 +52,23 @@ RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev \
     &&  apk del gcc libressl-dev musl-dev libffi-dev
 
 RUN adduser -D $UNAME
-
 RUN echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers
-
 RUN mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /config
+VOLUME /data /config
 
+FROM base-live as live
 COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clientapp
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
-
-VOLUME /data /config
-
 USER $UNAME
+WORKDIR /app
+ENTRYPOINT [ "/app/scripts/run-app.sh" ]
 
+FROM base-live as live-local
+COPY src/clientapp/dist/wg-ui-plus/browser /app/clientapp
+COPY src/api_project /app/api_project
+COPY scripts/run-app.sh /app/scripts
+USER $UNAME
+WORKDIR /app
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]
 
