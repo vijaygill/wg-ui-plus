@@ -207,10 +207,32 @@ AllowedIPs = 0.0.0.0/0
                 'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"',
             ]
 
-        # per target FORWARD - all non-internet
+        # per target FORWARD - all non-internet - hosts first
         for target in [x for x in targets if not x.disabled]:
             target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
             target_address = target_network_address if target_is_network_address else target_ip_address
+            if target_is_network_address:
+                continue
+            if str(target_address) == IP_ADDRESS_INTERNET:
+                continue
+            allow = any( (not x.disabled) for x in target.peer_groups.all() if any( (not p.disabled ) for p in x.peers.all() ) )
+            if not allow:
+                continue
+            chain_name = self.get_chain_name(target)
+            comment = f'Forward traffic for {target.name} ({target_ip_address}) '
+            rules = [
+                f'# {comment}',
+                f'iptables --append FORWARD --source {serverConfiguration.network_address} --destination {target_address} -j {chain_name} -m comment --comment "{comment}"',
+                '',
+            ]
+            post_up += rules
+
+        # per target FORWARD - all non-internet - then networks
+        for target in [x for x in targets if not x.disabled]:
+            target_is_network_address, target_ip_address, target_network_address = is_network_address(target.ip_address)
+            target_address = target_network_address if target_is_network_address else target_ip_address
+            if not target_is_network_address:
+                continue
             if str(target_address) == IP_ADDRESS_INTERNET:
                 continue
             allow = any( (not x.disabled) for x in target.peer_groups.all() if any( (not p.disabled ) for p in x.peers.all() ) )
