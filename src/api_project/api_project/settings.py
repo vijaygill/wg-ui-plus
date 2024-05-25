@@ -143,7 +143,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler"
 }
 
-STATIC_ROOT='/clientapp'
+STATIC_ROOT='/app/clientapp'
 
 LOGGING = {
     "version": 1,
