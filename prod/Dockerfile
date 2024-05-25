@@ -1,25 +1,23 @@
-FROM debian:latest
+FROM python:alpine3.20
 
 ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
 ARG ARG_GID_DOCKER=999
 
-RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
+RUN addgroup --gid $GID $UNAME && adduser --uid $UID -G $UNAME -D --shell /bin/bash $UNAME
 
-RUN groupadd -g $ARG_GID_DOCKER -o docker && usermod -aG docker $UNAME
+RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools
+RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors
 
-RUN apt-get update -y \
-	&& apt-get upgrade -y \
-	&& apt-get install -y \
-		python3 python3-pip python-is-python3 python3-cryptography \
-		wireguard wireguard-tools \
-		net-tools iproute2 iptables openresolv \
-		wireguard wireguard-tools libcap2-bin libcap2 iptraf-ng procps tcpdump sudo conntrack \
-	&& pip install --break-system-packages --upgrade qrcode colorlog \
-		Django djangorestframework django-cors-headers django-spa drf-standardized-errors \
-	&& usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers \
-	&& mkdir -p /app /clientapp /data /config && chown $UID:$GID /app /clientapp /data /config
+RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev \
+    &&  pip install --no-cache-dir cryptography \
+    &&  apk del gcc libressl-dev musl-dev libffi-dev
+
+RUN echo '%wheel ALL=(ALL) ALL' > /etc/sudoers.d/wheel
+RUN adduser $UNAME wheel
+
+RUN mkdir -p /app /clientapp /data /config && chown $UID:$GID /app /clientapp /data /config
 
 VOLUME /app /clientapp /data /config
 
