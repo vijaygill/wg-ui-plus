@@ -7,7 +7,7 @@ on:
     branches: [ "develop" ]
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ${{ github.repository }}
+  REGISTRY_IMAGE: vijaygill/wg-ui-plus
 
 jobs:
   build:
