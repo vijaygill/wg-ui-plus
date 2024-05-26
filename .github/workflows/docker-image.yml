@@ -7,8 +7,7 @@ on:
     branches: [ "develop" ]
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  REGISTRY_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+  REGISTRY_IMAGE: ${{ github.repository }}
 
 jobs:
   build:
