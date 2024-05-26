@@ -23,32 +23,39 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   - [x] Add/Remove Peer-Groups from Peer's list, thus affecting the access to the target linked with the Peer-Group
 - [ ] Live Dashboard
 
-## Screenshots ##
-* Home page showing some Peers-Groups and Peers disabled.
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/8f938e8c-a8a0-4def-acc8-868d9f4e50b6)
+## Usage
+You can set up your own VPN in a few minutes by following the following steps:
+1. Gather the following information
+   * IP address assigned to you router (refered to as External IP address in this document )
+   * IP address of the machine / raspberry pi / any other SBC you are going to use to run the VPN (refered to as Internal IP address in this document ).
+2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
+3. Now start the WG-UI-Plus using one of the following two options
+    Option 1:
+     * Run the following command
+       ```
+       docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --cap-add=NET_ADMIN --cap-add=SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+       ```
+    Option 2:
+     * Clone this repo and simply execute the following command
+       ```
+       "./run-app-live-from-ghcr.sh"
+       ```
+4. Point your browser to the address "htttp://internel_ip_address:8000".
+5. In the server configuration page
+   * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
+   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/d224d5f1-ec8a-4a08-9c9e-783a56fb273b)
+   * Change the upstream DNS server to suitable value. I have pihole on 192.168.0.5 in my setup. you can use 8.8.8.8 also.
+   * Click on "Generate Wireguard Configuration Files" and "Restart WireGuard".
+6. In Peers management page, add a new Peer
+   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/47ade299-eae5-432b-8ecf-ac7a2d9cb168)
+   * Save the Peer.
+   * Reopen the page for the peer leave it open to scan QR code in next step
+7. Install WirGuard app on your mobile phone and add tunnel by scannign the QR code.
+8. You should be able to access internet on your mobile phone via the VPN.
 
-* Peer-Groups list page
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/ed583785-3b09-401b-b5eb-84945a625b76)
-
-* Peer-Group "LAN Users" allows only my mobile phone to access LAN (192.168.0.0/24)
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/b3ac96de-dac5-445d-8d72-5f0960ba7442)
-
-* Server Configuration page where you can generate configuration files for WireGuard and IPTables.
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/567215b8-53a8-4fc6-aadb-cacab239de37)
-
-* The Peer page where you can see the QR code to add tunnel on your client device.
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/6ca7a44f-841e-42f7-acda-9d0bbae82fe7)
-
-* And finally, the IPTables rules showing that My mobile is allowed to access LAN and nothing else.
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/c0f91f13-9ae1-404b-9dd2-3fc3aa2b0069)
+Now you can start adding more targets and peer-groups and peers to configure the VPN in any way you need.
 
 Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled the target "Internet" for "Everyone", hence my mobile phone can access the internet also via the VPN. This could be stopped by removing the Target from EveryOne peer-group in Peer-Group edit page.
-
-## Usage
-Clone this repo and simply run "./run-dev-app".
-It will build docker image for dev so be patient.
-Once it finishes, just point your browser at the host where this application is running and it listens on port 8000. For example in my case it is "http://orangepi5-plus:8000/" (I am using an OrangePi5-plus for devlopment).
-The web UI is only using `HTTP`, and thus not secured; to run this securely you should use a reverse proxy to handle `HTTPS`.
 
 ## Development guide
 
