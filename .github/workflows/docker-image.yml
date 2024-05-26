@@ -27,6 +27,12 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v4
+    
+    - name: Docker meta data
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY_IMAGE }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -41,20 +47,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY_IMAGE }}
-
     - name: Build and push Docker image
-      id: push
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
         platforms: ${{ matrix.platform }}
+        labels: ${{ steps.meta.outputs.labels }}
         outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
     - name: Export digest
