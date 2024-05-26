@@ -12,7 +12,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
