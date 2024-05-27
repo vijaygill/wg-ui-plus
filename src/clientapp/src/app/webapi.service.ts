@@ -40,6 +40,11 @@ export class WebapiService {
         return res;
     }
 
+    deletePeerGroup(item: PeerGroup): Observable<PeerGroup> {
+        var res = this.http.delete<PeerGroup>(this.urlPeerGroup + item.id + '/');
+        return res;
+    }
+
     getPeerList(): Observable<Peer[]> {
         return this.http.get<Peer[]>(this.urlPeer);
     }
@@ -58,6 +63,11 @@ export class WebapiService {
         return res;
     }
 
+    deletePeer(item: Peer): Observable<Peer> {
+        var res = this.http.delete<Peer>(this.urlPeer + item.id + '/');
+        return res;
+    }
+
     getTargetList(): Observable<Target[]> {
         return this.http.get<Target[]>(this.urlTarget);
     }
@@ -73,6 +83,11 @@ export class WebapiService {
         var res = item.id
             ? this.http.put<Target>(this.urlTarget + item.id + '/', item)
             : this.http.post<Target>(this.urlTarget, item);
+        return res;
+    }
+
+    deleteTarget(item: Target): Observable<Target> {
+        var res = this.http.delete<Target>(this.urlTarget + item.id + '/');
         return res;
     }
 

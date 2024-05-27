@@ -165,7 +165,11 @@ LOGGING = {
         "django.server": {
             "handlers": ["console", ],
             "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
-        }
+        },
+        "django.db.backends": {
+            "handlers": ["console", ],
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
+        },
     },
     "formatters": {
         "verbose": {

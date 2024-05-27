@@ -89,7 +89,7 @@ class Peer(models.Model):
   public_key = models.CharField(max_length = 255, null = True, blank=True)
   private_key = models.CharField(max_length = 255, null = True, blank=True)
   last_changed_datetime = models.DateTimeField(auto_now = True, )
-  peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.peers.through, )
+  peer_groups = models.ManyToManyField('PeerGroup', blank=True)
 
   def __str__(self):
      return f"{self.name} - {self.description}"
@@ -111,7 +111,7 @@ class Peer(models.Model):
           ip_address_pool = [x for x in ip_address_pool if x not in ip_addresses_to_exclude]
       self.ip_address = ip_address_pool[1]
     super().save(force_insert, force_update)
-
+  
 class Target(models.Model):
   name = models.CharField(max_length = 255)
   description = models.CharField(max_length = 255, null = True, blank=True)
@@ -121,7 +121,7 @@ class Target(models.Model):
   allow_modify_self = models.BooleanField(null = True, default = True)
   allow_modify_peer_groups = models.BooleanField(null = True, default = True)
   last_changed_datetime = models.DateTimeField(auto_now = True, )
-  peer_groups = models.ManyToManyField('PeerGroup', blank=True, through=PeerGroup.targets.through, )
+  peer_groups = models.ManyToManyField('PeerGroup', blank=True )
 
   def __str__(self):
      return f"{self.name} - {self.description}"
