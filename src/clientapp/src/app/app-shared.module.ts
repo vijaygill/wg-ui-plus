@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
-//import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
 //import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
@@ -63,6 +63,7 @@ import { AutoFocusModule } from 'primeng/autofocus';
 let modules = [
     AutoFocusModule ,
     ButtonModule, CardModule, CheckboxModule,
+    ConfirmDialogModule,
     DataViewModule, DialogModule, DividerModule,
     DragDropModule,
     DropdownModule,

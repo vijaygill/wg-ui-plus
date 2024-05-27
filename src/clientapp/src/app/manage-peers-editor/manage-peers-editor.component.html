@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+<p-confirmDialog />
 <table style="width: 100%;">
     <colgroup>
         <col style="width:100%;" />
@@ -87,7 +89,7 @@
                                     </span>
                                     <span *ngIf="editItem.id">
                                         <p-button icon="pi pi-times" label="Delete" severity="danger"
-                                            (onClick)="delete()"></p-button>
+                                            (onClick)="delete($event)"></p-button>
                                         &nbsp;
                                     </span>
                                     <app-validation-errors-display
