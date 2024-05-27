@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PeerGroup, ServerValidationError, Target, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
@@ -11,7 +11,7 @@ import { ValidationErrorsDisplayComponent } from '../validation-errors-display/v
   selector: 'app-manage-peer-groups-editor',
   standalone: true,
   imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './manage-peer-groups-editor.component.html',
   styleUrl: './manage-peer-groups-editor.component.scss'
 })
@@ -37,7 +37,9 @@ export class ManagePeerGroupsEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+  constructor(private messageService: MessageService,
+    private confirmationService: ConfirmationService,
+    private webapiService: WebapiService) { }
 
   getLookupData() {
     if (this.peerGroup) {
@@ -73,26 +75,40 @@ export class ManagePeerGroupsEditorComponent {
       });
   }
 
-  delete() {
+  delete(event: Event) {
     if (!this.peerGroup) {
       return;
     }
-    this.webapiService.deletePeerGroup(this.peerGroup)
-      .subscribe({
-        next: data => {
-        },
-        error: error => {
-          let response = error as HttpErrorResponse;
-          if (response) {
-            this.validationResult = response.error as ServerValidationError;
-          }
-        },
-        complete: () => {
-          this.onFinish.emit(true);
-        },
-      });
-  }
 
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure that you want to proceed?',
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptIcon: "none",
+      rejectIcon: "none",
+      rejectButtonStyleClass: "p-button-text",
+      accept: () => {
+        this.webapiService.deletePeerGroup(this.peerGroup)
+          .subscribe({
+            next: data => {
+            },
+            error: error => {
+              let response = error as HttpErrorResponse;
+              if (response) {
+                this.validationResult = response.error as ServerValidationError;
+              }
+            },
+            complete: () => {
+              this.onFinish.emit(true);
+            },
+          });
+      },
+      reject: () => {
+      }
+    });
+
+  }
 
   cancel() {
     this.onFinish.emit(false);

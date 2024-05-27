@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, WebapiService } from '../webapi.service';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   selector: 'app-manage-peers-editor',
   standalone: true,
   imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './manage-peers-editor.component.html',
   styleUrl: './manage-peers-editor.component.scss'
 })
@@ -38,8 +39,9 @@ export class ManagePeersEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService
-  ) {
+  constructor(private messageService: MessageService,
+    private confirmationService: ConfirmationService,
+    private webapiService: WebapiService) {
 
   }
 
@@ -83,24 +85,38 @@ export class ManagePeersEditorComponent {
     this.onFinish.emit(false);
   }
 
-  delete(){
+  delete(event: Event) {
     if (!this.peer) {
       return;
     }
-    this.webapiService.deletePeer(this.peer)
-      .subscribe({
-        next: data => {
-        },
-        error: error => {
-          let response = error as HttpErrorResponse;
-          if (response) {
-            this.validationResult = response.error as ServerValidationError;
-          }
-        },
-        complete: () => {
-          this.onFinish.emit(true);
-        },
-      });
+
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure that you want to proceed?',
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptIcon: "none",
+      rejectIcon: "none",
+      rejectButtonStyleClass: "p-button-text",
+      accept: () => {
+        this.webapiService.deletePeer(this.peer)
+          .subscribe({
+            next: data => {
+            },
+            error: error => {
+              let response = error as HttpErrorResponse;
+              if (response) {
+                this.validationResult = response.error as ServerValidationError;
+              }
+            },
+            complete: () => {
+              this.onFinish.emit(true);
+            },
+          });
+      },
+      reject: () => {
+      }
+    });
   }
 
   peerGroupsPickListTrackBy(index: number, item: any) {

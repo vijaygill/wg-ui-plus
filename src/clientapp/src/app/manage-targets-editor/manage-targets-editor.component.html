@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+<p-confirmDialog />
 <table class="editor-table">
     <tbody>
         <tr>
@@ -84,8 +86,8 @@
                         <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
                         &nbsp;
                     </span>
-                    <span *ngIf="editItem.id">
-                        <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete()"></p-button>
+                    <span *ngIf="editItem.id && editItem.allow_modify_self">
+                        <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete($event)"></p-button>
                         &nbsp;
                     </span>
                     <app-validation-errors-display
