@@ -73,6 +73,27 @@ export class ManagePeerGroupsEditorComponent {
       });
   }
 
+  delete() {
+    if (!this.peerGroup) {
+      return;
+    }
+    this.webapiService.deletePeerGroup(this.peerGroup)
+      .subscribe({
+        next: data => {
+        },
+        error: error => {
+          let response = error as HttpErrorResponse;
+          if (response) {
+            this.validationResult = response.error as ServerValidationError;
+          }
+        },
+        complete: () => {
+          this.onFinish.emit(true);
+        },
+      });
+  }
+
+
   cancel() {
     this.onFinish.emit(false);
   }

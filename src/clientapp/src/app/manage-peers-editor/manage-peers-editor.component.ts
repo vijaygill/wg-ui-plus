@@ -83,6 +83,26 @@ export class ManagePeersEditorComponent {
     this.onFinish.emit(false);
   }
 
+  delete(){
+    if (!this.peer) {
+      return;
+    }
+    this.webapiService.deletePeer(this.peer)
+      .subscribe({
+        next: data => {
+        },
+        error: error => {
+          let response = error as HttpErrorResponse;
+          if (response) {
+            this.validationResult = response.error as ServerValidationError;
+          }
+        },
+        complete: () => {
+          this.onFinish.emit(true);
+        },
+      });
+  }
+
   peerGroupsPickListTrackBy(index: number, item: any) {
     let x = item as PeerGroup;
     return x.id;

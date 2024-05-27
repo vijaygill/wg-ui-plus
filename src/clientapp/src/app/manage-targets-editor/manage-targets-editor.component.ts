@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PeerGroup, Target, WebapiService } from '../webapi.service';
+import { PeerGroup, ServerValidationError, Target, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -56,6 +56,26 @@ export class ManageTargetsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error;
+          }
+        },
+        complete: () => {
+          this.onFinish.emit(true);
+        },
+      });
+  }
+
+  delete(){
+    if (!this.target) {
+      return;
+    }
+    this.webapiService.deleteTarget(this.target)
+      .subscribe({
+        next: data => {
+        },
+        error: error => {
+          let response = error as HttpErrorResponse;
+          if (response) {
+            this.validationResult = response.error as ServerValidationError;
           }
         },
         complete: () => {

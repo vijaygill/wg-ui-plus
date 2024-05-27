@@ -91,10 +91,18 @@
         <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
-                    <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                    &nbsp;
-                    <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-                    &nbsp;
+                    <span>
+                        <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                        &nbsp;
+                    </span>
+                    <span>
+                        <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                        &nbsp;
+                    </span>
+                    <span *ngIf="editItem.id">
+                        <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete()"></p-button>
+                        &nbsp;
+                    </span>
                     <app-validation-errors-display
                         [validationResult]="validationResult"></app-validation-errors-display>
                 </div>
