@@ -24,13 +24,14 @@ def populate_dictionary_data(apps, schema_editor):
     peer_group.save()
 
     Target = apps.get_model('api_app', 'Target')
+    peer_group_everyone = PeerGroup.objects.get(name = PEER_GROUP_EVERYONE_NAME)
     target = Target(name = 'Internet', description = 'Internet - We all need it.',
                     ip_address = IP_ADDRESS_INTERNET,
                     allow_modify_self = False,
                     allow_modify_peer_groups = True,)
     target.save()
-    peer_group_everyone = PeerGroup.objects.get(name = PEER_GROUP_EVERYONE_NAME)
     target.peer_groups.add(peer_group_everyone)
+    peer_group_everyone.targets.add(target)
     target.save()
 
     ServerConfiguration = apps.get_model('api_app', 'ServerConfiguration')
@@ -47,6 +48,7 @@ def populate_dictionary_data(apps, schema_editor):
                     public_key = public_key, private_key = private_key)
     serverConfiguration.save()
 
+    peer_group_everyone = PeerGroup.objects.get(name = PEER_GROUP_EVERYONE_NAME)
     serverConfiguration = ServerConfiguration.objects.all()[0]
     Peer = apps.get_model('api_app', 'Peer')
     for peer_name, description in SAMPLE_PEERS:
@@ -61,5 +63,7 @@ def populate_dictionary_data(apps, schema_editor):
         peer = Peer(name = peer_name, description = description,
                     public_key = public_key, private_key = private_key,
                     ip_address = ip_address)
+        peer.save()
+        peer.peer_groups.add(peer_group_everyone)
         peer.save()
 
