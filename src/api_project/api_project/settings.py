@@ -160,11 +160,11 @@ LOGGING = {
     "loggers": {
         "": {
             "handlers": ["console", ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
         },
         "django.server": {
             "handlers": ["console", ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "DEBUG"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
         }
     },
     "formatters": {

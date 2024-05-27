@@ -2,26 +2,16 @@
 
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
-source ${BASE_DIR}/build-docker-images.sh
+source ${BASE_DIR}/set-script-vars.sh
+source ${BASE_DIR}/build-docker-images.sh dev-only
 
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}\":/wg-ui-plus "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}/src/api_project/\":/app/api_project "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}/src/clientapp/dist/wg-ui-plus/browser\":/app/clientapp "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}/scripts\":/app/scripts "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.gitconfig\":/home/pi/.gitconfig:ro "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} wg-ui-plus-dev bash "
 
-docker run -it --rm \
-    --cap-add CAP_NET_ADMIN \
-    --cap-add NET_ADMIN \
-    --cap-add SYS_MODULE \
-    --cap-add=NET_ADMIN \
-    --cap-add=SYS_MODULE \
-    --privileged \
-    --sysctl net.ipv4.conf.all.src_valid_mark=1 \
-    --sysctl net.ipv4.ip_forward=1 \
-    -v "${BASE_DIR}":/wg-ui-plus \
-    -v "${BASE_DIR}/src":/app \
-    -v "${BASE_DIR}/src/clientapp/dist/wg-ui-plus/browser":/clientapp \
-    -v "${BASE_DIR}/data":/data \
-    -v "${BASE_DIR}/config":/config \
-    -v "${HOME}/.gitconfig":/home/pi/.gitconfig:ro \
-    -v "${BASE_DIR}/temp/vscode":/home/pi/.vscode-oss \
-    -v /lib/modules:/lib/modules:ro \
-    -v /tmp:/tmp \
-    wg-ui-plus-dev bash
+eval ${DOCKER_RUN_CMD}
+
 

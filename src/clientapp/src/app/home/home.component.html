@@ -1,38 +1,85 @@
-<div>
-	<p-organizationChart [value]="items">
-		<ng-template let-node pTemplate="target">
-			<div class="p-2 text-center">
-				<div class="p-2">
-					<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
-					{{ node.label }}
+<p-tabView>
+	<p-tabPanel header="Dashboard">
+		<p-table [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
+			<ng-template pTemplate="caption">
+				<div class="flex align-items-center justify-content-between">
+					Connected Peers (Last update time: {{connectedPeerData.datetime}})
 				</div>
-				<div>
-					<small>
-						{{ node.data.ip_address }}
-					</small>
+			</ng-template>
+			<ng-template pTemplate="header">
+				<tr>
+					<th>Name</th>
+					<th>Status</th>
+					<th>End-point IP</th>
+					<th>Allowed IP's</th>
+					<th>Last Handshake</th>
+					<th>Data Rx</th>
+					<th>Data Tx</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-connectedPeer>
+				<tr>
+					<td>{{ connectedPeer.peer_name }}</td>
+					<td><span *ngIf="connectedPeer.is_connected">
+							Connected
+						</span>
+					</td>
+					<td>{{ connectedPeer.end_point_ip }}</td>
+					<td>{{ connectedPeer.allowed_ips_ip }}</td>
+					<td>
+						<span *ngIf="connectedPeer.is_connected">
+							{{ connectedPeer.latest_handshake }}
+						</span>
+					</td>
+					<td>
+						<span *ngIf="connectedPeer.is_connected">
+							{{ connectedPeer.transfer_rx | number}}
+						</span>
+					</td>
+					<td>
+						<span *ngIf="connectedPeer.is_connected">
+							{{ connectedPeer.transfer_tx | number }}
+						</span>
+					</td>
+				</tr>
+			</ng-template>
+		</p-table>
+	</p-tabPanel>
+	<p-tabPanel header="VPN Layout">
+		<p-organizationChart [value]="heirarchyData">
+			<ng-template let-node pTemplate="target">
+				<div class="p-2 text-center">
+					<div class="p-2">
+						<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+						{{ node.label }}
+					</div>
+					<div>
+						<small>
+							{{ node.data.ip_address }}
+						</small>
+					</div>
 				</div>
-			</div>
-		</ng-template>
-		<ng-template let-node pTemplate="peerGroup">
-			<div class="p-2 text-center">
-				<div class="p-2">
-					<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
-					{{ node.label }}
+			</ng-template>
+			<ng-template let-node pTemplate="peerGroup">
+				<div class="p-2 text-center">
+					<div class="p-2">
+						<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+						{{ node.label }}
+					</div>
 				</div>
-			</div>
-		</ng-template>
-		<ng-template let-node pTemplate="peer">
-			<div class="p-2 text-center">
-				<div class="p-2">
-					<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
-					{{ node.label }}
+			</ng-template>
+			<ng-template let-node pTemplate="peer">
+				<div class="p-2 text-center">
+					<div class="p-2">
+						<i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+						{{ node.label }}
+					</div>
+					<div>
+						<small>
+							{{ node.data.ip_address }}
+						</small>
+					</div>
 				</div>
-				<div>
-					<small>
-						{{ node.data.ip_address }}
-					</small>
-				</div>
-			</div>
-		</ng-template>
-	</p-organizationChart>
-</div>
+			</ng-template>
+		</p-organizationChart> </p-tabPanel>
+</p-tabView>

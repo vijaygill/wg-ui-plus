@@ -16,7 +16,8 @@ export class WebapiService {
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
     private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
-    private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/'
+    private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
+    private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
 
     constructor(private http: HttpClient) { }
 
@@ -153,6 +154,11 @@ export class WebapiService {
                 return res;
             }));
     }
+
+
+    getConnectedPeers(): Observable<ConnectedPeerInformation> {
+        return this.http.get<ConnectedPeerInformation>(this.urlGetConnectedPeers);
+    }
 }
 
 export interface Entity {
@@ -238,3 +244,25 @@ export interface ServerValidationErrorItem {
     attr: string;
 }
 
+export interface ConnectedPeerInformation {
+    datetime: string;
+    items: ConnectedPeerInformationItem[];
+}
+
+export interface ConnectedPeerInformationItem {
+    peer_name: string;
+    is_connected: boolean;
+    interface: string;
+    public_key: string;
+    preshared_key: string;
+    end_point: string;
+    end_point_ip: string;
+    end_point_port: string;
+    allowed_ips: string;
+    allowed_ips_ip: string;
+    allowed_ips_mask: string;
+    latest_handshake: string;
+    transfer_rx: number;
+    transfer_tx: number;
+    persistent_keepalive: number;
+}
