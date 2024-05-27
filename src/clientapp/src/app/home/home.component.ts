@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { interval, timer } from 'rxjs';
 
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService, TreeNode } from 'primeng/api';
-import { WebapiService } from '../webapi.service';
-import { Init } from 'v8';
+import { ConnectedPeerInformation, WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-home',
@@ -17,20 +17,33 @@ import { Init } from 'v8';
 })
 export class HomeComponent implements OnInit {
 
-  items!: TreeNode[];
+  heirarchyData!: TreeNode[];
+  connectedPeerData!: ConnectedPeerInformation;
+  private refresh_timer = interval(5000);
 
   constructor(private webapiService: WebapiService) {
   }
 
   ngOnInit(): void {
+    const sub = this.refresh_timer.subscribe(val => {
+      this.loadData();
+    });
     this.loadData();
   }
 
   loadData() {
     this.webapiService.getTargetHeirarchy().subscribe(data => {
-      this.items = data;
+      this.heirarchyData = data;
     }
     );
+
+    this.webapiService.getConnectedPeers().subscribe(data => {
+      this.connectedPeerData = data;
+    }
+    );
+
+
   }
+
 
 }

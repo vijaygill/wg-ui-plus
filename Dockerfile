@@ -64,6 +64,7 @@ FROM base-live as live
 COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clientapp
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
+COPY --from=builder /wg-ui-plus/scripts/monitor-*.sh /app/scripts
 USER $UNAME
 WORKDIR /app
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]

@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/v1/control/wireguard_generate_configuration_files', views.wireguard_generate_configuration_files, name='wireguard_generate_configuration_files'),
     path('api/v1/control/wireguard_restart', views.wireguard_restart, name='wireguard_restart'),
     path('api/v1/control/wireguard_get_configuration', views.wireguard_get_configuration, name='wireguard_get_configuration'),
+    path('api/v1/control/wireguard_get_connected_peers', views.wireguard_get_connected_peers, name='wireguard_get_connected_peers'),
 ]
