@@ -58,6 +58,11 @@ export class WebapiService {
         return res;
     }
 
+    deletePeer(item: Peer): Observable<Peer> {
+        var res = this.http.delete<Peer>(this.urlPeer + item.id + '/');
+        return res;
+    }
+
     getTargetList(): Observable<Target[]> {
         return this.http.get<Target[]>(this.urlTarget);
     }
