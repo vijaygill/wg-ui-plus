@@ -12,7 +12,7 @@ You can set up your own VPN in a few minutes by following the following steps:
     Option 1:
      * Run the following command
        ```
-       docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --cap-add=NET_ADMIN --cap-add=SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+       mkdir ./config && mkdir ./data && docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --cap-add=NET_ADMIN --cap-add=SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
        ```
     Option 2:
      * Clone this repo and simply execute the following command
