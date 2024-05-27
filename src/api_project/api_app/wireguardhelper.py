@@ -379,7 +379,7 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def execute_process(Self, command):
+    def execute_process(self, command):
         output = ''
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         try:
@@ -397,4 +397,28 @@ AllowedIPs = 0.0.0.0/0
         command = f'sudo wg-quick down {sc.wireguard_config_path}; sudo wg-quick up {sc.wireguard_config_path}; sudo conntrack -F; sudo conntrack -F; sudo conntrack -F;'
         output = self.execute_process(command)
         res = {'status': 'ok', 'output': output }
+        return res
+    
+    @logged 
+    def get_connected_peers(self, peers):
+        regex = r"""
+            peer \s* : \s* (?P<public_key>[^\n]+) \s*
+            endpoint \s* : \s* (?P<endpoint_ip>[^:]+): \s* (?P<endpoint_port>[^\n]+) \s*
+            allowed \s ips \s* : \s* (?P<allowed_ips> [^\n]+ ) \s*
+            latest \s handshake \s* : \s* (?P<latest_handshake> \s* [^\n]+ ) \s*
+            transfer: \s* (?P<received> [^,]*) , \s* (?P<sent> [^\n]*)
+            """
+        output = self.execute_process("sudo wg show;")
+        matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
+        res = {}
+        for matchNum, match in enumerate(matches, start=1):
+            peer_data = match.groupdict()
+            peers_filtered = [x for x in peers if x.public_key == peer_data['public_key']]
+            peer = peers_filtered[0] if peers_filtered else None
+            peer_data['public_key'] = ''
+            if peer:
+                res[peer.name] = peer_data
+            else:
+                res[f'unknown-{matchNum}'] = peer_data
+        print(f'>>>> {res}')
         return res

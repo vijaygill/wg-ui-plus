@@ -74,3 +74,11 @@ def wireguard_get_configuration(request):
     res = wg.getWireguardConfiguration(serverConfiguration=sc, peers= peers)
     res = json.dumps(res)
     return HttpResponse(res)
+
+def wireguard_get_connected_peers(request):
+    peers = Peer.objects.all()
+    wg = WireGuardHelper()
+    res = wg.get_connected_peers(peers)
+    res = json.dumps(res)
+    return HttpResponse(res)
+
