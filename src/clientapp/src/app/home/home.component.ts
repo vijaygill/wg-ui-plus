@@ -6,6 +6,7 @@ import { interval, timer } from 'rxjs';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService, TreeNode } from 'primeng/api';
 import { ConnectedPeerInformation, WebapiService } from '../webapi.service';
+import { TabViewChangeEvent } from 'primeng/tabview';
 
 @Component({
   selector: 'app-home',
@@ -26,23 +27,31 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     const sub = this.refresh_timer.subscribe(val => {
-      this.loadData();
+      this.loadDataConnectedPeers();
     });
-    this.loadData();
+    this.loadDataConnectedPeers();
   }
 
-  loadData() {
+  loadDataTargetHeirarchy() {
     this.webapiService.getTargetHeirarchy().subscribe(data => {
       this.heirarchyData = data;
     }
     );
+  }
 
+
+  loadDataConnectedPeers() {
     this.webapiService.getConnectedPeers().subscribe(data => {
       this.connectedPeerData = data;
     }
     );
+  }
 
 
+  onTabChange(event: any) {
+    if (event.index == 1) {
+      this.loadDataTargetHeirarchy();
+    }
   }
 
 

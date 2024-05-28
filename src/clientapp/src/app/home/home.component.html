@@ -1,4 +1,4 @@
-<p-tabView>
+<p-tabView (onChange) = "onTabChange($event)">
 	<p-tabPanel header="Dashboard">
 		<p-table [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 			<ng-template pTemplate="caption">
