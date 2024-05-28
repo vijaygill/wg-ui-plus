@@ -13,6 +13,7 @@ import subprocess
 import re
 import logging
 from django.template import Template, Context
+from django.utils import timezone
 
 from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
 
@@ -517,7 +518,7 @@ AllowedIPs = 0.0.0.0/0
             """
         output = self.execute_process("sudo wg show all dump;")
         matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
-        dt = datetime.datetime.now()
+        dt = datetime.datetime.now().astimezone()
         res = {}
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["items"] = []
