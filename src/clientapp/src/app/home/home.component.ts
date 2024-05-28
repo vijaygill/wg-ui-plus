@@ -19,7 +19,8 @@ import { TabViewChangeEvent } from 'primeng/tabview';
 export class HomeComponent implements OnInit {
 
   heirarchyData!: TreeNode[];
-  connectedPeerData!: ConnectedPeerInformation;
+  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
+
   private refresh_timer = interval(5000);
   subscriptionDataConnectedPeers !: Subscription;
 
