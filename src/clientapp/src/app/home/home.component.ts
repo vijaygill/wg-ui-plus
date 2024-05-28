@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { interval, timer } from 'rxjs';
+import { Observable, Subscription, interval, timer } from 'rxjs';
 
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService, TreeNode } from 'primeng/api';
@@ -21,15 +21,30 @@ export class HomeComponent implements OnInit {
   heirarchyData!: TreeNode[];
   connectedPeerData!: ConnectedPeerInformation;
   private refresh_timer = interval(5000);
+  subscriptionDataConnectedPeers !: Subscription;
 
   constructor(private webapiService: WebapiService) {
   }
 
   ngOnInit(): void {
-    const sub = this.refresh_timer.subscribe(val => {
+    this.subscribeTimer();
+  }
+
+  ngOnDestroy() {
+    this.unsubscribeTimer();
+  }
+
+  subscribeTimer(): void {
+    this.subscriptionDataConnectedPeers = this.refresh_timer.subscribe(val => {
       this.loadDataConnectedPeers();
     });
     this.loadDataConnectedPeers();
+  }
+
+  unsubscribeTimer(): void {
+    if (this.subscriptionDataConnectedPeers) {
+      this.subscriptionDataConnectedPeers.unsubscribe();
+    }
   }
 
   loadDataTargetHeirarchy() {
@@ -49,7 +64,11 @@ export class HomeComponent implements OnInit {
 
 
   onTabChange(event: any) {
+    if (event.index == 0) {
+      this.subscribeTimer()
+    }
     if (event.index == 1) {
+      this.unsubscribeTimer()
       this.loadDataTargetHeirarchy();
     }
   }
