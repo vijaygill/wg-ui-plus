@@ -14,8 +14,7 @@ import re
 import logging
 from django.template import Template, Context
 
-
-IP_ADDRESS_INTERNET = "0.0.0.0/0"
+from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
 
 logger = logging.getLogger(__name__)
 
@@ -319,11 +318,13 @@ AllowedIPs = 0.0.0.0/0
             if not target.peer_groups:
                 continue
             for peer_group in target.peer_groups.all():
-                if (peer_group.name != "EveryOne") and peer_group.disabled:
+                if (
+                    peer_group.name != PEER_GROUP_EVERYONE_NAME
+                ) and peer_group.disabled:
                     continue
                 peer_group_peers = (
                     peers
-                    if peer_group.name == "EveryOne"
+                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
                     else [
                         x
                         for x in peer_group.peers.all()
@@ -356,7 +357,7 @@ AllowedIPs = 0.0.0.0/0
             for peer_group in peer_groups:
                 peer_group_peers = (
                     peers
-                    if peer_group.name == "EveryOne"
+                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
                     else [
                         x
                         for x in peer_group.peers.all()
@@ -384,7 +385,7 @@ AllowedIPs = 0.0.0.0/0
             for peer_group in peer_groups:
                 peer_group_peers = (
                     peers
-                    if peer_group.name == "EveryOne"
+                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
                     else [
                         x
                         for x in peer_group.peers.all()

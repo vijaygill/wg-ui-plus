@@ -4,14 +4,14 @@
 import ipaddress
 from .wireguardhelper import generate_keys
 
-IP_ADDRESS_INTERNET = "0.0.0.0/0"
+from .common import IP_ADDRESS_INTERNET, PEER_GROUP_EVERYONE_NAME
+
 IP_ADDRESS_SERVER_DEFAULT = "192.168.2.0/24"
 SERVER_FQDN_DEFAULT = "myvpn.duckdns.org"
 PORT_DEFAULT_EXTERNAL = 1196
 PORT_DEFAULT_INTERNAL = "51820"
 PORT_DEFAULT_PEER = PORT_DEFAULT_EXTERNAL
 UPSTREAM_DNS_SERVER_DEFAULT = "192.168.0.5"
-PEER_GROUP_EVERYONE_NAME = "EveryOne"
 SAMPLE_PEERS = [
     ("Mobile phone", "Your mobile phone"),
     ("Laptop", "May need access to VPN occasionally"),
