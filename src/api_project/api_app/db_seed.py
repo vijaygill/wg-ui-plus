@@ -4,14 +4,14 @@
 import ipaddress
 from .wireguardhelper import generate_keys
 
-IP_ADDRESS_INTERNET = "0.0.0.0/0"
+from .common import IP_ADDRESS_INTERNET, PEER_GROUP_EVERYONE_NAME, TARGET_INTERNET_NAME
+
 IP_ADDRESS_SERVER_DEFAULT = "192.168.2.0/24"
 SERVER_FQDN_DEFAULT = "myvpn.duckdns.org"
 PORT_DEFAULT_EXTERNAL = 1196
 PORT_DEFAULT_INTERNAL = "51820"
 PORT_DEFAULT_PEER = PORT_DEFAULT_EXTERNAL
 UPSTREAM_DNS_SERVER_DEFAULT = "192.168.0.5"
-PEER_GROUP_EVERYONE_NAME = "EveryOne"
 SAMPLE_PEERS = [
     ("Mobile phone", "Your mobile phone"),
     ("Laptop", "May need access to VPN occasionally"),
@@ -32,8 +32,8 @@ def populate_dictionary_data(apps, schema_editor):
     Target = apps.get_model("api_app", "Target")
     peer_group_everyone = PeerGroup.objects.get(name=PEER_GROUP_EVERYONE_NAME)
     target = Target(
-        name="Internet",
-        description="Internet - We all need it.",
+        name=TARGET_INTERNET_NAME,
+        description=f"{TARGET_INTERNET_NAME} - We all need it.",
         ip_address=IP_ADDRESS_INTERNET,
         allow_modify_self=False,
         allow_modify_peer_groups=True,
