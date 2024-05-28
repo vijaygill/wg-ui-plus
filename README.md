@@ -2,23 +2,24 @@
 
 A Dockerised UI to run and manage a WireGuard VPN in the same container.
 
+## Disclaimer
+Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
+
+## Background
+I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard). So far, I like this combo and though this is WIP, I have already replaced my linuxserver's WireGuard image with this project.
+
+This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
+
 ## Usage
 You can set up your own VPN in a few minutes by following the following steps:
 1. Gather the following information
    * IP address assigned to you router (refered to as External IP address in this document )
    * IP address of the machine / raspberry pi / any other SBC you are going to use to run the VPN (refered to as Internal IP address in this document ).
 2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
-3. Now start the WG-UI-Plus using one of the following two options
-    Option 1:
-     * Run the following command
-       ```
-       mkdir ./config && mkdir ./data && docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
-       ```
-    Option 2:
-     * Clone this repo and simply execute the following command
-       ```
-       "./run-app-live-from-ghcr.sh"
-       ```
+3. Now start the WG-UI-Plus using the following command
+   ```
+   mkdir ./config && mkdir ./data && docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+   ```
 4. Point your browser to the address "htttp://internel_ip_address:8000".
 5. In the server configuration page
    * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
@@ -29,8 +30,7 @@ You can set up your own VPN in a few minutes by following the following steps:
    * Open the edit page for any peer and leave it open to scan QR code in next step
      ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/2851ad9b-9bfa-4b61-9aa1-0dfbdaf9d855)
 
-
-7. Install WirGuard app on your mobile phone and add tunnel by scannign the QR code.
+7. Install WireGuard app on your mobile phone and add tunnel by scanning the QR code.
 8. You should be able to access internet on your mobile phone via the VPN.
 
 Now you can start adding more targets and peer-groups and peers to configure the VPN in any way you need.
@@ -56,8 +56,16 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   - [x] Alow/Deny Targets for a given Peer-Group
 - [x] Manage Peer-Groups - Add/Edit/Disable
   - [x] Add/Remove Peer-Groups from Peer's list, thus affecting the access to the target linked with the Peer-Group
-- [ ] Live Dashboard
+- [x] Live Dashboard
+- [ ] Authentication
+- [ ] Ability to send configuration files for peers by email
+
+## Screenshots with some salient features
+* Dashboard showing currently connected peers
+  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/537356fa-6f67-4286-9874-37beb699807c)
+* Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "Everyone" group (by default, but can be changed).
+  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/3ce88394-83cc-44e6-ac89-a2b85f094cb6)
 
 ## Development guide
 
-This repository comes with a Docker based development environment, for more details, see [devenv.md](devenv.md).
+This repository comes with a Docker based development environment, for more details, see [devenv.md](devenv.md). Needs some work to make it useful.
