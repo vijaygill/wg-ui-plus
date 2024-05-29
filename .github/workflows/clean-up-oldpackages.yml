@@ -1,7 +1,6 @@
 name: Clean old docker images published to GH Packages
 
-on:
-  workflow_call:
+on: workflow_call
 
 jobs:
   delete:
