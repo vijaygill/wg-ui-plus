@@ -5,9 +5,7 @@
             <th>Description</th>
             <th>Disabled</th>
             <th>Can Access</th>
-            <th>Action
-                <p-button icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
-            </th>
+            <th>Action</th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-peerGroup>
@@ -20,5 +18,10 @@
                 <p-button icon="pi pi-file-edit" (onClick)="editItem(peerGroup);"></p-button>
             </td>
         </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div>
+            <p-button label="Add New" icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
+        </div>
     </ng-template>
 </p-table>
