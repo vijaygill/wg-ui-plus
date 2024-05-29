@@ -4,7 +4,9 @@
             <th>Name</th>
             <th>IP Address</th>
             <th>Disabled</th>
-            <th>Action</th>
+            <th>Action
+                <p-button [rounded]="true" icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
+            </th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-targetGroup>
@@ -12,12 +14,7 @@
             <td>{{ targetGroup.name }}</td>
             <td>{{ targetGroup.ip_address }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
-            <td><p-button icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
+            <td><p-button [rounded]="true" icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>
-    </ng-template>
-    <ng-template pTemplate="summary">
-        <div>
-            <p-button label="Add New" icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
-        </div>
     </ng-template>
 </p-table>
