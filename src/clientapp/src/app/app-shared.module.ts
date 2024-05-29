@@ -62,6 +62,7 @@ import { AutoFocusModule } from 'primeng/autofocus';
 
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogModule, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
+import {MatTableModule} from '@angular/material/table';
 
 let modules = [
     AutoFocusModule ,
@@ -81,7 +82,7 @@ let modules = [
     TooltipModule,
     ValidationErrorsDisplayComponent,
 
-    MatButtonModule, MatDialogModule,    
+    MatButtonModule, MatDialogModule, MatTableModule,
 ];
 
 @NgModule({
