@@ -6,6 +6,7 @@ on:
       - develop
       - master
   pull_request:
+    branches:
       - develop
       - master
 env:
@@ -52,6 +53,6 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64,linux/arm64
 
-          #  clean_old_packages:
-          #    uses: ./.github/workflows/clean-up-oldpackages.yml
+  clean_old_packages:
+    uses: ./.github/workflows/clean-up-oldpackages.yml
 
