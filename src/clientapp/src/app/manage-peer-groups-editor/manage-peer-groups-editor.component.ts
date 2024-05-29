@@ -2,18 +2,17 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PeerGroup, ServerValidationError, Target, WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { ConfirmDialogModel, ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-manage-peer-groups-editor',
   standalone: true,
   imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [ConfirmationService, MessageService],
+  providers: [MessageService, ConfirmationDialogService],
   templateUrl: './manage-peer-groups-editor.component.html',
   styleUrl: './manage-peer-groups-editor.component.scss'
 })
@@ -39,10 +38,8 @@ export class ManagePeerGroupsEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-    private webapiService: WebapiService,
-    public dialog: MatDialog) { }
+  constructor(private webapiService: WebapiService,
+    private confirmationDialogService: ConfirmationDialogService) { }
 
   getLookupData() {
     if (this.peerGroup) {
@@ -83,46 +80,25 @@ export class ManagePeerGroupsEditorComponent {
       return;
     }
 
-    const dialogData = new ConfirmDialogModel("Confirm Action", 'Are you sure that you want to proceed?');
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      maxWidth: "400px",
-      data: dialogData
-    });
-
-    dialogRef.afterClosed().subscribe(dialogResult => {
-      alert('boo!');
-    });
-
-    return;
-
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure that you want to proceed?',
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      acceptIcon: "none",
-      rejectIcon: "none",
-      rejectButtonStyleClass: "p-button-text",
-      accept: () => {
-        this.webapiService.deletePeerGroup(this.peerGroup)
-          .subscribe({
-            next: data => {
-            },
-            error: error => {
-              let response = error as HttpErrorResponse;
-              if (response) {
-                this.validationResult = response.error as ServerValidationError;
-              }
-            },
-            complete: () => {
-              this.onFinish.emit(true);
-            },
-          });
-      },
-      reject: () => {
-      }
-    });
-
+    this.confirmationDialogService.confirm('Confirm', 'Are you sure that you want to proceed?')
+      .subscribe(dialogResult => {
+        if (dialogResult) {
+          this.webapiService.deletePeerGroup(this.peerGroup)
+            .subscribe({
+              next: data => {
+              },
+              error: error => {
+                let response = error as HttpErrorResponse;
+                if (response) {
+                  this.validationResult = response.error as ServerValidationError;
+                }
+              },
+              complete: () => {
+                this.onFinish.emit(true);
+              },
+            });
+        }
+      });
   }
 
   cancel() {

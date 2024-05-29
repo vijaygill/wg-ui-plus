@@ -61,7 +61,7 @@ import { ValidationErrorsDisplayComponent } from './validation-errors-display/va
 import { AutoFocusModule } from 'primeng/autofocus';
 
 import {MatButtonModule} from '@angular/material/button';
-import {MatDialogModule} from '@angular/material/dialog';
+import {MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogModule, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 
 let modules = [
     AutoFocusModule ,
@@ -81,7 +81,7 @@ let modules = [
     TooltipModule,
     ValidationErrorsDisplayComponent,
 
-    MatButtonModule, MatDialogModule,
+    MatButtonModule, MatDialogModule,    
 ];
 
 @NgModule({
