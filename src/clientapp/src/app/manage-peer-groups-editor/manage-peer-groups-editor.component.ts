@@ -6,6 +6,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
+import { ConfirmDialogModel, ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-manage-peer-groups-editor',
@@ -39,7 +41,8 @@ export class ManagePeerGroupsEditorComponent {
 
   constructor(private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private webapiService: WebapiService) { }
+    private webapiService: WebapiService,
+    public dialog: MatDialog) { }
 
   getLookupData() {
     if (this.peerGroup) {
@@ -79,6 +82,18 @@ export class ManagePeerGroupsEditorComponent {
     if (!this.peerGroup) {
       return;
     }
+
+    const dialogData = new ConfirmDialogModel("Confirm Action", 'Are you sure that you want to proceed?');
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      maxWidth: "400px",
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(dialogResult => {
+      alert('boo!');
+    });
+
+    return;
 
     this.confirmationService.confirm({
       target: event.target as EventTarget,
