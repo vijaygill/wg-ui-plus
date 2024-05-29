@@ -2,9 +2,12 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "develop" ]
+    branches:
+      - develop
+      - master
   pull_request:
-    branches: [ "develop" ]
+      - develop
+      - master
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -48,4 +51,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         platforms: linux/amd64,linux/arm64
+
+  clean_old_packages:
+    uses: ./.github/workflows/clean-up-oldpackages.yml
 
