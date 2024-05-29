@@ -1,0 +1,25 @@
+on:
+  push:
+    branches:
+      - develop
+      - master
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    name: Remove except latest few
+    permissions: write-all
+    steps:
+      - name: Set ENV variables
+        run: |
+          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
+      - name: Delete packages
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ env.REPO_NAME }}
+          package-type: 'container'
+          min-versions-to-keep: 15
+		  delete-only-untagged-versions: true
+		  delete-only-pre-release-versions: true
+
+
