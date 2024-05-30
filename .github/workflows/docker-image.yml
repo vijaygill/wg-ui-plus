@@ -55,6 +55,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
 
   clean_old_packages:
+    needs: build
     permissions: write-all
     uses: ./.github/workflows/clean-up-oldpackages.yml
 
