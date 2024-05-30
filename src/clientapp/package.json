@@ -12,12 +12,12 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
-    "@angular/cdk": "^18.0.0",
+    "@angular/cdk": "^18.0.1",
     "@angular/common": "^18.0.0",
     "@angular/compiler": "^18.0.0",
     "@angular/core": "^18.0.0",
     "@angular/forms": "^18.0.1",
-    "@angular/material": "^18.0.0",
+    "@angular/material": "^18.0.1",
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.1",
     "@angular/platform-server": "^18.0.1",
@@ -25,7 +25,7 @@
     "@angular/ssr": "^18.0.2",
     "express": "^4.19.2",
     "primeicons": "^7.0.0",
-    "primeng": "^17.17.0",
+    "primeng": "^17.18.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "^0.14.6"
