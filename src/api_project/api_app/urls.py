@@ -23,6 +23,11 @@ urlpatterns = [
     path("api/v1/data/", include(router.urls)),
     path("test/", views.test, name="test"),
     path(
+        "api/v1/license",
+        views.get_license,
+        name="get_license",
+    ),
+    path(
         "api/v1/control/wireguard_generate_configuration_files",
         views.wireguard_generate_configuration_files,
         name="wireguard_generate_configuration_files",

@@ -1,12 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { LicenseInfo, WebapiService } from '../webapi.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AppSharedModule } from '../app-shared.module';
+
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, FormsModule, AppSharedModule],
   templateUrl: './about.component.html',
   styleUrl: './about.component.scss'
 })
-export class AboutComponent {
+export class AboutComponent implements OnInit {
+  license: LicenseInfo = { license: '' } as LicenseInfo;
+  constructor(private webapiService: WebapiService) {
+  }
 
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.webapiService.getLicense().subscribe(data => {
+      this.license = data;
+    });
+  }
 }

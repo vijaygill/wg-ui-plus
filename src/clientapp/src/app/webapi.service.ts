@@ -9,6 +9,7 @@ import { expand, map } from 'rxjs/operators'
 })
 export class WebapiService {
 
+    private urlGetLicense = '/api/v1/license';
     private urlPeerGroup = '/api/v1/data/peer_group/';
     private urlPeer = '/api/v1/data/peer/';
     private urlTarget = '/api/v1/data/target/';
@@ -20,6 +21,10 @@ export class WebapiService {
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
 
     constructor(private http: HttpClient) { }
+
+    getLicense(): Observable<LicenseInfo> {
+        return this.http.get<LicenseInfo>(this.urlGetLicense);
+    }
 
     getPeerGroupList(): Observable<PeerGroup[]> {
         return this.http.get<PeerGroup[]>(this.urlPeerGroup);
@@ -280,4 +285,9 @@ export interface ConnectedPeerInformationItem {
     transfer_rx: number;
     transfer_tx: number;
     persistent_keepalive: number;
+}
+
+export interface LicenseInfo
+{
+    license:string;
 }

@@ -59,6 +59,10 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet):
 def test(request):
     return HttpResponse(json.dumps({"message": "Hello from test!"}))
 
+def get_license(request):
+    with open('/app/LICENSE') as f:
+        text = f.read()
+        return HttpResponse(json.dumps({"license": text}))
 
 def wireguard_generate_configuration_files(request):
     wg = WireGuardHelper()

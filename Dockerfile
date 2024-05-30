@@ -65,6 +65,7 @@ COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clien
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
 COPY --from=builder /wg-ui-plus/scripts/monitor-*.sh /app/scripts
+COPY --from=builder /wg-ui-plus/LICENSE /app
 USER $UNAME
 WORKDIR /app
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]
