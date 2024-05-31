@@ -24,16 +24,16 @@ export class SidepanelComponent {
           route: '/home',
         },
         {
+          label: 'Targets',
+          route: '/manage-targets',
+        },
+        {
           label: 'Peer-Groups',
           route: '/manage-peer-groups',
         },
         {
           label: 'Peers',
           route: '/manage-peers',
-        },
-        {
-          label: 'Targets',
-          route: '/manage-targets',
         },
         {
           label: 'Server Configuration',

@@ -28,11 +28,6 @@
                     variant="filled" pTooltip="Disabled Peer-Groups are denied access to VPN." tooltipPosition="top" />
             </td>
         </tr>
-        <tr>
-            <td colspan="2">
-                <span *ngIf="!editItem.allow_modify_self">Only changing access to targets is allowed.</span>
-            </td>
-        </tr>
         <tr *ngIf="editItem.allow_modify_peers">
             <td><label for="peers">Peers</label></td>
             <td>
