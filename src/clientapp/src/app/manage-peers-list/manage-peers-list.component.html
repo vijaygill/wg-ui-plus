@@ -5,6 +5,7 @@
             <th>Description</th>
             <th>IP Address</th>
             <th>Disabled</th>
+            <th>Can Access</th>
             <th>Action
                 <p-button [rounded]="true" icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
             </th>
@@ -16,7 +17,14 @@
             <td>{{ peer.description }}</td>
             <td>{{ peer.ip_address }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peer.disabled" /></td>
+            <td>{{ peer.target_names }}
+            </td>
             <td><p-button [rounded]="true" icon="pi pi-file-edit" (onClick)="editItem(peer);"></p-button></td>
         </tr>
+    </ng-template>
+    <ng-template pTemplate="caption">
+        <div>
+            
+        </div>
     </ng-template>
 </p-table>

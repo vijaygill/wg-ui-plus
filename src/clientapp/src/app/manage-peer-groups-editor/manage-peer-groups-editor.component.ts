@@ -49,6 +49,12 @@ export class ManagePeerGroupsEditorComponent {
           : lookup;
         this.peerGroup.peers_lookup = lookupItems;
       });
+      this.webapiService.getTargetList().subscribe(lookup => {
+        let lookupItems = this.peerGroup.targets ?
+          lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
+          : lookup;
+        this.peerGroup.targets_lookup = lookupItems;
+      });
     }
   }
 

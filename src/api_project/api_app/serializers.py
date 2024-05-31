@@ -11,12 +11,41 @@ logger = logging.getLogger(__name__)
 
 
 class PeerSerializer(serializers.ModelSerializer):
+    target_names = serializers.SerializerMethodField(
+        "get_target_names",
+        read_only=True,
+    )
+
     class Meta:
         model = Peer
         fields = "__all__"
         depth = 1
 
+    def get_target_names(self, instance):
+        res = []
+        for peer_group in [x for x in instance.peer_groups.all() if not x.disabled]:
+            for target in peer_group.targets.all():
+                res += [(target, peer_group)]
+
+        peer_group_everyone = PeerGroup.objects.filter(name=PEER_GROUP_EVERYONE_NAME)[0]
+        if peer_group_everyone:
+            for target in peer_group_everyone.targets.all():
+                res += [(target, peer_group_everyone)]
+
+        res = [f"{x[0].name} ({x[1].name})" for x in res]
+        res = list(set(res))
+        res.sort()
+        res = ", ".join(res)
+        return res
+
+
 class PeerWithQrSerializer(serializers.ModelSerializer):
+    peer_group_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        read_only=False,
+        queryset=PeerGroup.objects.all(),
+        source="peer_groups",
+    )
     qr = serializers.SerializerMethodField(
         "get_qr",
         read_only=True,
@@ -60,6 +89,13 @@ class PeerGroupSerializer(serializers.ModelSerializer):
     peer_ids = serializers.PrimaryKeyRelatedField(
         many=True, read_only=False, queryset=Peer.objects.all(), source="peers"
     )
+    target_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=False, queryset=Target.objects.all(), source="targets"
+    )
+    target_names = serializers.SerializerMethodField(
+        "get_target_names",
+        read_only=True,
+    )
     is_everyone_group = serializers.SerializerMethodField(
         "get_is_everyone_group",
         read_only=True,
@@ -69,6 +105,13 @@ class PeerGroupSerializer(serializers.ModelSerializer):
         model = PeerGroup
         fields = "__all__"
         depth = 1
+
+    def get_target_names(self, instance):
+        res = [f"{x.name}" for x in instance.targets.all()]
+        res = list(set(res))
+        res.sort()
+        res = ", ".join(res)
+        return res
 
     def get_is_everyone_group(self, instance):
         res = instance.name == PEER_GROUP_EVERYONE_NAME

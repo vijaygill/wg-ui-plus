@@ -37,6 +37,7 @@ export class WebapiService {
     savePeerGroup(item: PeerGroup): Observable<PeerGroup> {
         if (item) {
             item.peer_ids = item.peers ? item.peers.map(x => x.id) : [];
+            item.target_ids = item.targets ? item.targets.map(x => x.id) : [];
         }
         var res = item.id
             ? this.http.put<PeerGroup>(this.urlPeerGroup + item.id + '/', item)
@@ -58,6 +59,9 @@ export class WebapiService {
     }
 
     savePeer(item: Peer): Observable<Peer> {
+        if (item) {
+            item.peer_group_ids = item.peer_groups ? item.peer_groups.map(x => x.id) : [];
+        }
         var res = item.id
             ? this.http.put<Peer>(this.urlPeer + item.id + '/', item)
             : this.http.post<Peer>(this.urlPeer, item);
@@ -190,7 +194,11 @@ export interface Peer extends Entity {
     public_key: string;
     private_key: string;
     peer_configuration: string;
+    peer_groups: PeerGroup[];
+    peer_groups_lookup: PeerGroup[];
+    peer_group_ids: number[];
     qr: string;
+    target_names: string;
     configuration: string;
 }
 
@@ -201,9 +209,13 @@ export interface PeerGroup extends Entity {
     allow_modify_self: boolean;
     allow_modify_peers: boolean;
     allow_modify_targets: boolean;
+    targets: Target[];
+    targets_lookup: Target[];
     peers: Peer[];
     peers_lookup: Peer[];
     peer_ids: number[];
+    target_ids: number[];
+    target_names: string;
     is_everyone_group: boolean;
 }
 
@@ -239,6 +251,7 @@ export interface WireguardConfiguration {
     server_configuration: string;
     peer_configurations: string[];
 }
+
 
 export interface ServerValidationError {
     type: string;

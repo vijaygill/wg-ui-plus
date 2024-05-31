@@ -34,6 +34,8 @@ export class ManagePeersListComponent {
   newItem(): void {
     if (this.onNewItem) {
       let peer = {
+        peer_group_ids: [] as number[],
+        peer_groups: [] as PeerGroup[],
       } as Peer;
       this.onNewItem.emit(peer);
     }

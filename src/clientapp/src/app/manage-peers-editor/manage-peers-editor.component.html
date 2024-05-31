@@ -44,6 +44,36 @@
                             <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
                         </tr>
                         <tr>
+                            <td><label for="peerGroups">Groups</label></td>
+                            <td>
+                                <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup"
+                                    [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
+                                    [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
+                                    [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
+                                    [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+                                    breakpoint="1400px"
+                                    pTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
+                                    tooltipPosition="top">
+                                    <ng-template let-peerGroupLink pTemplate="item">
+                                        <div class="flex flex-wrap p-2 align-items-center gap-3">
+                                            <div class="flex-1 flex flex-column gap-2">
+                                                <span class="font-bold">{{ peerGroupLink.name }}</span>
+                                                <div class="flex align-items-center gap-2">
+                                                    <i class="pi pi-tag text-sm"></i>
+                                                    <small>
+                                                        {{ peerGroupLink.description }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </p-pickList>
+                                <app-validation-errors-display field="peer_groups"
+                                    [validationResult]="validationResult">
+                                </app-validation-errors-display>
+                            </td>
+                        </tr>
+                        <tr>
                             <td colspan="2">
                                 <div style="width:100%;align-items: center; text-align: center;">
                                     <span>
