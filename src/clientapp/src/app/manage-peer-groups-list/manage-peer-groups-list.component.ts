@@ -39,8 +39,6 @@ export class ManagePeerGroupsListComponent {
         allow_modify_self: true,
         peer_ids: [] as number[],
         peers: [] as Peer[],
-        target_ids: [] as number[],
-        targets : [] as Target[],
       } as PeerGroup;
       this.onNewItem.emit(peerGroup);
     }

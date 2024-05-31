@@ -75,23 +75,6 @@ def is_network_or_single_address(value):
 
 
 # Create your models here.
-class PeerGroup(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255, null=True)
-    disabled = models.BooleanField(null=True, default=False)
-    allow_modify_self = models.BooleanField(null=True, default=True)
-    allow_modify_peers = models.BooleanField(null=True, default=True)
-    allow_modify_targets = models.BooleanField(null=True, default=True)
-    last_changed_datetime = models.DateTimeField(
-        auto_now=True,
-    )
-    peers = models.ManyToManyField("Peer", blank=True)
-    targets = models.ManyToManyField("Target", blank=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.description}"
-
-
 class Peer(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
@@ -103,7 +86,6 @@ class Peer(models.Model):
     last_changed_datetime = models.DateTimeField(
         auto_now=True,
     )
-    peer_groups = models.ManyToManyField("PeerGroup", blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.description}"
@@ -132,6 +114,20 @@ class Peer(models.Model):
             self.ip_address = ip_address_pool[1]
         super().save(force_insert, force_update)
 
+class PeerGroup(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, null=True)
+    disabled = models.BooleanField(null=True, default=False)
+    allow_modify_self = models.BooleanField(null=True, default=True)
+    allow_modify_peers = models.BooleanField(null=True, default=True)
+    allow_modify_targets = models.BooleanField(null=True, default=True)
+    last_changed_datetime = models.DateTimeField(
+        auto_now=True,
+    )
+    peers = models.ManyToManyField(Peer, blank=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.description}"
 
 class Target(models.Model):
     name = models.CharField(max_length=255)
@@ -149,7 +145,7 @@ class Target(models.Model):
     last_changed_datetime = models.DateTimeField(
         auto_now=True,
     )
-    peer_groups = models.ManyToManyField("PeerGroup", blank=True)
+    peer_groups = models.ManyToManyField(PeerGroup, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.description}"

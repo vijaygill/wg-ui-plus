@@ -61,33 +61,6 @@
             </td>
         </tr>
         <tr>
-            <td><label for="target">Targets</label></td>
-            <td>
-                <p-pickList id="target" [source]="editItem.targets_lookup" [target]="editItem.targets"
-                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                    (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="1400px" *ngIf="editItem.allow_modify_targets"
-                    pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
-                    <ng-template let-targetGroupLink pTemplate="item">
-                        <div class="flex flex-wrap p-2 align-items-center gap-3">
-                            <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ targetGroupLink.name }}</span>
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-tag text-sm"></i>
-                                    <small>
-                                        {{ targetGroupLink.description }} ({{ targetGroupLink.ip_address }})
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-pickList>
-                <app-validation-errors-display field="targets"
-                    [validationResult]="validationResult"></app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
             <td colspan="2">
                 <div style="width:100%;align-items: center; text-align: center;">
                     <span>
