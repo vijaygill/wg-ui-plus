@@ -89,22 +89,6 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-ubuntu-latest \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-self-hosted
 
-  remove-temporary-images:
-    needs: create-multiarch-image
-    runs-on: ubuntu-latest
-    name: Remove temporary images
-    permissions: write-all
-    steps:
-      - name: Set ENV variables
-        run: |
-          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
-      - name: Delete packages
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ env.REPO_NAME }}
-          package-type: 'container'
-          package-version-ids: 'dev-ubuntu-latest,dev-self-hosted'
-
   clean_old_packages:
     needs: create-multiarch-image
     permissions: write-all
