@@ -42,8 +42,7 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=raw,value=${{ env.IMAGE_TAG }}-${{ matrix.runner }}
-          type=raw,value={{date 'YYYY-MM-DD-HH-mm'}}
+          type=raw,value=${{ matrix.runner }}-${{ github.sha }}
 
     - name: Build and push Docker image
       id: push
@@ -54,8 +53,6 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-          #        cache-from: type=gha
-          #        cache-to: type=gha,mode=max
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
     - name: Move cache
@@ -85,9 +82,11 @@ jobs:
 
       - name: Create multiarch manifests
         run: |
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-ubuntu-latest \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}-self-hosted
+          docker buildx imagetools create \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
 
   clean_old_packages:
     needs: create-multiarch-image

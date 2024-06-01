@@ -18,5 +18,5 @@ jobs:
         with:
           package-name: ${{ env.REPO_NAME }}
           package-type: 'container'
-          min-versions-to-keep: 5
+          min-versions-to-keep: 15
 
