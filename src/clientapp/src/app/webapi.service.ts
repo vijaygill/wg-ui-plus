@@ -19,7 +19,7 @@ export class WebapiService {
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
     private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
-    private urlGetIpTablesLog = 'api/v1/control/get_iptables_log';
+    private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
 
     constructor(private http: HttpClient) { }
 

@@ -17,13 +17,13 @@ import { TabViewChangeEvent } from 'primeng/tabview';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-
+  activeTab : number = 0;
   heirarchyData!: TreeNode[];
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
   ipTablesLog : IpTablesLog = { output: ''} as IpTablesLog;
 
   private refresh_timer = interval(5000);
-  subscriptionDataConnectedPeers !: Subscription;
+  timerSubscription !: Subscription;
 
   constructor(private webapiService: WebapiService) {
   }
@@ -37,15 +37,32 @@ export class HomeComponent implements OnInit {
   }
 
   subscribeTimer(): void {
-    this.subscriptionDataConnectedPeers = this.refresh_timer.subscribe(val => {
-      this.loadDataConnectedPeers();
+    this.timerSubscription = this.refresh_timer.subscribe(val => {
+      this.loadData();
     });
-    this.loadDataConnectedPeers();
+    this.loadData();
   }
 
   unsubscribeTimer(): void {
-    if (this.subscriptionDataConnectedPeers) {
-      this.subscriptionDataConnectedPeers.unsubscribe();
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+    }
+  }
+
+  onTabChange(event: any) {
+    this.activeTab = event.index;
+    this.loadData();
+  }
+
+  loadData(){
+    if (this.activeTab == 0) {
+      this.loadDataConnectedPeers();
+    }
+    if (this.activeTab == 1) {
+      this.loadDataTargetHeirarchy();
+    }
+    if (this.activeTab == 2) {
+      this.loadDataIpTablesLog();
     }
   }
 
@@ -56,7 +73,6 @@ export class HomeComponent implements OnInit {
     );
   }
 
-
   loadDataConnectedPeers() {
     this.webapiService.getConnectedPeers().subscribe(data => {
       this.connectedPeerData = data;
@@ -64,15 +80,11 @@ export class HomeComponent implements OnInit {
     );
   }
 
-
-  onTabChange(event: any) {
-    if (event.index == 0) {
-      this.subscribeTimer()
+  loadDataIpTablesLog() {
+    this.webapiService.getIpTablesLog().subscribe(data => {
+      this.ipTablesLog = data;
     }
-    if (event.index == 1) {
-      this.unsubscribeTimer()
-      this.loadDataTargetHeirarchy();
-    }
+    );
   }
 
 

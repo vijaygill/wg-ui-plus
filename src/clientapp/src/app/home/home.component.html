@@ -1,5 +1,5 @@
 <p-tabView (onChange)="onTabChange($event)">
-	<p-tabPanel header="Dashboard">
+	<p-tabPanel header="Dashboard" #dashboardTabPanel>
 		<p-table [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 			<ng-template pTemplate="caption">
 				<div class="flex align-items-center justify-content-between">
@@ -83,9 +83,5 @@
 			</ng-template>
 		</p-organizationChart>
 	</p-tabPanel>
-	<p-tabPanel header="Monitor IPTables">
-<pre>
-	{{ipTablesLog.output}}
-</pre>
-	</p-tabPanel>
+	<p-tabPanel header="Monitor IPTables"><pre>{{ipTablesLog.output}}</pre></p-tabPanel>
 </p-tabView>
