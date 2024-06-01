@@ -179,33 +179,37 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def getWireguardIpTablesScript(self, serverConfiguration, targets, peers):
+    def getWireguardIpTablesScript(
+        self, serverConfiguration, targets, peer_groups, peers
+    ):
         dns_servers = [serverConfiguration.upstream_dns_ip_address]
+        vpn_network_address = ipaddress.ip_interface(
+            serverConfiguration.network_address
+        ).network
+        internet__network_address = ipaddress.ip_interface(IP_ADDRESS_INTERNET).network
         # generate post-up script
         post_up = [
-            f"#!/bin/bash",
-            f"WIREGUARD_INTERFACE=wg0",
-            f"WIREGUARD_LAN=192.168.2.0/24",
-            f"LAN_INTERFACE=eth0",
-            f"LOCAL_LAN=192.168.0.0/24",
-            f'echo "***** PostUp: Configuration ******************** "',
-            f'echo "WIREGUARD_LAN: ${{WIREGUARD_LAN}}"',
-            f'echo "LAN_INTERFACE: ${{LAN_INTERFACE}}"',
-            f'echo "LOCAL_LAN    : ${{LOCAL_LAN}}"',
-            f'echo "************************************************ "',
-            f"",
-            f"# clear existing rules and setup defaults",
-            f"iptables --flush",
-            f"iptables --table nat --flush",
-            f"iptables --delete-chain",
-            f"",
-            f"",
-            f"# masquerade traffic related to wg0",
-            f"iptables -t nat -I POSTROUTING -o ${{LAN_INTERFACE}} -j MASQUERADE -s $WIREGUARD_LAN",
-            f"",
-            f"# Accept related or established traffic",
-            f'iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment "Established and related packets."',
-            f"",
+            "#!/bin/bash",
+            "WIREGUARD_INTERFACE=wg0",
+            f"WIREGUARD_LAN={vpn_network_address}",
+            "LAN_INTERFACE=eth0",
+            'echo "***** PostUp: Configuration ******************** "',
+            'echo "WIREGUARD_LAN: ${WIREGUARD_LAN}"',
+            'echo "LAN_INTERFACE: ${LAN_INTERFACE}"',
+            'echo "************************************************ "',
+            "",
+            "# clear existing rules and setup defaults",
+            "iptables --flush",
+            "iptables --table nat --flush",
+            "iptables --delete-chain",
+            "",
+            "",
+            "# masquerade traffic related to wg0",
+            "iptables -t nat -I POSTROUTING -o ${LAN_INTERFACE} -j MASQUERADE -s $WIREGUARD_LAN",
+            "",
+            "# Accept related or established traffic",
+            'iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment "Established and related packets."',
+            "",
         ]
 
         for dns_server in dns_servers:
@@ -216,207 +220,152 @@ AllowedIPs = 0.0.0.0/0
             ]
             post_up += rules
 
-        post_up += rules
-        for target in [x for x in targets if not x.disabled]:
-            peer_groups = [x for x in target.peer_groups.all() if not x.disabled]
-            if not peer_groups:
-                # if there are no links with Peer-Groups, do not create the chain
-                continue
-            chain_name = self.get_chain_name(target)
-            rules = [
-                f"iptables -N {chain_name}",
-            ]
-            post_up += rules
+        target_infos = []
+        for target in targets:
+            for peer_group in target.peer_groups.all():
+                if peer_group.name == PEER_GROUP_EVERYONE_NAME:
+                    continue
+                (
+                    target_is_network_address,
+                    target_ip_address,
+                    target_network_address,
+                ) = is_network_address(target.ip_address)
+                peer_infos = [
+                    (
+                        x.name,
+                        x.disabled,
+                        x.ip_address,
+                    )
+                    for x in peer_group.peers.all()
+                ]
+                target_infos += [
+                    (
+                        self.get_chain_name(target),
+                        target.name,
+                        target.disabled,
+                        target_is_network_address,
+                        target_ip_address,
+                        target_network_address,
+                        peer_group.name,
+                        peer_group.disabled,
+                        peer_infos,
+                    )
+                ]
 
+        peer_group_everyone = [
+            x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
+        ]
+        if peer_group_everyone:
+            peer_group_everyone = peer_group_everyone[0]
+        if peer_group_everyone:
+            for target in peer_group_everyone.targets.all():
+                (
+                    target_is_network_address,
+                    target_ip_address,
+                    target_network_address,
+                ) = is_network_address(target.ip_address)
+                peer_infos = [
+                    (
+                        x.name,
+                        x.disabled,
+                        x.ip_address,
+                    )
+                    for x in peers.all()
+                ]
+                target_infos += [
+                    (
+                        self.get_chain_name(target),
+                        target.name,
+                        target.disabled,
+                        target_is_network_address,
+                        target_ip_address,
+                        target_network_address,
+                        peer_group_everyone.name,
+                        peer_group_everyone.disabled,
+                        peer_infos,
+                    )
+                ]
+
+        # allow all DNS traffic
         post_up += [
             'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"',
         ]
 
-        # per target FORWARD - all non-internet - hosts first
-        for target in [x for x in targets if not x.disabled]:
-            target_is_network_address, target_ip_address, target_network_address = (
-                is_network_address(target.ip_address)
-            )
-            target_address = (
-                target_network_address
-                if target_is_network_address
-                else target_ip_address
-            )
+        # now add FORWARD and ACCEPT rules for each chain - hosts only
+        for (
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) in target_infos:
             if target_is_network_address:
                 continue
-            if str(target_address) == IP_ADDRESS_INTERNET:
-                continue
-            allow = any(
-                (not x.disabled)
-                for x in target.peer_groups.all()
-                if any((not p.disabled) for p in x.peers.all())
-            )
-            if not allow:
-                continue
-            chain_name = self.get_chain_name(target)
-            comment = f"Forward traffic for {target.name} ({target_ip_address}) "
-            rules = [
-                f"# {comment}",
-                f'iptables --append FORWARD --source {serverConfiguration.network_address} --destination {target_address} -j {chain_name} -m comment --comment "{comment}"',
-                "",
-            ]
-            post_up += rules
+            for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                post_up += [
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
+                ]
 
-        # per target FORWARD - all non-internet - then networks
-        for target in [x for x in targets if not x.disabled]:
-            target_is_network_address, target_ip_address, target_network_address = (
-                is_network_address(target.ip_address)
-            )
-            target_address = (
-                target_network_address
-                if target_is_network_address
-                else target_ip_address
-            )
+        # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
+        for (
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) in target_infos:
             if not target_is_network_address:
                 continue
-            if str(target_address) == IP_ADDRESS_INTERNET:
+            if target_network_address == internet__network_address:
                 continue
-            allow = any(
-                (not x.disabled)
-                for x in target.peer_groups.all()
-                if any((not p.disabled) for p in x.peers.all())
-            )
-            if not allow:
-                continue
-            chain_name = self.get_chain_name(target)
-            comment = f"Forward traffic for {target.name} ({target_ip_address}) "
-            rules = [
-                f"# {comment}",
-                f'iptables --append FORWARD --source {serverConfiguration.network_address} --destination {target_address} -j {chain_name} -m comment --comment "{comment}"',
-                "",
-            ]
-            post_up += rules
+            for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                post_up += [
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
+                ]
 
         local_networks = []
         if serverConfiguration.local_networks:
             local_networks = [
                 x for x in serverConfiguration.local_networks.split(",") if x
             ]
-        server_ip_address = ipaddress.ip_interface(serverConfiguration.network_address)
-        targets_to_block = [
-            str(server_ip_address.network),
-        ] + local_networks
-        rules = [
+        targets_to_block = local_networks #+ [str(vpn_network_address)]
+        post_up += [
             f'iptables --append FORWARD --destination {target} -j DROP -m comment --comment "DROP - Everything going to local network - {target}"'
             for target in targets_to_block
         ]
-        post_up += rules
 
-        # per target FORWARD - network - Internet only
-        for target in [x for x in targets if not x.disabled]:
-            target_is_network_address, target_ip_address, target_network_address = (
-                is_network_address(target.ip_address)
-            )
+        # add FORWARD and ACCEPT rules for each chain - networks only INTERNET!
+        for (
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) in target_infos:
             if not target_is_network_address:
                 continue
-            if str(target_network_address) != IP_ADDRESS_INTERNET:
+            if target_network_address != internet__network_address:
                 continue
-            if not target.peer_groups:
-                continue
-            for peer_group in target.peer_groups.all():
-                if (
-                    peer_group.name != PEER_GROUP_EVERYONE_NAME
-                ) and peer_group.disabled:
-                    continue
-                peer_group_peers = (
-                    peers
-                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
-                    else [
-                        x
-                        for x in peer_group.peers.all()
-                        if ((x.disabled is None) or (not x.disabled))
-                    ]
-                )
-                for peer in peer_group_peers:
-                    chain_name = self.get_chain_name(target)
-                    comment = f"FWD - {peer.name} => {peer_group.name} => {target.name}"
-                    rules = [
-                        f"# {comment}",
-                        f'iptables --append FORWARD --source {peer.ip_address} --destination {target_network_address} -j {chain_name} -m comment --comment "{comment}"',
-                        f"",
-                    ]
-                    post_up += rules
+            for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                post_up += [
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
+                ]
 
-        rules = [
-            f'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"',
+        post_up += [
+            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"',
         ]
-        post_up += rules
-
-        # per peer rules now for host addresses only
-        for target in [x for x in targets if not x.disabled]:
-            target_is_network_address, target_ip_address, target_network_address = (
-                is_network_address(target.ip_address)
-            )
-            if target_is_network_address:
-                continue
-            peer_groups = [x for x in target.peer_groups.all() if not x.disabled]
-            for peer_group in peer_groups:
-                peer_group_peers = (
-                    peers
-                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
-                    else [
-                        x
-                        for x in peer_group.peers.all()
-                        if ((x.disabled is None) or (not x.disabled))
-                    ]
-                )
-                for peer in peer_group_peers:
-                    chain_name = self.get_chain_name(target)
-                    comment = f"ACCEPT - {peer.name} => {peer_group.name} => {target.name}({target_ip_address})"
-                    rules = [
-                        f"# {comment}",
-                        f'iptables --append {chain_name} --source {peer.ip_address} --destination {target_ip_address} -j ACCEPT  -m comment --comment "{comment}"',
-                        f"",
-                    ]
-                    post_up += rules
-
-        # per peer rules now for network addresses only
-        for target in [x for x in targets if not x.disabled]:
-            target_is_network_address, target_ip_address, target_network_address = (
-                is_network_address(target.ip_address)
-            )
-            if not target_is_network_address:
-                continue
-            peer_groups = [x for x in target.peer_groups.all() if not x.disabled]
-            for peer_group in peer_groups:
-                peer_group_peers = (
-                    peers
-                    if peer_group.name == PEER_GROUP_EVERYONE_NAME
-                    else [
-                        x
-                        for x in peer_group.peers.all()
-                        if ((x.disabled is None) or (not x.disabled))
-                    ]
-                )
-                for peer in peer_group_peers:
-                    chain_name = self.get_chain_name(target)
-                    comment = f"ACCEPT - {peer.name} => {peer_group.name} => {target.name}({target_ip_address})"
-                    rules = [
-                        f"# {comment}",
-                        f'iptables --append {chain_name} --source {peer.ip_address} --destination {target_network_address} -j ACCEPT  -m comment --comment "{comment}"',
-                        f"",
-                    ]
-                    post_up += rules
-
-        rules = [
-            f"# now add DROP rule to all user-defined chains",
-        ]
-        post_up += rules
-
-        for target in [x for x in targets if not x.disabled]:
-            if not target.peer_groups:
-                # if there are no links with Peer-Groups, do not create the chain
-                continue
-            chain_name = self.get_chain_name(target)
-            rules = [
-                f'iptables -A {chain_name} -j DROP -m comment --comment "DROP - everything else"',
-            ]
-            post_up += rules
 
         post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
 
@@ -435,7 +384,9 @@ AllowedIPs = 0.0.0.0/0
         return (post_up, post_down)
 
     @logged
-    def generateConfigurationFiles(self, serverConfiguration, targets, peers):
+    def generateConfigurationFiles(
+        self, serverConfiguration, targets, peer_groups, peers
+    ):
 
         # first save wg0.conf
         ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
@@ -451,7 +402,10 @@ AllowedIPs = 0.0.0.0/0
         ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
         iptables_scripts_post_up, iptables_scripts_post_down = (
             self.getWireguardIpTablesScript(
-                serverConfiguration=serverConfiguration, targets=targets, peers=peers
+                serverConfiguration=serverConfiguration,
+                targets=targets,
+                peer_groups=peer_groups,
+                peers=peers,
             )
         )
         with open(serverConfiguration.script_path_post_up, "w") as f:

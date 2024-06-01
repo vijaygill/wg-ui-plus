@@ -59,18 +59,21 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet):
 def test(request):
     return HttpResponse(json.dumps({"message": "Hello from test!"}))
 
+
 def get_license(request):
-    with open('/app/LICENSE') as f:
+    with open("/app/LICENSE") as f:
         text = f.read()
         return HttpResponse(json.dumps({"license": text}))
+
 
 def wireguard_generate_configuration_files(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
+    peer_groups = PeerGroup.objects.all()
     peers = Peer.objects.all()
     targets = Target.objects.all()
     res = wg.generateConfigurationFiles(
-        serverConfiguration=sc, targets=targets, peers=peers
+        serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
     )
     return HttpResponse(json.dumps(res))
 
