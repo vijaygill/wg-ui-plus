@@ -19,6 +19,7 @@ export class WebapiService {
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
     private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
+    private urlGetIpTablesLog = 'api/v1/control/get_iptables_log';
 
     constructor(private http: HttpClient) { }
 
@@ -175,10 +176,14 @@ export class WebapiService {
             }));
     }
 
-
     getConnectedPeers(): Observable<ConnectedPeerInformation> {
         return this.http.get<ConnectedPeerInformation>(this.urlGetConnectedPeers);
     }
+
+    getIpTablesLog(): Observable<IpTablesLog> {
+        return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
+    }
+
 }
 
 export interface Entity {
@@ -287,7 +292,11 @@ export interface ConnectedPeerInformationItem {
     persistent_keepalive: number;
 }
 
-export interface LicenseInfo
-{
-    license:string;
+export interface LicenseInfo {
+    license: string;
+}
+
+export interface IpTablesLog{
+    status: string;
+    output: string;
 }

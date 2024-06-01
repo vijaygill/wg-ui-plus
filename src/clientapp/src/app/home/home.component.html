@@ -1,4 +1,4 @@
-<p-tabView (onChange) = "onTabChange($event)">
+<p-tabView (onChange)="onTabChange($event)">
 	<p-tabPanel header="Dashboard">
 		<p-table [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 			<ng-template pTemplate="caption">
@@ -81,5 +81,11 @@
 					</div>
 				</div>
 			</ng-template>
-		</p-organizationChart> </p-tabPanel>
+		</p-organizationChart>
+	</p-tabPanel>
+	<p-tabPanel header="Monitor IPTables">
+<pre>
+	{{ipTablesLog.output}}
+</pre>
+	</p-tabPanel>
 </p-tabView>

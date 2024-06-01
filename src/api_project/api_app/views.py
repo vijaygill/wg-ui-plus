@@ -95,10 +95,15 @@ def wireguard_get_configuration(request):
     res = json.dumps(res)
     return HttpResponse(res)
 
-
 def wireguard_get_connected_peers(request):
     peers = Peer.objects.all()
     wg = WireGuardHelper()
     res = wg.get_connected_peers(peers)
+    res = json.dumps(res)
+    return HttpResponse(res)
+
+def wireguard_get_iptables_log(request):
+    wg = WireGuardHelper()
+    res = wg.get_iptables_log()
     res = json.dumps(res)
     return HttpResponse(res)

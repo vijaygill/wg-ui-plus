@@ -443,7 +443,7 @@ AllowedIPs = 0.0.0.0/0
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res
-
+    
     @logged
     def get_connected_peers(self, peers):
         regex = r"""
@@ -499,4 +499,11 @@ AllowedIPs = 0.0.0.0/0
             else:
                 peer_data["end_point"] = None
             res["items"] += [peer_data]
+        return res
+
+    @logged
+    def get_iptables_log(self):
+        command = f"sudo iptables -n -L -v --line-numbers;"
+        output = self.execute_process(command)
+        res = {"status": "ok", "output": output}
         return res

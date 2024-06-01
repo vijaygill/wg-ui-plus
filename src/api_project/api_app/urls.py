@@ -47,4 +47,9 @@ urlpatterns = [
         views.wireguard_get_connected_peers,
         name="wireguard_get_connected_peers",
     ),
+    path(
+        "api/v1/control/get_iptables_log",
+        views.wireguard_get_iptables_log,
+        name="wireguard_get_iptables_log",
+    ),
 ]
