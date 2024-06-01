@@ -7,4 +7,5 @@ then
 fi
 cd /app/api_project
 ./manage.py migrate
+./manage.py db_init_on_start
 ./manage.py runserver 0.0.0.0:8000

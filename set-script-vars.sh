@@ -21,3 +21,9 @@ DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /lib/modules:/lib/modules:ro "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /tmp:/tmp "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /etc/localtime:/etc/localtime:ro "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /etc/timezone:/etc/timezone:ro "
+
+env | grep "^WG_" > /tmp/env.txt
+while read -r line
+do
+    DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -e ${line}"
+done < /tmp/env.txt
