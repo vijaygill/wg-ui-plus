@@ -65,6 +65,9 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/537356fa-6f67-4286-9874-37beb699807c)
 * Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "Everyone" group (by default, but can be changed).
   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/3ce88394-83cc-44e6-ac89-a2b85f094cb6)
+* Monitor IPTables
+  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/c30c0a0a-aee4-464b-9e28-28719232e797)
+
 
 ## Development guide
 
