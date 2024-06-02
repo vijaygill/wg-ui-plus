@@ -52,4 +52,9 @@ urlpatterns = [
         views.wireguard_get_iptables_log,
         name="wireguard_get_iptables_log",
     ),
+    path(
+        "api/v1/control/login",
+        views.login,
+        name="login",
+    ),
 ]

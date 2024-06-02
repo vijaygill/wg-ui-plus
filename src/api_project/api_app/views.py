@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 
 from .models import Peer, PeerGroup, Target, ServerConfiguration
 from .serializers import TargetSerializer
@@ -107,3 +108,20 @@ def wireguard_get_iptables_log(request):
     res = wg.get_iptables_log()
     res = json.dumps(res)
     return HttpResponse(res)
+
+from django.contrib.auth import logout
+from django.contrib.auth.models import User, auth
+
+@csrf_exempt
+def login(request):
+    # if request.user.is_authenticated:
+    #     return HttpResponse(f'user logged in already: {request.user}')
+    # username = request.GET.get('username').strip()
+    # password = request.GET.get('password').strip()
+    # user = authenticate(username = username, password = password)
+    # if user:
+    #     auth.login(request, user)
+    # print(f'>>>>>>>>>>>> {user}')
+    for x in User.objects.all():
+        x.delete()
+    return HttpResponse('user logged in')
