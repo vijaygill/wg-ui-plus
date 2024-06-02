@@ -75,6 +75,11 @@ def get_target_ip_address_parts(value):
                     if not mask_ok:
                         errors.append(f"Invalid mask {mask}")
                     else:
+                        (
+                            target_is_network_address,
+                            target_ip_address,
+                            target_network_address,
+                        ) = is_network_address(f'{ip}/{mask}')
                         res = (
                             mask_ok,
                             target_is_network_address,
