@@ -44,8 +44,20 @@ jobs:
         tags: |
           type=raw,value=${{ matrix.runner }}-${{ github.sha }}
 
-    - name: Build and push Docker image
-      id: push
+    - name: Build and push Docker image (without cache)
+      if: matrix.runner == 'ubuntu-latest'
+      id: push_no_cache
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        provenance: false
+
+    - name: Build and push Docker image (with cache)
+      if: matrix.runner == 'self-hosted'
+      id: push_with_cache
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -55,7 +67,9 @@ jobs:
         provenance: false
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
     - name: Move cache
+      if: matrix.runner == 'self-hosted'
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache      
