@@ -28,8 +28,9 @@
             <td>
                 <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address"
                     [disabled]="!editItem.allow_modify_self"
-                    pTooltip="IP Address (xxx.xxx.xxx.xxx) (:N where N can be a port. Optional.) / Network (xxx.xxx.xxx.xxx/N) you wish to allow access to via the VPN."
+                    pTooltip="Resource you wish to allow access to via the VPN. It can be IP Address / Network address with mask / IP Address with 1 or more ports (seperated by commas)."
                     tooltipPosition="top" />
+                <span>Valid values XXX.XXX.XXX.XXX / XXX.XXX.XXX.XXX/MASK / XXX.XXX.XXX.XXX:PORT1,PORT2...</span>
                 <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
                 </app-validation-errors-display>
             </td>
@@ -85,7 +86,8 @@
                         &nbsp;
                     </span>
                     <span *ngIf="editItem.id && editItem.allow_modify_self">
-                        <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete($event)"></p-button>
+                        <p-button icon="pi pi-times" label="Delete" severity="danger"
+                            (onClick)="delete($event)"></p-button>
                         &nbsp;
                     </span>
                     <app-validation-errors-display

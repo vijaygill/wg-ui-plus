@@ -223,6 +223,7 @@ AllowedIPs = 0.0.0.0/0
                     target_network_address,
                     target_port,
                     target_mask,
+                    errors,
                 ) = get_target_ip_address_parts(target.ip_address)
                 peer_infos = [
                     (
@@ -261,6 +262,7 @@ AllowedIPs = 0.0.0.0/0
                     target_network_address,
                     target_port,
                     target_mask,
+                    errors,
                 ) = get_target_ip_address_parts(target.ip_address)
                 peer_infos = [
                     (
@@ -306,12 +308,15 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                rule = (
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {target_port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
-                    if target_port
-                    else f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
-                )
-                post_up += [rule]
+                if target_port:
+                    for port in target_port:
+                        post_up.append(
+                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        )
+                else:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
         for (
@@ -444,7 +449,7 @@ AllowedIPs = 0.0.0.0/0
     @logged
     def restart(self, serverConfiguration):
         sc = serverConfiguration
-        command = f"sudo wg-quick down {sc.wireguard_config_path}; sudo wg-quick up {sc.wireguard_config_path}; sudo conntrack -F; sudo conntrack -F; sudo conntrack -F;"
+        command = f"sudo wg-quick down {sc.wireguard_config_path};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {sc.wireguard_config_path};"
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res

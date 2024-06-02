@@ -72,9 +72,10 @@ def validator_is_network_or_single_address(value):
 def validator_is_valid_target_ip_address(value):
     parts = get_target_ip_address_parts(value=value)
     res = parts[0]
+    error = parts[-1]
     if (not res):
         raise ValidationError(
-            f"{value} is not a valid IP address.",
+            f"{value} is not a valid IP address. Error: {error}",
             params={"value": value},
         )
     return res
