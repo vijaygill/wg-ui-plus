@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { TreeNode } from 'primeng/api';
-import { expand, map } from 'rxjs/operators'
+import { map } from 'rxjs/operators'
 
 @Injectable({
     providedIn: 'root'
@@ -20,6 +20,8 @@ export class WebapiService {
     private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
     private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
+    private urlIsUserLogIn = '/api/v1/auth/login';
+    private urlIsUserLogOut = '/api/v1/auth/logout';
 
     constructor(private http: HttpClient) { }
 
@@ -184,6 +186,27 @@ export class WebapiService {
         return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
     }
 
+    checkIsUserAuthenticated(): Observable<UserSessionInfo>{
+        return this.http.get<UserSessionInfo>(this.urlIsUserLogIn);
+    }
+
+    login(credentials: UserCrendentials): Observable<UserSessionInfo>{
+        return this.http.post<UserSessionInfo>(this.urlIsUserLogIn, credentials);
+    }
+
+    logout(): Observable<UserSessionInfo>{
+        return this.http.get<UserSessionInfo>(this.urlIsUserLogOut);
+    }
+}
+
+export interface UserCrendentials{
+    username: string;
+    password: string;
+}
+
+export interface UserSessionInfo{
+    is_logged_in :boolean;
+    message: string;
 }
 
 export interface Entity {

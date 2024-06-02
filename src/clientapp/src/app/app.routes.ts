@@ -7,9 +7,10 @@ import { ManagePeersComponent } from './manage-peers/manage-peers.component';
 import { ManagePeerGroupsComponent } from './manage-peer-groups/manage-peer-groups.component';
 import { ManageTargetsComponent } from './manage-targets/manage-targets.component';
 import { ManageServerConfigurationComponent } from './manage-server-configuration/manage-server-configuration.component';
+import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
-    { path: '', component: HomeComponent },
+    { path: '', component: LoginComponent },
     { path: 'home', component: HomeComponent },
     { path: 'about', component: AboutComponent },
     { path: 'manage-peer-groups', component: ManagePeerGroupsComponent },
@@ -17,5 +18,5 @@ export const routes: Routes = [
     { path: 'manage-targets', component: ManageTargetsComponent },
     { path: 'manage-server-configuration', component: ManageServerConfigurationComponent },
     { path: 'test-page', component: TestpageComponent },
-    { path: '*', component: AboutComponent },
+    { path: '*', component: LoginComponent },
 ];

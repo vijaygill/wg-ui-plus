@@ -10,7 +10,17 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate as drf_authenticate
+from django.contrib.auth import logout as drf_logout
+from django.contrib.auth.models import User, auth
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import authentication_classes, permission_classes
 
 from .models import Peer, PeerGroup, Target, ServerConfiguration
 from .serializers import TargetSerializer
@@ -57,10 +67,12 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
 
+@api_view(["GET"])
 def test(request):
-    return HttpResponse(json.dumps({"message": "Hello from test!"}))
+    return Response({"message": "Hello from test!"})
 
 
+@api_view(["GET"])
 def get_license(request):
     with open("/app/LICENSE") as f:
         text = f.read()
@@ -96,6 +108,7 @@ def wireguard_get_configuration(request):
     res = json.dumps(res)
     return HttpResponse(res)
 
+
 def wireguard_get_connected_peers(request):
     peers = Peer.objects.all()
     wg = WireGuardHelper()
@@ -103,25 +116,40 @@ def wireguard_get_connected_peers(request):
     res = json.dumps(res)
     return HttpResponse(res)
 
+
 def wireguard_get_iptables_log(request):
     wg = WireGuardHelper()
     res = wg.get_iptables_log()
     res = json.dumps(res)
     return HttpResponse(res)
 
-from django.contrib.auth import logout
-from django.contrib.auth.models import User, auth
 
 @csrf_exempt
+# @api_view(["GET", "POST"])
 def login(request):
-    # if request.user.is_authenticated:
-    #     return HttpResponse(f'user logged in already: {request.user}')
-    # username = request.GET.get('username').strip()
-    # password = request.GET.get('password').strip()
-    # user = authenticate(username = username, password = password)
-    # if user:
-    #     auth.login(request, user)
-    # print(f'>>>>>>>>>>>> {user}')
-    for x in User.objects.all():
-        x.delete()
-    return HttpResponse('user logged in')
+    res = {}
+    if request.method == "GET":
+        res = {
+            "is_logged_in": request.user.is_authenticated,
+            "message": "Already logged in.",
+        }
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            res = {"is_logged_in": True, "message": "Already logged in."}
+        else:
+            # cred = request.data #used with @api_view only but that causes session to be lost
+            cred = json.loads(request.body)
+            username = cred["username"].strip()
+            password = cred["password"].strip()
+            user = drf_authenticate(username=username, password=password)
+            if user:
+                auth.login(request, user)
+                res = {"is_logged_in": True, "message": "Logged in now."}
+            else:
+                res = {"is_logged_in": False, "message": "Not logged in."}
+    return HttpResponse(json.dumps(res))
+
+def logout(request):
+    drf_logout(request=request)
+    res = {"is_logged_in": False, "message": "User logged out."}
+    return HttpResponse(json.dumps(res))

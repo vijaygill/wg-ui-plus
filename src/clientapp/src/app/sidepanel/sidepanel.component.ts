@@ -6,6 +6,7 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
 import { routes } from '../app.routes';
+import { WebapiService } from '../webapi.service';
 
 
 @Component({
@@ -51,7 +52,7 @@ export class SidepanelComponent {
     }
   ];
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private webapiService: WebapiService) {
 
   }
 }

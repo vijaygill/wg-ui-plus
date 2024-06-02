@@ -1,0 +1,23 @@
+<p-card header="Login">
+    <table>
+        <tr>
+            <td>User name</td>
+            <td>
+                <input pInputText id="peerGroupName" [(ngModel)]="credentials.username" pAutoFocus [autofocus]="true" />
+            </td>
+        </tr>
+        <tr>
+            <td>Password</td>
+            <td>
+                <p-password [(ngModel)]="credentials.password" [feedback]="false" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <p-button label="Login" (onClick)="login($event)"></p-button>
+                <p-button label="Logout" (onClick)="logout($event)"></p-button>
+            </td>
+        </tr>
+    </table>
+</p-card>
+userSessionInfo: {{userSessionInfo | json}}
