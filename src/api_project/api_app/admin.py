@@ -70,12 +70,12 @@ class TargetAdmin(admin.ModelAdmin):
 
 class ServerConfigurationAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
-        return ("host_name_external", "ip_address", "port_external", "port_internal")
+        return ("host_name_external", "network_address", "port_external", "port_internal")
 
     def get_fields(self, request, obj=None):
         return [
             "host_name_external",
-            "ip_address",
+            "network_address",
             "port_external",
             "port_internal",
             "peer_default_port",
