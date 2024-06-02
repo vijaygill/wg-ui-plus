@@ -216,6 +216,7 @@ AllowedIPs = 0.0.0.0/0
             rules = [
                 "# now make all DNS traffic flow to desired DNS server",
                 f"iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to {dns_server}:53",
+                f"iptables -t nat -I PREROUTING -p tcp --dport 53 -j DNAT --to {dns_server}:53",
                 "",
             ]
             post_up += rules
@@ -503,7 +504,7 @@ AllowedIPs = 0.0.0.0/0
 
     @logged
     def get_iptables_log(self):
-        command = f"sudo iptables -n -L -v --line-numbers;"
+        command = f"sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res
