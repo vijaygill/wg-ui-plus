@@ -453,18 +453,6 @@ AllowedIPs = 0.0.0.0/0
                         (?P<preshared_key> [^\s]+) \s+
             (?P<endpoint>
                         (?P<end_point_ip> \d+\.\d+\.\d+\.\d+ ) : (?P<end_point_port> \d+ | \(none\)) | \(none\)) \s+
-                        (?P<allowed_ips> \d+\.\d+\.\d+\.\d+\/\d+) \s+
-                        (?P<latest_handshake> \d+) \s+
-                        (?P<transfer_rx> \d+) \s+
-                        (?P<transfer_tx> \d+) \s+
-                        (?P<persistent_keepalive> \d+) \s+
-            """
-        regex = r"""
-            (?P<interface> wg\d+) \s+
-                        (?P<public_key> [^\s]+) \s+
-                        (?P<preshared_key> [^\s]+) \s+
-            (?P<endpoint>
-                        (?P<end_point_ip> \d+\.\d+\.\d+\.\d+ ) : (?P<end_point_port> \d+ | \(none\)) | \(none\)) \s+
                         (?P<allowed_ips> (?P<allowed_ips_ip>\d+\.\d+\.\d+\.\d+) / (?P<allowed_ips_mask>\d+) ) \s+
                         (?P<latest_handshake> \d+) \s+
                         (?P<transfer_rx> \d+) \s+
