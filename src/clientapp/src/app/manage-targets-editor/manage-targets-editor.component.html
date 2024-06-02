@@ -28,7 +28,7 @@
             <td>
                 <input pInputText id="targetIPAddress" [(ngModel)]="editItem.ip_address"
                     [disabled]="!editItem.allow_modify_self"
-                    pTooltip="IP Address (xxx.xxx.xxx.xxx) / Network (xxx.xxx.xxx.xxx/N) you wish to allow access to via the VPN."
+                    pTooltip="IP Address (xxx.xxx.xxx.xxx) (:N where N can be a port. Optional.) / Network (xxx.xxx.xxx.xxx/N) you wish to allow access to via the VPN."
                     tooltipPosition="top" />
                 <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
                 </app-validation-errors-display>

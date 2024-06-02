@@ -7,10 +7,12 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 
+from .util import ensure_folder_exists_for_file, get_target_ip_address_parts, is_network_address, is_single_address
+
 from .wireguardhelper import generate_keys
 
 
-def is_network_address(value, throw_exception=True):
+def validator_is_network_address(value, throw_exception=True):
     ip = None
     res = False
     try:
@@ -29,13 +31,12 @@ def is_network_address(value, throw_exception=True):
         )
     return res
 
-
-def are_network_addresses(value, throw_exception=True):
+def validator_are_network_addresses(value, throw_exception=True):
     res = False
     if value:
         parts = [x for x in value.split(",") if x]
         parts_result = [
-            (x, is_network_address(x, throw_exception=False)) for x in parts
+            (x, validator_is_network_address(x, throw_exception=False)) for x in parts
         ]
         bad_values = [x[0] for x in parts_result if not x[1]]
         error_message = "Invalid value: " + ", ".join(bad_values)
@@ -48,27 +49,19 @@ def are_network_addresses(value, throw_exception=True):
     return res
 
 
-def is_single_address(value, throw_exception=True):
+def validator_is_single_address(value, throw_exception=True):
     ip = None
-    res = False
-    try:
-        ip = ipaddress.ip_interface(str(value))
-        if isinstance(value, (ipaddress.IPv4Interface)):
-            ip = value
-        res = ip.network.prefixlen == 32
-    except:
-        res = False
-    if throw_exception:
-        if not res:
-            raise ValidationError(
-                f"{value} is not a valid IP address. Example 192.168.0.10.",
-                params={"value": value},
-            )
+    res = is_single_address(value)
+    if (not res) and throw_exception:
+        raise ValidationError(
+            f"{value} is not a valid IP address. Example 192.168.0.10.",
+            params={"value": value},
+        )
     return res
 
 
-def is_network_or_single_address(value):
-    res = is_network_address(value, False) or is_single_address(value, False)
+def validator_is_network_or_single_address(value):
+    res = validator_is_network_address(value, False) or validator_is_single_address(value, False)
     if not res:
         raise ValidationError(
             f"{value} is not a valid IP address or network address. Example 192.168.0.10 Or 192.168.0.0/24.",
@@ -76,58 +69,16 @@ def is_network_or_single_address(value):
         )
 
 
-def get_target_ip_address_parts(value):
-    regex = r"""
-	( ( (?P<ip1>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) / (?P<mask> .+)  ) )
-	| ( ( (?P<ip2>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) : (?P<port> .+)  ) )
-	| ( (?P<ip>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) )
-	"""
-    res = (False, None, None, None)
-    try:
-        matches = re.finditer(regex, value, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
-        for matchNum, match in enumerate(matches, start=1):
-            ip = match["ip2"] if match["ip2"] else match["ip1"] if match["ip1"] else match["ip"]
-            mask = match["mask"]
-            port = match["port"]
-            if mask:
-                mask = int(match["mask"])
-                res = (
-                    is_network_address(f'{ip}/{mask}', False),
-                    ip,
-                    None,
-                    mask,
-                )
-            elif port:
-                port = int(port)
-                is_valid_port = port < 65535
-                res = (
-                    is_valid_port and is_single_address(ip, False),
-                    ip,
-                    port,
-                    None,
-                )
-            else:
-                res = (
-                    False and is_single_address(ip, False),
-                    ip,
-                    None,
-                    None,
-                )
-            break
-    except:
-        print(traceback.format_exc())
-        pass
-    return res
-
-def is_valid_target_ip_address(value):
-    is_valid, _, _, _ = get_target_ip_address_parts(value=value)
-    res = is_valid
+def validator_is_valid_target_ip_address(value):
+    parts = get_target_ip_address_parts(value=value)
+    res = parts[0]
     if (not res):
         raise ValidationError(
             f"{value} is not a valid IP address.",
             params={"value": value},
         )
     return res
+
 
 # Create your models here.
 class PeerGroup(models.Model):
@@ -198,7 +149,7 @@ class Target(models.Model):
         max_length=255,
         null=False,
         blank=False,
-        validators=[is_valid_target_ip_address],
+        validators=[validator_is_valid_target_ip_address],
     )
     port = models.IntegerField(null=True, blank=True)
     allow_modify_self = models.BooleanField(null=True, default=True)
@@ -220,10 +171,10 @@ class ServerConfiguration(models.Model):
     port_external = models.IntegerField(null=False)
     port_internal = models.IntegerField(null=False)
     upstream_dns_ip_address = models.CharField(
-        max_length=255, null=False, blank=False, validators=[is_single_address]
+        max_length=255, null=False, blank=False, validators=[validator_is_single_address]
     )
     local_networks = models.CharField(
-        max_length=512, null=True, blank=True, validators=[are_network_addresses]
+        max_length=512, null=True, blank=True, validators=[validator_are_network_addresses]
     )
     wireguard_config_path = models.CharField(max_length=255)
     script_path_post_down = models.CharField(max_length=255)

@@ -16,6 +16,11 @@ from django.template import Template, Context
 from django.utils import timezone
 
 from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
+from .util import (
+    ensure_folder_exists_for_file,
+    is_network_address,
+    get_target_ip_address_parts,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,21 +37,6 @@ def logged(func):
             logger.debug(f"{func_name}: end")
 
     return logger_func
-
-
-def is_network_address(addr):
-    ip = ipaddress.ip_interface(str(addr))
-    if isinstance(addr, (ipaddress.IPv4Interface)):
-        ip = addr
-    res = int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
-    return (res, ip.ip, ip.network)
-
-
-def ensure_folder_exists_for_file(filepath):
-    dir = os.path.dirname(filepath)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-        logger.warning(f"Directory was missing. Created: {dir}")
 
 
 def generate_keys():
@@ -227,10 +217,13 @@ AllowedIPs = 0.0.0.0/0
                 if peer_group.name == PEER_GROUP_EVERYONE_NAME:
                     continue
                 (
+                    is_valid,
                     target_is_network_address,
                     target_ip_address,
                     target_network_address,
-                ) = is_network_address(target.ip_address)
+                    target_port,
+                    target_mask,
+                ) = get_target_ip_address_parts(target.ip_address)
                 peer_infos = [
                     (
                         x.name,
@@ -247,6 +240,7 @@ AllowedIPs = 0.0.0.0/0
                         target_is_network_address,
                         target_ip_address,
                         target_network_address,
+                        target_port,
                         peer_group.name,
                         peer_group.disabled,
                         peer_infos,
@@ -261,10 +255,13 @@ AllowedIPs = 0.0.0.0/0
         if peer_group_everyone:
             for target in peer_group_everyone.targets.all():
                 (
+                    is_valid,
                     target_is_network_address,
                     target_ip_address,
                     target_network_address,
-                ) = is_network_address(target.ip_address)
+                    target_port,
+                    target_mask,
+                ) = get_target_ip_address_parts(target.ip_address)
                 peer_infos = [
                     (
                         x.name,
@@ -281,6 +278,7 @@ AllowedIPs = 0.0.0.0/0
                         target_is_network_address,
                         target_ip_address,
                         target_network_address,
+                        target_port,
                         peer_group_everyone.name,
                         peer_group_everyone.disabled,
                         peer_infos,
@@ -300,6 +298,7 @@ AllowedIPs = 0.0.0.0/0
             target_is_network_address,
             target_ip_address,
             target_network_address,
+            target_port,
             peer_group_name,
             peer_group_disabled,
             peer_infos,
@@ -307,9 +306,12 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                post_up += [
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
-                ]
+                rule = (
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {target_port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    if target_port
+                    else f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                )
+                post_up += [rule]
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
         for (
@@ -319,6 +321,7 @@ AllowedIPs = 0.0.0.0/0
             target_is_network_address,
             target_ip_address,
             target_network_address,
+            target_port,
             peer_group_name,
             peer_group_disabled,
             peer_infos,
@@ -337,7 +340,7 @@ AllowedIPs = 0.0.0.0/0
             local_networks = [
                 x for x in serverConfiguration.local_networks.split(",") if x
             ]
-        targets_to_block = local_networks #+ [str(vpn_network_address)]
+        targets_to_block = local_networks  # + [str(vpn_network_address)]
         post_up += [
             f'iptables --append FORWARD --destination {target} -j DROP -m comment --comment "DROP - Everything going to local network - {target}"'
             for target in targets_to_block
@@ -351,6 +354,7 @@ AllowedIPs = 0.0.0.0/0
             target_is_network_address,
             target_ip_address,
             target_network_address,
+            target_port,
             peer_group_name,
             peer_group_disabled,
             peer_infos,
@@ -444,7 +448,7 @@ AllowedIPs = 0.0.0.0/0
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res
-    
+
     @logged
     def get_connected_peers(self, peers):
         regex = r"""
