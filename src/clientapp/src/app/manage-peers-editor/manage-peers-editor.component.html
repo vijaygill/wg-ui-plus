@@ -27,10 +27,11 @@
                                 </app-validation-errors-display>
                             </td>
                         </tr>
-                        <tr>
+                        <tr *ngIf="editItem.ip_address">
                             <td><label for="peerIPAddress">IPAddress</label></td>
                             <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
-                                    [disabled]="true" /></td>
+                                    pTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
+                                    tooltipPosition="top" [disabled]="true" /></td>
                         </tr>
                         <!-- <tr>
                             <td><label for="portnumber">Port</label></td>
@@ -88,8 +89,13 @@
                                     <span *ngIf="editItem.id">
                                         <p-button icon="pi pi-times" label="Delete" severity="danger"
                                             (onClick)="delete($event)"></p-button>
-                                        &nbsp;
                                     </span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <div style="width:100%;align-items: center; text-align: center;">
                                     <app-validation-errors-display
                                         [validationResult]="validationResult"></app-validation-errors-display>
                                 </div>
@@ -99,9 +105,10 @@
                 </table>
             </td>
             <td>
-                <img width="180px" [src]="getQrCode()" />
+                <img width="180px" [src]="getQrCode()" *ngIf="editItem.configuration" />
                 <br />
-                <p-button label="Download .conf file" (onClick)="downloadConfigFile($event)"></p-button>
+                <p-button label="Download .conf file" (onClick)="downloadConfigFile($event)"
+                    *ngIf="editItem.configuration"></p-button>
             </td>
         </tr>
     </tbody>

@@ -100,8 +100,13 @@
                     </span>
                     <span *ngIf="editItem.id && editItem.allow_modify_self">
                         <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete($event)"></p-button>
-                        &nbsp;
                     </span>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
                     <app-validation-errors-display
                         [validationResult]="validationResult"></app-validation-errors-display>
                 </div>

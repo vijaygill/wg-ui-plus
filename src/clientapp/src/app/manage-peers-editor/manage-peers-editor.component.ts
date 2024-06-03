@@ -90,7 +90,7 @@ export class ManagePeersEditorComponent {
       return;
     }
 
-    this.confirmationDialogService.confirm('Confirm', 'Are you sure that you want to proceed?')
+    this.confirmationDialogService.confirm('Confirm', 'Are you sure that you want to delete ' + this.editItem.name + '?')
       .subscribe(dialogResult => {
         if (dialogResult) {
           this.webapiService.deletePeer(this.peer)

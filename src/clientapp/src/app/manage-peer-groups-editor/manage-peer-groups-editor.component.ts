@@ -6,7 +6,7 @@ import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { ConfirmationDialogService } from '../confirmation-dialog-service';
-import { PeerGroup, ServerValidationError, Target} from '../webapi.entities';
+import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
@@ -81,7 +81,7 @@ export class ManagePeerGroupsEditorComponent {
       return;
     }
 
-    this.confirmationDialogService.confirm('Confirm', 'Are you sure that you want to proceed?')
+    this.confirmationDialogService.confirm('Confirm', 'Are you sure that you want to delete ' + this.editItem.name + '?')
       .subscribe(dialogResult => {
         if (dialogResult) {
           this.webapiService.deletePeerGroup(this.peerGroup)
