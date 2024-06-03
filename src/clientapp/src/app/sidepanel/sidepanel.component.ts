@@ -72,13 +72,9 @@ export class SidepanelComponent implements OnInit {
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
-      if (this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/home']);
-        this.items = [...this.itemsDefault, ...this.itemsLogout];
-      }
-      else {
-        this.router.navigate(['/']);
-        this.items = this.itemsDefault;
+      this.items = this.userSessionInfo.is_logged_in ? [...this.itemsDefault, ...this.itemsLogout] : this.itemsDefault;
+      if (!this.userSessionInfo.is_logged_in) {
+        this.router.navigate(['/login']);
       }
     });
     this.loginService.checkIsUserAuthenticated();

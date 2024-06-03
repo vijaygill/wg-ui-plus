@@ -10,10 +10,10 @@ import { ManageServerConfigurationComponent } from './manage-server-configuratio
 import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
-    { path: '', component: LoginComponent },
+    { path: '', component: HomeComponent },
+    { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'logout', component: LoginComponent },
-    { path: 'home', component: HomeComponent },
     { path: 'about', component: AboutComponent },
     { path: 'manage-peer-groups', component: ManagePeerGroupsComponent },
     { path: 'manage-peers', component: ManagePeersComponent },

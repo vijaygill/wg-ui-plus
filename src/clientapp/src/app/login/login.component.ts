@@ -30,7 +30,7 @@ export class LoginComponent implements OnInit {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
       if (this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/home']);
+        this.router.navigate(['/']);
       }
     });
   }

@@ -24,11 +24,8 @@ export class AuthorizedViewComponent implements OnInit{
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
-      if (this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/home']);
-      }
-      else {
-        this.router.navigate(['/']);
+      if (!this.userSessionInfo.is_logged_in) {
+        this.router.navigate(['/login']);
       }
     });
     this.loginService.checkIsUserAuthenticated();
