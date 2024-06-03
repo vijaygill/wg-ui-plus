@@ -11,6 +11,7 @@ I was just exploring the combination of Django REST Framework + Angular. So I th
 This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
 
 ## Usage
+#### Note: Default username/password is admin/admin. You can change it later in "Server Configuration page".
 You can set up your own VPN in a few minutes by following the following steps:
 1. Gather the following information
    * IP address assigned to you router (refered to as External IP address in this document )
