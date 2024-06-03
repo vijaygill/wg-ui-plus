@@ -1,7 +1,7 @@
 <div>
 	<p-tabView (onChange)="onTabChange($event)">
 		<p-tabPanel header="Dashboard" #dashboardTabPanel>
-			<p-table [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
+			<p-table sortField="peer_name" [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 				<ng-template pTemplate="caption">
 					<div class="flex align-items-center justify-content-between">
 						Connected Peers (Last update time: {{connectedPeerData.datetime}})
