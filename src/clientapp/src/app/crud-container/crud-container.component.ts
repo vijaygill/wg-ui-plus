@@ -1,11 +1,9 @@
 import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../app-shared.module';
-import { LoginService } from '../login/login.component';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { UserSessionInfo } from '../webapi.service';
 import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
+import { LoginService } from '../loginService';
 
 @Component({
   selector: 'app-crud-container',

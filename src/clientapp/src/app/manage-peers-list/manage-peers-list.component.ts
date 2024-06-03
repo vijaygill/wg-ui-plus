@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { Peer, PeerGroup, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
+import { Peer, PeerGroup } from '../webapi.entities';
+import { WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-peers-list',

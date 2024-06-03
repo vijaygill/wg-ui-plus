@@ -5,7 +5,8 @@ import { Observable, Subscription, interval, timer } from 'rxjs';
 
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService, TreeNode } from 'primeng/api';
-import { ConnectedPeerInformation, IpTablesLog, WebapiService } from '../webapi.service';
+import { ConnectedPeerInformation, IpTablesLog } from '../webapi.entities';
+import { WebapiService } from '../webapi.service';
 import { TabViewChangeEvent } from 'primeng/tabview';
 
 @Component({
@@ -17,10 +18,10 @@ import { TabViewChangeEvent } from 'primeng/tabview';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit {
-  activeTab : number = 0;
+  activeTab: number = 0;
   heirarchyData!: TreeNode[];
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
-  ipTablesLog : IpTablesLog = { output: ''} as IpTablesLog;
+  ipTablesLog: IpTablesLog = { output: '' } as IpTablesLog;
 
   private refresh_timer = interval(5000);
   timerSubscription !: Subscription;
@@ -54,7 +55,7 @@ export class HomeComponent implements OnInit {
     this.loadData();
   }
 
-  loadData(){
+  loadData() {
     if (this.activeTab == 0) {
       this.loadDataConnectedPeers();
     }

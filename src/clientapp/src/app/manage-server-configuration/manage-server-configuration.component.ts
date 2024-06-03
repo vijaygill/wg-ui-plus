@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ChangeUserPasswordInfo, ServerConfiguration, ServerValidationError, UserSessionInfo, WebapiService, WireguardConfiguration } from '../webapi.service';
+import { ChangeUserPasswordInfo, ServerConfiguration, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -9,7 +9,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginService } from '../login/login.component';
+import { LoginService } from '../loginService';
+import { WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-server-configuration',
@@ -30,7 +31,8 @@ export class ManageServerConfigurationComponent {
   loginServiceSubscription !: Subscription;
 
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService,
+  constructor(private messageService: MessageService,
+    private webapiService: WebapiService,
     private router: Router, private loginService: LoginService) { }
 
   ngOnInit(): void {

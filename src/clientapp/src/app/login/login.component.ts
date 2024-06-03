@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { UserCrendentials, UserSessionInfo, WebapiService } from '../webapi.service';
+import { WebapiService } from '../webapi.service';
 import { Router } from '@angular/router';
 import { Observable, Subject, Subscription } from 'rxjs';
+import { UserCrendentials, UserSessionInfo } from '../webapi.entities';
+import { LoginService } from '../loginService';
 
 @Component({
   selector: 'app-login',
@@ -51,33 +53,3 @@ export class LoginComponent implements OnInit {
   }
 }
 
-@Injectable({ providedIn: 'root' })
-export class LoginService {
-
-  constructor(private webapiService: WebapiService) { }
-
-  private userSessionInfo = new Subject<UserSessionInfo>();
-
-  getUserSessionInfo(): Observable<UserSessionInfo> {
-    return this.userSessionInfo.asObservable();
-  }
-
-  checkIsUserAuthenticated(): void {
-    this.webapiService.checkIsUserAuthenticated().subscribe(data => {
-      this.userSessionInfo.next(data);
-    });
-  }
-
-  login(credentials: UserCrendentials): void {
-    this.webapiService.login(credentials).subscribe(data => {
-      this.userSessionInfo.next(data);
-    });
-  }
-
-  logout(): void {
-    this.webapiService.logout().subscribe(data => {
-      this.userSessionInfo.next(data);
-    });
-  }
-
-}

@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, ContentChild, OnInit, TemplateRef } from '@angular/core';
 import { AppSharedModule } from '../app-shared.module';
-import { LoginService } from '../login/login.component';
+import { LoginService } from '../loginService';
 import { Router } from '@angular/router';
-import { UserSessionInfo } from '../webapi.service';
+import { UserSessionInfo } from '../webapi.entities';
 import { Subscription } from 'rxjs';
 
 @Component({

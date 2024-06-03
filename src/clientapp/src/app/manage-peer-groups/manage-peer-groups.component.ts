@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { ManagePeerGroupsListComponent } from '../manage-peer-groups-list/manage-peer-groups-list.component';
 import { ManagePeerGroupsEditorComponent } from '../manage-peer-groups-editor/manage-peer-groups-editor.component';
-import { PeerGroup, WebapiService } from '../webapi.service';
 import { CrudContainerComponent } from '../crud-container/crud-container.component';
 import { MessageService } from 'primeng/api';
 

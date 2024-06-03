@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Peer, PeerGroup, ServerValidationError, WebapiService } from '../webapi.service';
+import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
+import { WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { CommonModule } from '@angular/common';
@@ -68,14 +69,17 @@ export class ManagePeersEditorComponent {
     this.webapiService.savePeer(this.peer)
       .subscribe({
         next: data => {
+          debugger;
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            debugger;
           }
         },
         complete: () => {
+          debugger;
           this.onFinish.emit(true);
         },
       });

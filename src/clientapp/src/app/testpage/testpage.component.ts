@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Peer, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
+import { WebapiService } from '../webapi.service';
 
 @Component({
     selector: 'app-testpage',

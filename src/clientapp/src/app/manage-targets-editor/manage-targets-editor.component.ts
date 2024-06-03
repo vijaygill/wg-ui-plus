@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PeerGroup, ServerValidationError, Target, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +6,8 @@ import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.component';
+import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
+import { WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-targets-editor',

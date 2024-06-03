@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Peer, WebapiService } from '../webapi.service';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

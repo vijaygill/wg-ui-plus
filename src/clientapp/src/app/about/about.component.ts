@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { LicenseInfo, WebapiService } from '../webapi.service';
+import { WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
+import { LicenseInfo } from '../webapi.entities';
 
 
 @Component({

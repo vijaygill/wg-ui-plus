@@ -6,9 +6,9 @@ import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
 import { routes } from '../app.routes';
-import { UserSessionInfo, WebapiService } from '../webapi.service';
+import { UserSessionInfo } from '../webapi.entities';
 import { Subscription } from 'rxjs';
-import { LoginService } from '../login/login.component';
+import { LoginService } from '../loginService';
 
 
 @Component({
@@ -87,7 +87,7 @@ export class SidepanelComponent implements OnInit {
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
 
-  constructor(private router: Router, private loginService: LoginService) { }
+  constructor(private loginService: LoginService) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {

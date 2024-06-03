@@ -3,7 +3,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
-import { PeerGroup, Target, WebapiService } from '../webapi.service';
+import { PeerGroup, Target } from '../webapi.entities';
+import { WebapiService } from '../webapi.service';
 
 @Component({
   selector: 'app-manage-targets-list',
