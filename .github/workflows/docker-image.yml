@@ -95,6 +95,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create multiarch manifests
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker buildx imagetools create \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
+      - name: Create multiarch manifests
+        if: github.ref != 'refs/heads/master'
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
