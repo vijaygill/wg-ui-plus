@@ -1,4 +1,4 @@
-import { Component, Injectable, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Injectable, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -42,6 +42,7 @@ export class LoginComponent implements OnInit {
   }
 
   login(event: Event): void {
+    this.userSessionInfo.message = 'Logging in. Please wait...';
     this.loginService.login(this.credentials);
   }
 
