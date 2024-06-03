@@ -50,14 +50,34 @@ export class SidepanelComponent implements OnInit {
         {
           label: 'About',
           route: '/about',
-        }
+        },
       ]
     }
   ];
 
+  itemsLogin: MenuItem[] = [
+    {
+      items: [
+        {
+          label: 'Home',
+          route: '/home',
+        },
+        {
+          label: 'About',
+          route: '/about',
+        },
+        {
+          label: 'Log in',
+          route: '/login',
+        },
+      ]
+    }
+  ];
+
+
   itemsLogout: MenuItem[] = [{
     items: [{
-      label: 'Logout',
+      label: 'Log out',
       command: () => {
         this.loginService.logout();
       },
@@ -72,10 +92,7 @@ export class SidepanelComponent implements OnInit {
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
-      this.items = this.userSessionInfo.is_logged_in ? [...this.itemsDefault, ...this.itemsLogout] : this.itemsDefault;
-      if (!this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/login']);
-      }
+      this.items = this.userSessionInfo.is_logged_in ? [...this.itemsDefault, ...this.itemsLogout] : this.itemsLogin;
     });
     this.loginService.checkIsUserAuthenticated();
   }
