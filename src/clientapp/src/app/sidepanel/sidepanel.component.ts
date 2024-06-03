@@ -40,7 +40,7 @@ export class SidepanelComponent implements OnInit {
           route: '/manage-targets',
         },
         {
-          label: 'Server Configuration',
+          label: 'Server',
           route: '/manage-server-configuration',
         },
         // {
