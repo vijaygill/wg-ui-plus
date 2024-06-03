@@ -132,7 +132,8 @@ def wireguard_get_iptables_log(request):
 
 
 @csrf_exempt
-# @api_view(["GET", "POST"])
+@api_view(["GET", "POST"])
+@authentication_classes([SessionAuthentication])
 def login(request):
     res = {}
     if request.method == "GET":
@@ -148,8 +149,7 @@ def login(request):
         if request.user.is_authenticated:
             res = {"is_logged_in": True, "message": "Already logged in."}
         else:
-            # cred = request.data #used with @api_view only but that causes session to be lost
-            cred = json.loads(request.body)
+            cred = request.data
             username = cred["username"].strip() if cred["username"] else ""
             password = cred["password"].strip() if cred["password"] else ""
             user = drf_authenticate(username=username, password=password)
@@ -161,7 +161,7 @@ def login(request):
                     "is_logged_in": False,
                     "message": "Login failed. Check username/password.",
                 }
-    return HttpResponse(json.dumps(res))
+    return Response(res)
 
 
 @api_view(["GET"])
