@@ -9,8 +9,7 @@ import { nextTick } from 'process';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.component';
-import { Router } from '@angular/router';
+import { ConfirmationDialogService } from '../confirmation-dialog-service';
 
 @Component({
   selector: 'app-manage-peers-editor',
@@ -69,17 +68,14 @@ export class ManagePeersEditorComponent {
     this.webapiService.savePeer(this.peer)
       .subscribe({
         next: data => {
-          debugger;
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
-            debugger;
           }
         },
         complete: () => {
-          debugger;
           this.onFinish.emit(true);
         },
       });

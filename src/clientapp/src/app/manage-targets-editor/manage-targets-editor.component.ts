@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogService } from '../confirmation-dialog-service';
 import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 

@@ -1,12 +1,17 @@
 <h1 mat-dialog-title>
-    {{title}}
+    {{data.title}}
 </h1>
 
 <div mat-dialog-content>
-    <p>{{message}}</p>
+    <p>{{data.message}}</p>
 </div>
 
 <div mat-dialog-actions>
-    <button mat-button (click)="onDismiss()">No</button>
-    <button mat-raised-button color="primary" (click)="onConfirm()">Yes</button>
+    <span *ngIf="data.only_ok">
+        <button mat-raised-button color="primary" (click)="onConfirm()">Ok</button>
+    </span>
+    <span *ngIf="!data.only_ok">
+        <button mat-button (click)="onDismiss()">No</button>
+        <button mat-raised-button color="primary" (click)="onConfirm()">Yes</button>
+    </span>
 </div>
