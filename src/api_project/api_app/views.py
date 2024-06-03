@@ -7,7 +7,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import serializers
 from django.contrib.auth import authenticate as drf_authenticate
@@ -35,7 +35,7 @@ from .wireguardhelper import WireGuardHelper
 class PeerViewSet(viewsets.ModelViewSet):
     queryset = Peer.objects.all()
     serializer_class = PeerSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action == "retrieve" or self.action == "update":
@@ -46,25 +46,25 @@ class PeerViewSet(viewsets.ModelViewSet):
 class TargetHeirarchyViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetHeirarchySerializer
-    permission_classes = [AllowAny]
+    permission_classes = (IsAuthenticated,)
 
 
 class PeerGroupViewSet(viewsets.ModelViewSet):
     queryset = PeerGroup.objects.all()
     serializer_class = PeerGroupSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (IsAuthenticated,)
 
 
 class TargetViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (IsAuthenticated,)
 
 
 class ServerConfigurationViewSet(viewsets.ModelViewSet):
     queryset = ServerConfiguration.objects.all()
     serializer_class = ServerConfigurationSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (IsAuthenticated,)
 
 
 @api_view(["GET"])

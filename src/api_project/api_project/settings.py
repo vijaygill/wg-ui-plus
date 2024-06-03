@@ -149,7 +149,7 @@ STATICFILES_DIRS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
 }

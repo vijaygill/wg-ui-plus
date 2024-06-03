@@ -3,6 +3,7 @@ import base64
 import logging
 import qrcode
 from rest_framework import serializers
+from rest_framework import permissions
 from .models import Peer, PeerGroup, Target, ServerConfiguration
 from .wireguardhelper import WireGuardHelper
 from .db_seed import PEER_GROUP_EVERYONE_NAME
