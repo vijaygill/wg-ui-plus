@@ -6,7 +6,8 @@ then
     sudo wg-quick up "${WG_CONF_FILE}"
 fi
 cd /app/api_project
-#./manage.py makemigrations
+./manage.py makemigrations
 ./manage.py migrate
+./manage.py db_init_admin_user
 ./manage.py db_init_on_start
 ./manage.py runserver 0.0.0.0:8000

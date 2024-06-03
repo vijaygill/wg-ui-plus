@@ -31,7 +31,7 @@ import { OrganizationChartModule } from 'primeng/organizationchart';
 //import { PaginatorModule } from 'primeng/paginator';
 //import { PanelMenuModule } from 'primeng/panelmenu';
 //import { PanelModule } from 'primeng/panel';
-//import { PasswordModule } from 'primeng/password';
+import { PasswordModule } from 'primeng/password';
 import { PickListModule } from 'primeng/picklist';
 //import { ProgressBarModule } from 'primeng/progressbar';
 //import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -77,6 +77,7 @@ let modules = [
     MenuModule,
     MessagesModule,
     OrganizationChartModule,
+    PasswordModule,
     PickListModule,
     TableModule, TabViewModule, ToastModule,
     TooltipModule,
