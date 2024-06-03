@@ -9,6 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-manage-peers-editor',
@@ -26,12 +27,9 @@ export class ManagePeersEditorComponent {
     if (value.id) {
       this.webapiService.getPeer(value.id).subscribe(data => {
         this.peer = data;
-        this.getLookupData();
       });
     }
-    else {
-      this.getLookupData();
-    }
+    this.getLookupData();
   }
 
   peer: Peer = {} as Peer;
@@ -42,7 +40,8 @@ export class ManagePeersEditorComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) {
+    private confirmationDialogService: ConfirmationDialogService,
+    private sanitizer: DomSanitizer) {
 
   }
 
@@ -58,7 +57,7 @@ export class ManagePeersEditorComponent {
   }
 
   getQrCode() {
-    let imagePath = 'data:image/jpg;base64,' + this.editItem.qr;
+    let imagePath = this.editItem.qr ? 'data:image/jpg;base64,' + this.editItem.qr : '';
     return imagePath;
   }
 
@@ -117,4 +116,21 @@ export class ManagePeersEditorComponent {
     let x = item as PeerGroup;
     return x.id;
   }
+
+  fileUrl: any;
+
+  downloadConfigFile(event: Event): void {
+    if (this.peer.configuration) {
+      var blob = new Blob([this.peer.configuration], { type: 'text/plain' });
+      // TODO revisit this
+      //this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
+      this.fileUrl = window.URL.createObjectURL(blob);
+    }
+    const downloadAncher = document.createElement("a");
+    downloadAncher.style.display = "none";
+    downloadAncher.href = this.fileUrl;
+    downloadAncher.download = this.peer.name + '.conf';
+    downloadAncher.click();
+  }
+
 }

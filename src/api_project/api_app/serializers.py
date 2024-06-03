@@ -66,6 +66,8 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
         serverConfiguration = ServerConfiguration.objects.all()[0]
         peer = instance
         s, c = wg.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+        if c:
+            c = c.strip()
         return c
 
     def get_qr(self, instance):
