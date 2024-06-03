@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
 
 @Component({
   selector: 'app-manage-server-configuration',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
