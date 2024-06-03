@@ -131,7 +131,11 @@ def login(request):
     if request.method == "GET":
         res = {
             "is_logged_in": request.user.is_authenticated,
-            "message": "Already logged in." if request.user.is_authenticated else "Not logged in.",
+            "message": (
+                "Already logged in."
+                if request.user.is_authenticated
+                else "Not logged in."
+            ),
         }
     if request.method == "POST":
         if request.user.is_authenticated:
@@ -139,17 +143,65 @@ def login(request):
         else:
             # cred = request.data #used with @api_view only but that causes session to be lost
             cred = json.loads(request.body)
-            username = cred["username"].strip() if cred["username"] else ''
-            password = cred["password"].strip() if cred["password"] else ''
+            username = cred["username"].strip() if cred["username"] else ""
+            password = cred["password"].strip() if cred["password"] else ""
             user = drf_authenticate(username=username, password=password)
             if user:
                 auth.login(request, user)
                 res = {"is_logged_in": True, "message": "Logged in now."}
             else:
-                res = {"is_logged_in": False, "message": "Not logged in."}
+                res = {
+                    "is_logged_in": False,
+                    "message": "Login failed. Check username/password.",
+                }
     return HttpResponse(json.dumps(res))
+
 
 def logout(request):
     drf_logout(request=request)
     res = {"is_logged_in": False, "message": "User logged out."}
+    return HttpResponse(json.dumps(res))
+
+
+def change_password(request):
+    user = request.user
+    res = {"is_logged_in": user.is_authenticated, "message": ""}
+    if user.is_authenticated:
+        cred = json.loads(request.body)
+        current_password = (
+            cred["current_password"].strip()
+            if "current_password" in cred.keys()
+            else ""
+        )
+        new_password = (
+            cred["new_password"].strip() if "new_password" in cred.keys() else ""
+        )
+        new_password_copy = (
+            cred["new_password_copy"].strip()
+            if "new_password_copy" in cred.keys()
+            else ""
+        )
+        if new_password != new_password_copy:
+            res = {
+                "is_logged_in": user.is_authenticated,
+                "message": "New passwords don't match.",
+            }
+        else:
+            if new_password:
+                user = drf_authenticate(
+                    username=user.username, password=current_password
+                )
+                if user:
+                    auth.login(request, user)
+                    user.set_password(new_password)
+                    user.save()
+                    res = {
+                        "is_logged_in": user.is_authenticated,
+                        "message": "Password changed.",
+                    }
+                else:
+                    res = {
+                        "is_logged_in": False,
+                        "message": "Current password invalid.",
+                    }
     return HttpResponse(json.dumps(res))

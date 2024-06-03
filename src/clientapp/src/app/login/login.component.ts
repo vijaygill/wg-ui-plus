@@ -17,7 +17,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 })
 export class LoginComponent implements OnInit {
   credentials: UserCrendentials = { username: '', password: '' } as UserCrendentials;
-  userSessionInfo!: UserSessionInfo;
+  userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' } as UserSessionInfo;
   loginServiceSubscription !: Subscription;
   url !: string;
 

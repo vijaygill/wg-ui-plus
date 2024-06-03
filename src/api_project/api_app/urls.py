@@ -62,4 +62,9 @@ urlpatterns = [
         views.logout,
         name="logout",
     ),
+    path(
+        "api/v1/auth/change_password",
+        views.change_password,
+        name="change_password",
+    ),
 ]

@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       HttpClientXsrfModule.withOptions({
       cookieName: 'csrftoken',
-      headerName: 'csrftoken',
+      headerName: 'X-CSRFToken',
     })
   ),]
 };

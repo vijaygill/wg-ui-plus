@@ -22,6 +22,7 @@ export class WebapiService {
     private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
     private urlIsUserLogIn = '/api/v1/auth/login';
     private urlIsUserLogOut = '/api/v1/auth/logout';
+    private urlChangeUserPassword = '/api/v1/auth/change_password';
 
     constructor(private http: HttpClient) { }
 
@@ -186,28 +187,40 @@ export class WebapiService {
         return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
     }
 
-    checkIsUserAuthenticated(): Observable<UserSessionInfo>{
+    checkIsUserAuthenticated(): Observable<UserSessionInfo> {
         return this.http.get<UserSessionInfo>(this.urlIsUserLogIn);
     }
 
-    login(credentials: UserCrendentials): Observable<UserSessionInfo>{
+    login(credentials: UserCrendentials): Observable<UserSessionInfo> {
         return this.http.post<UserSessionInfo>(this.urlIsUserLogIn, credentials);
     }
 
-    logout(): Observable<UserSessionInfo>{
+    logout(): Observable<UserSessionInfo> {
         return this.http.get<UserSessionInfo>(this.urlIsUserLogOut);
     }
+
+    changeUserPassword(info: ChangeUserPasswordInfo): Observable<UserSessionInfo> {
+        return this.http.post<UserSessionInfo>(this.urlChangeUserPassword, info);
+    }
+
 }
 
-export interface UserCrendentials{
+export interface UserCrendentials {
     username: string;
     password: string;
 }
 
-export interface UserSessionInfo{
-    is_logged_in :boolean;
+export interface UserSessionInfo {
+    is_logged_in: boolean;
     message: string;
 }
+
+export interface ChangeUserPasswordInfo {
+    current_password: string;
+    new_password: string;
+    new_password_copy: string;
+}
+
 
 export interface Entity {
     id: number;
@@ -319,7 +332,7 @@ export interface LicenseInfo {
     license: string;
 }
 
-export interface IpTablesLog{
+export interface IpTablesLog {
     status: string;
     output: string;
 }

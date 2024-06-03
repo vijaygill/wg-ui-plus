@@ -19,5 +19,12 @@
                 </div>
             </td>
         </tr>
+        <tr *ngIf="userSessionInfo && userSessionInfo.message">
+            <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                    {{userSessionInfo.message}}
+                </div>
+            </td>
+        </tr>
     </table>
 </p-card>
