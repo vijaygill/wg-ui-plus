@@ -131,7 +131,7 @@ def login(request):
     if request.method == "GET":
         res = {
             "is_logged_in": request.user.is_authenticated,
-            "message": "Already logged in.",
+            "message": "Already logged in." if request.user.is_authenticated else "Not logged in.",
         }
     if request.method == "POST":
         if request.user.is_authenticated:
@@ -139,8 +139,8 @@ def login(request):
         else:
             # cred = request.data #used with @api_view only but that causes session to be lost
             cred = json.loads(request.body)
-            username = cred["username"].strip()
-            password = cred["password"].strip()
+            username = cred["username"].strip() if cred["username"] else ''
+            password = cred["password"].strip() if cred["password"] else ''
             user = drf_authenticate(username=username, password=password)
             if user:
                 auth.login(request, user)

@@ -1,6 +1,10 @@
 import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../app-shared.module';
+import { LoginService } from '../login/login.component';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { UserSessionInfo } from '../webapi.service';
 
 @Component({
   selector: 'app-crud-container',
@@ -16,12 +20,33 @@ export class CrudContainerComponent<T> {
   item: T = {} as T;
 
   useDialogForEditor: boolean = false;
+  userSessionInfo!: UserSessionInfo;
+  loginServiceSubscription !: Subscription;
 
   @ContentChild("list") listControl!: TemplateRef<any>;
   @ContentChild("editor") editorControl!: TemplateRef<any>;
 
-  ngOnInit() {
+  constructor(private router: Router, private loginService: LoginService) { }
+
+  ngOnInit(): void {
+    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
+      this.userSessionInfo = data;
+      if (this.userSessionInfo.is_logged_in) {
+        this.router.navigate(['/home']);
+      }
+      else {
+        this.router.navigate(['/']);
+      }
+    });
+    this.loginService.checkIsUserAuthenticated();
   }
+
+  ngOnDestroy() {
+    if (this.loginServiceSubscription) {
+      this.loginServiceSubscription.unsubscribe();
+    }
+  }
+
 
   listControlContext = {
     onNewItem: (item: T) => {

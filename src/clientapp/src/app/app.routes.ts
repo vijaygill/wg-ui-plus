@@ -11,6 +11,8 @@ import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
     { path: '', component: LoginComponent },
+    { path: 'login', component: LoginComponent },
+    { path: 'logout', component: LoginComponent },
     { path: 'home', component: HomeComponent },
     { path: 'about', component: AboutComponent },
     { path: 'manage-peer-groups', component: ManagePeerGroupsComponent },

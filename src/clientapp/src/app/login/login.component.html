@@ -14,10 +14,10 @@
         </tr>
         <tr>
             <td colspan="2">
-                <p-button label="Login" (onClick)="login($event)"></p-button>
-                <p-button label="Logout" (onClick)="logout($event)"></p-button>
+                <div style="width:100%;align-items: center; text-align: center;">
+                    <p-button label="Login" (onClick)="login($event)"></p-button>
+                </div>
             </td>
         </tr>
     </table>
 </p-card>
-userSessionInfo: {{userSessionInfo | json}}

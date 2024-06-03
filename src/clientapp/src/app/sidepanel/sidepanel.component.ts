@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
 import { routes } from '../app.routes';
-import { WebapiService } from '../webapi.service';
+import { UserSessionInfo, WebapiService } from '../webapi.service';
+import { Subscription } from 'rxjs';
+import { LoginService } from '../login/login.component';
 
 
 @Component({
@@ -16,8 +18,9 @@ import { WebapiService } from '../webapi.service';
   templateUrl: './sidepanel.component.html',
   styleUrl: './sidepanel.component.scss'
 })
-export class SidepanelComponent {
-  items: MenuItem[] = [
+export class SidepanelComponent implements OnInit {
+  items: MenuItem[] = [] as MenuItem[];
+  itemsDefault: MenuItem[] = [
     {
       items: [
         {
@@ -47,12 +50,44 @@ export class SidepanelComponent {
         {
           label: 'About',
           route: '/about',
-        },
+        }
       ]
     }
   ];
 
-  constructor(private router: Router, private webapiService: WebapiService) {
+  itemsLogout: MenuItem[] = [{
+    items: [{
+      label: 'Logout',
+      command: () => {
+        this.loginService.logout();
+      },
+    }]
+  }];
 
+  userSessionInfo!: UserSessionInfo;
+  loginServiceSubscription !: Subscription;
+
+  constructor(private router: Router, private loginService: LoginService) { }
+
+  ngOnInit(): void {
+    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
+      this.userSessionInfo = data;
+      if (this.userSessionInfo.is_logged_in) {
+        this.router.navigate(['/home']);
+        this.items = [...this.itemsDefault, ...this.itemsLogout];
+      }
+      else {
+        this.router.navigate(['/']);
+        this.items = this.itemsDefault;
+      }
+    });
+    this.loginService.checkIsUserAuthenticated();
   }
+
+  ngOnDestroy() {
+    if (this.loginServiceSubscription) {
+      this.loginServiceSubscription.unsubscribe();
+    }
+  }
+
 }
