@@ -46,7 +46,6 @@ class PeerViewSet(viewsets.ModelViewSet):
 class TargetHeirarchyViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetHeirarchySerializer
-    permission_classes = (IsAuthenticated,)
 
 
 class PeerGroupViewSet(viewsets.ModelViewSet):
@@ -76,9 +75,12 @@ def test(request):
 def get_license(request):
     with open("/app/LICENSE") as f:
         text = f.read()
-        return HttpResponse(json.dumps({"license": text}))
+        return Response({"license": text})
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def wireguard_generate_configuration_files(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
@@ -88,40 +90,45 @@ def wireguard_generate_configuration_files(request):
     res = wg.generateConfigurationFiles(
         serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
     )
-    return HttpResponse(json.dumps(res))
+    return Response(res)
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def wireguard_restart(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
     res = wg.restart(serverConfiguration=sc)
-    return HttpResponse(
-        json.dumps({"message": "Hello from wireguard_restart!", "output": res})
-    )
+    return Response({"message": "Hello from wireguard_restart!", "output": res})
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def wireguard_get_configuration(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
     peers = Peer.objects.all()
     res = wg.getWireguardConfiguration(serverConfiguration=sc, peers=peers)
-    res = json.dumps(res)
-    return HttpResponse(res)
+    return Response(res)
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
 def wireguard_get_connected_peers(request):
     peers = Peer.objects.all()
     wg = WireGuardHelper()
     res = wg.get_connected_peers(peers)
-    res = json.dumps(res)
-    return HttpResponse(res)
+    return Response(res)
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
 def wireguard_get_iptables_log(request):
     wg = WireGuardHelper()
     res = wg.get_iptables_log()
-    res = json.dumps(res)
-    return HttpResponse(res)
+    return Response(res)
 
 
 @csrf_exempt
@@ -157,17 +164,23 @@ def login(request):
     return HttpResponse(json.dumps(res))
 
 
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
 def logout(request):
     drf_logout(request=request)
     res = {"is_logged_in": False, "message": "User logged out."}
-    return HttpResponse(json.dumps(res))
+    return Response(res)
 
 
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
 def change_password(request):
     user = request.user
     res = {"is_logged_in": user.is_authenticated, "message": ""}
     if user.is_authenticated:
-        cred = json.loads(request.body)
+        # cred = json.loads(request.body)
+        cred = request.data
         current_password = (
             cred["current_password"].strip()
             if "current_password" in cred.keys()
@@ -204,4 +217,4 @@ def change_password(request):
                         "is_logged_in": False,
                         "message": "Current password invalid.",
                     }
-    return HttpResponse(json.dumps(res))
+    return Response(res)
