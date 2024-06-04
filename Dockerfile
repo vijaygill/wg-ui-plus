@@ -44,15 +44,20 @@ USER $UNAME
 WORKDIR /wg-ui-plus/src
 
 FROM python:alpine3.20 as base-live
-
 ARG UNAME
 ARG UID
 ARG GID
 
-RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata && pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors && apk add --no-cache gcc libressl-dev musl-dev libffi-dev && pip install --no-cache-dir cryptography &&  apk del gcc libressl-dev musl-dev libffi-dev
+RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata
+RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors
 
-RUN adduser -D $UNAME && echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers && mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /config
+RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev \
+    &&  pip install --no-cache-dir cryptography \
+    &&  apk del gcc libressl-dev musl-dev libffi-dev
 
+RUN adduser -D $UNAME
+RUN echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers
+RUN mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /config
 VOLUME /data /config
 
 FROM base-live as live

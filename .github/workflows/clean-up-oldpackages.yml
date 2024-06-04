@@ -11,14 +11,12 @@ jobs:
     permissions: write-all
     steps:
       - name: Set ENV variables
-        id: get_repo_name
         run: |
-          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
       - name: Delete packages
         uses: actions/delete-package-versions@v5
         with:
-          package-name: ${{ steps.get_repo_name.outputs.REPO_NAME }}
+          package-name: ${{ env.REPO_NAME }}
           package-type: 'container'
-          min-versions-to-keep: 0
-          ignore-versions: '^(dev|master|latest).*'
+          min-versions-to-keep: 15
 
