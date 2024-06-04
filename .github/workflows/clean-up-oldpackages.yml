@@ -19,4 +19,11 @@ jobs:
           package-name: ${{ env.REPO_NAME }}
           package-type: 'container'
           min-versions-to-keep: 15
+      - name: Delete untagged packages
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ env.REPO_NAME }}
+          package-type: 'container'
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true
 
