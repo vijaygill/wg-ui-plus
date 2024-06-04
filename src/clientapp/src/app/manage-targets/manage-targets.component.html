@@ -1,4 +1,4 @@
-<app-crud-container header="Targets">
+<app-crud-container header="Targets" subheader="Targets are resources your VPN clients can access.">
     <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
         <app-manage-targets-list (onEdit)="onEdit($event)" (onNewItem)="onNewItem($event)"></app-manage-targets-list>
     </ng-template>

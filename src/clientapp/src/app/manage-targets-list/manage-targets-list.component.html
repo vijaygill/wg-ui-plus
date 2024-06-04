@@ -1,12 +1,20 @@
-<p-table [value]="targets" sortField="name" styleClass="p-datatable-striped" >
+<p-table [value]="targets" sortField="name" styleClass="p-datatable-striped p-datatable-gridlines p-datatable-sm">
     <ng-template pTemplate="header">
+        <tr>
+            <th colspan="3">
+                <h5>Targets</h5>
+                <span>
+                    A target is resource your VPN clients can access.
+                    It can be a machine (all ports or some) or a network.
+                </span>
+            </th>
+            <th><p-button icon="pi pi-plus-circle" label="New" (onClick)="newItem();"></p-button></th>
+        </tr>
         <tr>
             <th>Name</th>
             <th>IP Address</th>
             <th>Disabled</th>
-            <th>Action
-                <p-button [rounded]="true" icon="pi pi-plus-circle" (onClick)="newItem();"></p-button>
-            </th>
+            <th>Action</th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-targetGroup>
@@ -14,7 +22,7 @@
             <td>{{ targetGroup.name }}</td>
             <td>{{ targetGroup.ip_address }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
-            <td><p-button [rounded]="true" icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
+            <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>
     </ng-template>
 </p-table>

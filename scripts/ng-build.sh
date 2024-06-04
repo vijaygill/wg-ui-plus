@@ -10,4 +10,4 @@ fi
 
 cd "${APP_FOLDER}"
 #ng build --watch --prerender=false # --verbose --ssr
-ng build --watch --prerender=false --deploy-url="/static/" --base-href="/static/"
+ng build --watch --prerender=false --deploy-url="/" --base-href="/"

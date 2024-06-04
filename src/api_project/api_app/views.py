@@ -134,7 +134,7 @@ def wireguard_get_iptables_log(request):
 @csrf_exempt
 @api_view(["GET", "POST"])
 @authentication_classes([SessionAuthentication])
-def login(request):
+def auth_login(request):
     res = {}
     if request.method == "GET":
         res = {
@@ -166,7 +166,7 @@ def login(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-def logout(request):
+def auth_logout(request):
     drf_logout(request=request)
     res = {"is_logged_in": False, "message": "User logged out."}
     return Response(res)
@@ -175,7 +175,7 @@ def logout(request):
 @api_view(["POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def change_password(request):
+def auth_change_password(request):
     user = request.user
     res = {"is_logged_in": user.is_authenticated, "message": ""}
     if user.is_authenticated:
@@ -217,4 +217,25 @@ def change_password(request):
                         "is_logged_in": False,
                         "message": "Current password invalid.",
                     }
+    return Response(res)
+
+
+@api_view(["GET"])
+@authentication_classes([SessionAuthentication])
+def wireguard_get_server_status(request):
+    peers = Peer.objects.all()
+    peer_groups = PeerGroup.objects.all()
+    targets = Target.objects.all()
+    server_configurations = ServerConfiguration.objects.all()
+    last_changed_datetimes = (
+        [x.last_changed_datetime for x in peers]
+        + [x.last_changed_datetime for x in peers]
+        + [x.last_changed_datetime for x in targets]
+        + [x.last_changed_datetime for x in server_configurations]
+    )
+    last_changed_datetime = (
+        max(last_changed_datetimes) if last_changed_datetimes else None
+    )
+    wg = WireGuardHelper()
+    res = wg.get_server_status(last_db_change_datetime=last_changed_datetime)
     return Response(res)

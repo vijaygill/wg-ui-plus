@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import glob
 import datetime
 import ipaddress
 from functools import wraps
@@ -501,7 +502,32 @@ AllowedIPs = 0.0.0.0/0
 
     @logged
     def get_iptables_log(self):
-        command = f"sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
+        command = "sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
+        return res
+
+    @logged
+    def get_server_status(self, last_db_change_datetime):
+        res = {}
+        res["status"] = "ok"
+        res["need_regenerate_files"] = False
+        files = glob.glob("/config/wireguard/**/*", recursive=True)
+        last_file_change_timestamps = [os.path.getmtime(x) for x in files]
+        last_file_change_timestamp = (
+            max(last_file_change_timestamps) if last_file_change_timestamps else 0
+        )
+        
+        last_file_change_datetime = datetime.datetime.fromtimestamp(last_file_change_timestamp, timezone.get_current_timezone())
+
+        res["last_db_change_datetime"] = last_db_change_datetime
+        res["last_file_change_datetime"] = last_file_change_datetime
+
+        if last_db_change_datetime is None:
+            res["status"] = "Last DB Change cannot be ascertained."
+        else:
+            if last_db_change_datetime > last_file_change_datetime:
+                res["need_regenerate_files"] = True
+                res["status"] = "Configuration files need to be regenerated."
+
         return res

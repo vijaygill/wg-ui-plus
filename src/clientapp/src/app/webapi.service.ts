@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { TreeNode } from 'primeng/api';
-import { map } from 'rxjs/operators'
-import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, Peer, PeerGroup, ServerConfiguration, Target, UserCrendentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
+import { map, tap } from 'rxjs/operators'
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCrendentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -21,6 +21,7 @@ export class WebapiService {
     private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
     private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
+    private urlGetServerStatus = '/api/v1/control/get_server_status';
     private urlIsUserLogIn = '/api/v1/auth/login';
     private urlIsUserLogOut = '/api/v1/auth/logout';
     private urlChangeUserPassword = '/api/v1/auth/change_password';
@@ -47,11 +48,18 @@ export class WebapiService {
         var res = item.id
             ? this.http.put<PeerGroup>(this.urlPeerGroup + item.id + '/', item)
             : this.http.post<PeerGroup>(this.urlPeerGroup, item);
+
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
     deletePeerGroup(item: PeerGroup): Observable<PeerGroup> {
         var res = this.http.delete<PeerGroup>(this.urlPeerGroup + item.id + '/');
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
@@ -70,11 +78,17 @@ export class WebapiService {
         var res = item.id
             ? this.http.put<Peer>(this.urlPeer + item.id + '/', item)
             : this.http.post<Peer>(this.urlPeer, item);
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
     deletePeer(item: Peer): Observable<Peer> {
         var res = this.http.delete<Peer>(this.urlPeer + item.id + '/');
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
@@ -93,11 +107,17 @@ export class WebapiService {
         var res = item.id
             ? this.http.put<Target>(this.urlTarget + item.id + '/', item)
             : this.http.post<Target>(this.urlTarget, item);
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
     deleteTarget(item: Target): Observable<Target> {
         var res = this.http.delete<Target>(this.urlTarget + item.id + '/');
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
@@ -113,15 +133,24 @@ export class WebapiService {
         var res = item.id
             ? this.http.put<ServerConfiguration>(this.urlServerConfiguration + item.id + '/', item)
             : this.http.post<ServerConfiguration>(this.urlServerConfiguration, item);
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
         return res;
     }
 
     getWireguardConfiguration(): Observable<WireguardConfiguration> {
-        return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration);
+        return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration)
+            .pipe(tap(() => {
+                this.checkServerStatus();
+            }));
     }
 
     generateConfigurationFiles(): Observable<any> {
-        return this.http.get<any>(this.urlControlGenerateConfigurationFiles);
+        return this.http.get<any>(this.urlControlGenerateConfigurationFiles)
+            .pipe(tap(() => {
+                this.checkServerStatus();
+            }));
     }
 
     wireguardRestart(): Observable<any> {
@@ -186,6 +215,14 @@ export class WebapiService {
 
     getIpTablesLog(): Observable<IpTablesLog> {
         return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
+    }
+
+    serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
+
+    checkServerStatus(): void {
+        this.http.get<ServerStatus>(this.urlGetServerStatus).subscribe(data => {
+            this.serverStatus.next(data);
+        });
     }
 
     checkIsUserAuthenticated(): Observable<UserSessionInfo> {

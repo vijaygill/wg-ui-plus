@@ -94,7 +94,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create multiarch manifests
+      - name: Create multiarch manifests (master branch)
         if: github.ref == 'refs/heads/master'
         run: |
           docker buildx imagetools create \
@@ -102,7 +102,8 @@ jobs:
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
-      - name: Create multiarch manifests
+
+      - name: Create multiarch manifests (non-master branch)
         if: github.ref != 'refs/heads/master'
         run: |
           docker buildx imagetools create \

@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, Message } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
 import { routes } from '../app.routes';
-import { UserSessionInfo } from '../webapi.entities';
-import { Subscription } from 'rxjs';
+import { ServerStatus, UserSessionInfo } from '../webapi.entities';
+import { Subscription, interval } from 'rxjs';
 import { LoginService } from '../loginService';
+import { WebapiService } from '../webapi.service';
 
 
 @Component({
@@ -103,4 +104,5 @@ export class SidepanelComponent implements OnInit {
     }
   }
 
+  
 }

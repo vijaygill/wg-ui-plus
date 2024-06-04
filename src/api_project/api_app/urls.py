@@ -54,17 +54,22 @@ urlpatterns = [
     ),
     path(
         "api/v1/auth/login",
-        views.login,
+        views.auth_login,
         name="login",
     ),
     path(
         "api/v1/auth/logout",
-        views.logout,
+        views.auth_logout,
         name="logout",
     ),
     path(
         "api/v1/auth/change_password",
-        views.change_password,
+        views.auth_change_password,
         name="change_password",
+    ),
+    path(
+        "api/v1/control/get_server_status",
+        views.wireguard_get_server_status,
+        name="get_server_status",
     ),
 ]

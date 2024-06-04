@@ -33,7 +33,7 @@ class PeerSerializer(serializers.ModelSerializer):
             for target in peer_group_everyone.targets.all():
                 res += [(target, peer_group_everyone)]
 
-        res = [f"{x[0].name} ({x[1].name})" for x in res]
+        res = [f"{x[0].name}" for x in res]
         res = list(set(res))
         res.sort()
         res = ", ".join(res)

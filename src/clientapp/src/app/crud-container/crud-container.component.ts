@@ -13,7 +13,7 @@ import { LoginService } from '../loginService';
   styleUrl: './crud-container.component.scss'
 })
 export class CrudContainerComponent<T> {
-  @Input() header: string = '<No Header>';
+  @Input() header!: string;
   @Input() subheader!: string;
   isEditing: boolean = false;
   item: T = {} as T;

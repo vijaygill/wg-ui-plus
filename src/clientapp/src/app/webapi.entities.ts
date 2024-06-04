@@ -129,3 +129,10 @@ export interface IpTablesLog {
     status: string;
     output: string;
 }
+
+export interface ServerStatus {
+    status: string;
+    need_regenerate_files: boolean;
+    last_db_change_datetime: Date;
+    last_file_change_datetime: Date;
+}

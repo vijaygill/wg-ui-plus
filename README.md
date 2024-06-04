@@ -19,16 +19,16 @@ You can set up your own VPN in a few minutes by following the following steps:
 2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
 3. Now start the WG-UI-Plus using the following command
    ```
-   mkdir ./config && mkdir ./data && docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+   mkdir -p ./config && mkdir -p ./data && docker run -it --rm --cap-add CAP_NET_ADMIN --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 --privileged -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
    ```
-4. Point your browser to the address "htttp://internel_ip_address:8000".
+4. Point your browser to the address "htttp://internal_ip_address:8000".
 5. In the server configuration page
    * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
    ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/d224d5f1-ec8a-4a08-9c9e-783a56fb273b)
    * Change the upstream DNS server to suitable value. I have pihole on 192.168.0.5 in my setup. you can use 8.8.8.8 also.
    * Click on "Generate Wireguard Configuration Files" and "Restart WireGuard".
-6. In Peers management page, add a new Peer
-   * Open the edit page for any peer and leave it open to scan QR code in next step
+6. In Peers management page, click on "Edit" button for any of the peers created by default.
+   * Scan QR code in next step
      ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/2851ad9b-9bfa-4b61-9aa1-0dfbdaf9d855)
 
 7. Install WireGuard app on your mobile phone and add tunnel by scanning the QR code.
@@ -58,7 +58,7 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 - [x] Manage Peer-Groups - Add/Edit/Disable
   - [x] Add/Remove Peer-Groups from Peer's list, thus affecting the access to the target linked with the Peer-Group
 - [x] Live Dashboard
-- [ ] Authentication
+- [x] Authentication
 - [ ] Ability to send configuration files for peers by email
 
 ## Screenshots with some salient features
