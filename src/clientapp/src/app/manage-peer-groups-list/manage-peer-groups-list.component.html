@@ -1,11 +1,13 @@
-<p-table [value]="peerGroups" sortField="name" styleClass="p-datatable-striped p-datatable-gridlines p-datatable-sm" dataKey="id">
+<p-table [value]="peerGroups" sortField="name" styleClass="p-datatable-striped p-datatable-gridlines p-datatable-sm"
+    dataKey="id">
     <ng-template pTemplate="header">
         <tr>
             <th colspan="4">
                 <h5>Peer Groups</h5>
                 <span>
                     Peers-Groups are groups of Peers using the VPN.
-                    Managing peers in groups makes it easy to grant/deny access instead of doing so for individual peers.
+                    Managing peers in groups makes it easy to grant/deny access instead of doing so for individual
+                    peers.
                 </span>
             </th>
             <th><p-button icon="pi pi-plus-circle" label="New" (onClick)="newItem();"></p-button></th>
@@ -21,12 +23,13 @@
     <ng-template pTemplate="body" let-peerGroup>
         <tr>
             <td>
-                <p-button text="yes" [label]="peerGroup.name" (onClick)="editItem(peerGroup);"></p-button>
+                {{ peerGroup.name }}
             </td>
             <td>{{ peerGroup.description }}</td>
             <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peerGroup.disabled" /></td>
             <td>{{ peerGroup.target_names }}</td>
-            <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peerGroup);"></p-button></td>
+            <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peerGroup);"></p-button>
+            </td>
         </tr>
     </ng-template>
 </p-table>
