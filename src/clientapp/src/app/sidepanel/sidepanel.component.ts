@@ -21,7 +21,7 @@ import { WebapiService } from '../webapi.service';
 })
 export class SidepanelComponent implements OnInit {
   items: MenuItem[] = [] as MenuItem[];
-  itemsDefault: MenuItem[] = [
+  itemsAuthorised: MenuItem[] = [
     {
       items: [
         {
@@ -40,29 +40,79 @@ export class SidepanelComponent implements OnInit {
           label: 'Targets',
           route: '/manage-targets',
         },
+      ]
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Server',
+      expanded: true,
+      items: [
         {
-          label: 'Server',
+          label: 'Configuration',
           route: '/manage-server-configuration',
         },
-        // {
-        //   label: 'Test',
-        //   route: '/test-page',
-        // },
+        {
+          label: 'VPN Layout',
+          route: '/manage-server-configuration',
+        },
+        {
+          label: 'Monitor IP-Tables',
+          route: '/manage-server-configuration',
+        },
+      ]
+    },
+    {
+      separator: true
+    },
+    {
+      items: [
         {
           label: 'About',
           route: '/about',
         },
+        {
+          label: 'Log out',
+          command: () => {
+            this.loginService.logout();
+          },
+        }
       ]
     }
   ];
 
-  itemsLogin: MenuItem[] = [
+  itemsAnonymous: MenuItem[] = [
     {
       items: [
         {
           label: 'Home',
           route: '/home',
         },
+      ]
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Server',
+      expanded: true,
+      items: [
+        {
+          label: 'VPN Layout',
+          route: '/manage-server-configuration',
+        },
+        {
+          label: 'Monitor IP-Tables',
+          route: '/manage-server-configuration',
+        },
+      ]
+    },
+    {
+      separator: true
+    },
+    {
+      items: [
         {
           label: 'About',
           route: '/about',
@@ -70,20 +120,10 @@ export class SidepanelComponent implements OnInit {
         {
           label: 'Log in',
           route: '/login',
-        },
+        }
       ]
     }
   ];
-
-
-  itemsLogout: MenuItem[] = [{
-    items: [{
-      label: 'Log out',
-      command: () => {
-        this.loginService.logout();
-      },
-    }]
-  }];
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
@@ -93,7 +133,7 @@ export class SidepanelComponent implements OnInit {
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
-      this.items = this.userSessionInfo.is_logged_in ? [...this.itemsDefault, ...this.itemsLogout] : this.itemsLogin;
+      this.items = this.userSessionInfo.is_logged_in ? this.itemsAuthorised : this.itemsAnonymous;
     });
     this.loginService.checkIsUserAuthenticated();
   }
@@ -104,5 +144,5 @@ export class SidepanelComponent implements OnInit {
     }
   }
 
-  
+
 }
