@@ -103,7 +103,8 @@ jobs:
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ steps.gen_timestamp.outputs.timestamp }} \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:stable \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:stable-${{ steps.gen_timestamp.outputs.timestamp }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
