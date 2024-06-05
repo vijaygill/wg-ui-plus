@@ -8,7 +8,7 @@ def ensure_folder_exists_for_file(filepath):
     dir = os.path.dirname(filepath)
     if not os.path.exists(dir):
         os.makedirs(dir)
-        logger.warning(f"Directory was missing. Created: {dir}")
+        #logger.warning(f"Directory was missing. Created: {dir}")
 
 
 def is_single_address(value):
@@ -36,14 +36,6 @@ def is_network_address(addr):
     except:
         pass
     return res
-
-
-def ensure_folder_exists_for_file(filepath):
-    dir = os.path.dirname(filepath)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-        logger.warning(f"Directory was missing. Created: {dir}")
-
 
 def get_target_ip_address_parts(value):
     regex = r"""
