@@ -14,13 +14,6 @@ jobs:
         id: get_repo_name
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_OUTPUT
-      - name: Delete packages
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ steps.get_repo_name.outputs.REPO_NAME }}
-          package-type: 'container'
-          min-versions-to-keep: 15
-          ignore-versions: '^(dev\-|master\-|stable\-|latest).*$'
       - name: Delete untagged packages
         uses: actions/delete-package-versions@v5
         with:
