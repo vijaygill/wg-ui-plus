@@ -26,7 +26,9 @@ You can set up your own VPN in a few minutes by following the following steps:
    * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
    ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/d224d5f1-ec8a-4a08-9c9e-783a56fb273b)
    * Change the upstream DNS server to suitable value. I have pihole on 192.168.0.5 in my setup. you can use 8.8.8.8 also.
-   * Click on "Generate Wireguard Configuration Files" and "Restart WireGuard".
+   * Click on "Ok" to save data.
+   * A message will pop up at the top of the page to tell you that the changes need to be applied and VPN restarted.
+     Click on "Apply Changes" button.
 6. In Peers management page, click on "Edit" button for any of the peers created by default.
    * Scan QR code in next step
      ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/2851ad9b-9bfa-4b61-9aa1-0dfbdaf9d855)
