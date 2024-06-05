@@ -9,5 +9,8 @@ if [[ ! -d "${APP_FOLDER}" ]] ; then
 fi
 
 cd "${APP_FOLDER}"
-#ng build --watch --prerender=false # --verbose --ssr
+
+mkdir -p /wg-ui-plus/src/clientapp/dist
+sudo chown -R pi:pi /wg-ui-plus/src/clientapp/dist
+
 ng build --watch --prerender=false --deploy-url="/" --base-href="/"

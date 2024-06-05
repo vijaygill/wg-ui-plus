@@ -1,0 +1,52 @@
+<p-card header="VPN Layout" subheader="How Targets, Peer-Groups and Peers are linked.">
+    <p-organizationChart [value]="heirarchyData">
+        <ng-template let-node pTemplate="target">
+            <div class="p-2 text-center">
+                <div>
+                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    {{ node.label }}
+                </div>
+                <div>
+                    <small>
+                        {{ node.data.ip_address }}
+                    </small>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template let-node pTemplate="peerGroup">
+            <div class="p-2 text-center">
+                <div>
+                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    {{ node.label }}
+                </div>
+            </div>
+        </ng-template>
+        <ng-template let-node pTemplate="peer">
+            <div class="p-2 text-center">
+                <div class="p-2">
+                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    {{ node.label }}
+                </div>
+                <div>
+                    <small>
+                        {{ node.data.ip_address }}
+                    </small>
+                </div>
+            </div>
+        </ng-template>
+    </p-organizationChart>
+    <div>
+        <ul>
+            <li>A Peer is a device which connects with VPN</li>
+            <li>A Target can be a host (a specific IP Address with or without port/ports) or a network (IP Address with a mask)</li>
+            <li>
+                A Peer-Group is a group of Peers that can be given access to a Target.
+                <ul>
+                    <li>Using Peer-Groups makes it easy to grant/deny access to the peers.</li>
+                    <li>Once a Peer-Group is linked with a target (either in Peer-Group edit page or Target edit
+                        page), just add/remove Peers in the given Peer-Group.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</p-card>

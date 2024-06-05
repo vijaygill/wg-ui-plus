@@ -504,7 +504,11 @@ AllowedIPs = 0.0.0.0/0
     def get_iptables_log(self):
         command = "sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
         output = self.execute_process(command)
-        res = {"status": "ok", "output": output}
+        dt = datetime.datetime.now().astimezone()
+        res = {}
+        res["status"] = 'ok'
+        res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
+        res["output"] = output
         return res
 
     @logged
@@ -524,10 +528,12 @@ AllowedIPs = 0.0.0.0/0
         res["last_file_change_datetime"] = last_file_change_datetime
 
         if last_db_change_datetime is None:
-            res["status"] = "Last DB Change cannot be ascertained."
+            res["status"] = "warning"
+            res["message"] = "Last DB Change cannot be ascertained."
         else:
             if last_db_change_datetime > last_file_change_datetime:
                 res["need_regenerate_files"] = True
-                res["status"] = "Configuration files need to be regenerated."
+                res["message"] = "Configuration files need to be regenerated."
+                res["status"] = "warning"
 
         return res

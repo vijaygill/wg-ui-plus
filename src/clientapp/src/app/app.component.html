@@ -1,7 +1,7 @@
-<p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <h2>Welcome to WG-UI-Plus</h2>
+    <h3>WG-UI-Plus</h3>
+    <h5>Run and manage your WireGuard (TM) VPN in one UI.</h5>
     <div>
       <div *ngIf="serverStatus.need_regenerate_files">
         <p-messages severity="warn">
@@ -11,14 +11,13 @@
                 <span>Apply changes. This will regenerate Server Configuration files and restart WireGuard.</span>
               </div>
               <div>
-                <p-button icon="pi pi-check" label="Apply Changes"
-                  (onClick)="applyconfiguration($event)"></p-button>
+                <p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
               </div>
             </div>
           </ng-template>
         </p-messages>
       </div>
-      <p-messages [(value)]="serverStatusMessages" [enableService]="false" [closable]="false" />
+        <p-messages />
     </div>
   </div>
   <div class="item item-sidebar">

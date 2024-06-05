@@ -1,6 +1,6 @@
 <app-authorized-view>
     <ng-template #childControl>
-        <p-card>
+        <p-card [header]="header" [subheader]="subheader">
             <p class="m-0">
                 <ng-container *ngIf="useDialogForEditor">
                     <ng-container *ngIf="!isEditing">

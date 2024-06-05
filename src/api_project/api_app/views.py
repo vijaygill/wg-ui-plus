@@ -229,7 +229,7 @@ def wireguard_get_server_status(request):
     server_configurations = ServerConfiguration.objects.all()
     last_changed_datetimes = (
         [x.last_changed_datetime for x in peers]
-        + [x.last_changed_datetime for x in peers]
+        + [x.last_changed_datetime for x in peer_groups]
         + [x.last_changed_datetime for x in targets]
         + [x.last_changed_datetime for x in server_configurations]
     )

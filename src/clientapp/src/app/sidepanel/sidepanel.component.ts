@@ -23,11 +23,33 @@ export class SidepanelComponent implements OnInit {
   items: MenuItem[] = [] as MenuItem[];
   itemsAuthorised: MenuItem[] = [
     {
+      label: 'Server',
+      expanded: true,
       items: [
         {
-          label: 'Home',
-          route: '/home',
+          label: 'Configuration',
+          route: '/server-configuration',
         },
+        {
+          label: 'VPN Layout',
+          route: '/server-vpn-layout',
+        },
+        {
+          label: 'Monitor Peers',
+          route: '/server-monitor-peers',
+        },
+        {
+          label: 'Monitor IP-Tables',
+          route: '/server-monitor-iptables',
+        },
+      ]
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Manage Data',
+      items: [
         {
           label: 'Peer-Groups',
           route: '/manage-peer-groups',
@@ -39,27 +61,6 @@ export class SidepanelComponent implements OnInit {
         {
           label: 'Targets',
           route: '/manage-targets',
-        },
-      ]
-    },
-    {
-      separator: true
-    },
-    {
-      label: 'Server',
-      expanded: true,
-      items: [
-        {
-          label: 'Configuration',
-          route: '/manage-server-configuration',
-        },
-        {
-          label: 'VPN Layout',
-          route: '/manage-server-configuration',
-        },
-        {
-          label: 'Monitor IP-Tables',
-          route: '/manage-server-configuration',
         },
       ]
     },
@@ -84,27 +85,20 @@ export class SidepanelComponent implements OnInit {
 
   itemsAnonymous: MenuItem[] = [
     {
-      items: [
-        {
-          label: 'Home',
-          route: '/home',
-        },
-      ]
-    },
-    {
-      separator: true
-    },
-    {
       label: 'Server',
       expanded: true,
       items: [
         {
           label: 'VPN Layout',
-          route: '/manage-server-configuration',
+          route: '/server-vpn-layout',
+        },
+        {
+          label: 'Monitor Peers',
+          route: '/server-monitor-peers',
         },
         {
           label: 'Monitor IP-Tables',
-          route: '/manage-server-configuration',
+          route: '/server-monitor-iptables',
         },
       ]
     },

@@ -14,7 +14,6 @@ export interface ChangeUserPasswordInfo {
     new_password_copy: string;
 }
 
-
 export interface Entity {
     id: number;
 }
@@ -127,11 +126,13 @@ export interface LicenseInfo {
 
 export interface IpTablesLog {
     status: string;
+    datetime: string;
     output: string;
 }
 
 export interface ServerStatus {
     status: string;
+    message: string;
     need_regenerate_files: boolean;
     last_db_change_datetime: Date;
     last_file_change_datetime: Date;

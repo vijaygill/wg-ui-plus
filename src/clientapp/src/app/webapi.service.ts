@@ -26,6 +26,8 @@ export class WebapiService {
     private urlIsUserLogOut = '/api/v1/auth/logout';
     private urlChangeUserPassword = '/api/v1/auth/change_password';
 
+    serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
+
     constructor(private http: HttpClient) { }
 
     getLicense(): Observable<LicenseInfo> {
@@ -217,12 +219,14 @@ export class WebapiService {
         return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
     }
 
-    serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
-
     checkServerStatus(): void {
         this.http.get<ServerStatus>(this.urlGetServerStatus).subscribe(data => {
             this.serverStatus.next(data);
         });
+    }
+
+    pushServerStatus(serverStatus: ServerStatus):void{
+        this.serverStatus.next(serverStatus);
     }
 
     checkIsUserAuthenticated(): Observable<UserSessionInfo> {

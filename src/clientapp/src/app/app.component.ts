@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
   title = 'wg-ui-plus';
 
   serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
-  serverStatusMessages: Message[] = [];
 
   private refresh_timer = interval(5000);
   timerSubscription !: Subscription;
@@ -45,7 +44,18 @@ export class AppComponent implements OnInit {
     });
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
-      this.serverStatusMessages = [];
+      this.messageService.clear();
+      if (this.serverStatus && this.serverStatus.message) {
+        let severity = this.serverStatus.status == 'error' ? 'error'
+          : this.serverStatus.status == 'ok' ? 'info'
+            : 'info';
+        this.messageService.add({
+          summary: 'Server Status',
+          detail: this.serverStatus.message,
+          severity: severity,
+          closable: false,
+        });
+      }
     });
     this.webapiService.checkServerStatus();
   }
