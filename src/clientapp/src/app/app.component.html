@@ -3,7 +3,7 @@
     <h3>WG-UI-Plus</h3>
     <h5>Run and manage your WireGuard (TM) VPN in one UI.</h5>
     <div>
-      <div *ngIf="serverStatus.need_regenerate_files">
+      <div *ngIf="serverStatus.need_regenerate_files && userSessionInfo.is_logged_in">
         <p-messages severity="warn">
           <ng-template pTemplate>
             <div>
@@ -17,7 +17,7 @@
           </ng-template>
         </p-messages>
       </div>
-        <p-messages />
+      <p-messages />
     </div>
   </div>
   <div class="item item-sidebar">

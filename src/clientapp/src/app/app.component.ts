@@ -6,9 +6,10 @@ import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { Message, MessageService, PrimeNGConfig } from 'primeng/api';
-import { ServerStatus } from './webapi.entities';
+import { ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from './webapi.service';
+import { LoginService } from './loginService';
 
 @Component({
   selector: 'app-root',
@@ -22,14 +23,17 @@ export class AppComponent implements OnInit {
   title = 'wg-ui-plus';
 
   serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
+  userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
 
   private refresh_timer = interval(5000);
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
+  loginServiceSubscription !: Subscription;
 
   constructor(private primengConfig: PrimeNGConfig,
     private messageService: MessageService,
-    private webapiService: WebapiService) { }
+    private webapiService: WebapiService,
+    private loginService: LoginService) { }
 
   ngOnInit() {
     // this.primengConfig.zIndex = {
@@ -57,6 +61,10 @@ export class AppComponent implements OnInit {
         });
       }
     });
+    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
+      this.userSessionInfo = data;
+    });
+    this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
   }
 
@@ -67,7 +75,11 @@ export class AppComponent implements OnInit {
     if (this.serverStatusSubscription) {
       this.serverStatusSubscription.unsubscribe();
     }
+    if (this.loginServiceSubscription) {
+      this.loginServiceSubscription.unsubscribe();
+    }
   }
+
 
   applyconfiguration(event: Event): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
