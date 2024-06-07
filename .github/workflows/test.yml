@@ -11,8 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: List packages
-      run: |
-        gh api -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-           /user/packages/container/wg-ui-plus/versions
+      - name: List packages version
+        run: |
+          gh api -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+             /user/packages/container/wg-ui-plus/versions
+      - name: List packages version
+        run: |
+          gh api -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+             /user/packages/container
