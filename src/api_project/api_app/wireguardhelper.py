@@ -120,9 +120,9 @@ Address = {{peer.ip_address}}
 ListenPort = {{peer_port}}
 PrivateKey = {{peer.private_key}}
 DNS = {{serverConfiguration.upstream_dns_ip_address}}
+PersistentKeepalive = 25
 
-
-# Settings for the peer on the other side of the pipe.
+# Settings for the peer on the server side.
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
 Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
