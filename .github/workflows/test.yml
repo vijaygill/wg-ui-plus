@@ -18,7 +18,7 @@ jobs:
     - name: Get list of GHCR containers
       id: list_containers
       run: |
-      gh api -H "Accept: application/vnd.github+json" \
+        gh api -H "Accept: application/vnd.github+json" \
         /user/packages/container \
         | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'
 
