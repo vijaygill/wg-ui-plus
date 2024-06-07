@@ -33,9 +33,7 @@ jobs:
             /user/packages/container/$container/versions --input - <<EOF
           {
             "query": "version:*"
-          }
-EOF
-        done
+          } EOF; done
 
     - name: Confirm deletion
       run: |
