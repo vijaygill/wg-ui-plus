@@ -1,0 +1,44 @@
+name: Delete GHCR Containers by Regex Pattern
+
+on:
+  workflow_dispatch:
+    inputs:
+      regex_pattern:
+        description: 'Regex pattern to match containers to delete'
+        required: true
+
+jobs:
+  delete-containers:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Get list of GHCR containers
+      id: list_containers
+      run: gh api -H "Accept: application/vnd.github+json" \
+        /user/packages/container \
+        | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'
+
+    - name: Delete matched containers
+      if: steps.list_containers.outputs.names != ''
+      run: |
+        for container in $(gh api -H "Accept: application/vnd.github+json" \
+          /user/packages/container \
+          | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'); do
+          echo "Deleting container: $container"
+          gh api -X DELETE -H "Accept: application/vnd.github+json" \
+            /user/packages/container/$container/versions --input - <<EOF
+          {
+            "query": "version:*"
+          }
+EOF
+        done
+
+    - name: Confirm deletion
+      run: |
+        echo "Remaining containers:"
+        gh api -H "Accept: application/vnd.github+json" \
+          /user/packages/container
+
