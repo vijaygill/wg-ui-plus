@@ -4,20 +4,24 @@ on:
   workflow_dispatch:
 
 env:
-    GH_TOKEN: ${{ github.token }}
+  REGEX_PATTERN: '^your-regex-pattern$'
+  GH_TOKEN: ${{ github.token }}
+  PACKAGE_NAME: wg-ui-plus
 
 jobs:
   delete-containers:
     runs-on: ubuntu-latest
-
     steps:
-      - name: List packages version - 1
+
+      - name: List and Delete Containers
         run: |
-          gh api -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-             /user/packages/container/wg-ui-plus/versions
-      - name: List packages version - 2
-        run: |
-          gh api -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-             /user/packages/container/wg-ui-plus
+          # Define the regex pattern
+          REGEX_PATTERN="^your-regex-pattern$"
+          
+          # Get the list of container tags
+          gh api -H "Accept: application/vnd.github.v3+json" /user/packages/container/${{ PACKAGE_NAME }}/versions \
+          | jq -r '.[] | select(.metadata.container.tags[] | test(env.REGEX_PATTERN)) | .id' \
+          | while read -r version_id; do
+              echo "Deleting container version: $version_id"
+              echo "gh api --method DELETE -H \"Accept: application/vnd.github.v3+json\" /user/packages/container/${{ PACKAGE_NAME }}/versions/\"$version_id\""
+            done
