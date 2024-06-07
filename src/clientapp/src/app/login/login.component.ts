@@ -8,7 +8,7 @@ import { WebapiService } from '../webapi.service';
 import { Router } from '@angular/router';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { UserCrendentials, UserSessionInfo } from '../webapi.entities';
-import { LoginService } from '../loginService';
+import { LoginService } from '../login-service';
 
 @Component({
   selector: 'app-login',

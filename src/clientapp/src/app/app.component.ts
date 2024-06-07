@@ -6,10 +6,11 @@ import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { Message, MessageService, PrimeNGConfig } from 'primeng/api';
-import { ServerStatus, UserSessionInfo } from './webapi.entities';
+import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from './webapi.service';
-import { LoginService } from './loginService';
+import { LoginService } from './login-service';
+import { PlatformInformationService } from './platform-information.service';
 
 @Component({
   selector: 'app-root',
@@ -29,11 +30,15 @@ export class AppComponent implements OnInit {
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   loginServiceSubscription !: Subscription;
+  platformInformationServiceSubscription !: Subscription;
+
+  platformInformation: PlatformInformation = {} as PlatformInformation;
 
   constructor(private primengConfig: PrimeNGConfig,
     private messageService: MessageService,
     private webapiService: WebapiService,
-    private loginService: LoginService) { }
+    private loginService: LoginService,
+    private platformInformationService: PlatformInformationService) { }
 
   ngOnInit() {
     // this.primengConfig.zIndex = {
@@ -42,6 +47,12 @@ export class AppComponent implements OnInit {
     //   menu: 1000,     // overlay menus
     //   tooltip: 1100   // tooltip
     // };
+
+    this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
+      (data) => {
+        this.platformInformation = data;
+      }
+    );
 
     this.timerSubscription = this.refresh_timer.subscribe(val => {
       this.webapiService.checkServerStatus();
@@ -66,6 +77,7 @@ export class AppComponent implements OnInit {
     });
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
+    this.platformInformationService.checkPlatform();
   }
 
   ngOnDestroy() {
@@ -78,8 +90,10 @@ export class AppComponent implements OnInit {
     if (this.loginServiceSubscription) {
       this.loginServiceSubscription.unsubscribe();
     }
+    if (this.platformInformationServiceSubscription) {
+      this.platformInformationServiceSubscription.unsubscribe();
+    }
   }
-
 
   applyconfiguration(event: Event): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {

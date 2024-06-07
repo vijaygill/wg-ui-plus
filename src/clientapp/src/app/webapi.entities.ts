@@ -137,3 +137,7 @@ export interface ServerStatus {
     last_db_change_datetime: Date;
     last_file_change_datetime: Date;
 }
+
+export interface PlatformInformation{
+    is_small_screen: boolean;
+}

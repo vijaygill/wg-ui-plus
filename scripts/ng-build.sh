@@ -13,4 +13,4 @@ cd "${APP_FOLDER}"
 mkdir -p /wg-ui-plus/src/clientapp/dist
 sudo chown -R pi:pi /wg-ui-plus/src/clientapp/dist
 
-ng build --watch --prerender=false --deploy-url="/" --base-href="/"
+ng build --configuration development --watch --prerender=false --deploy-url="/" --base-href="/"

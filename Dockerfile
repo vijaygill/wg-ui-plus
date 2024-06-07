@@ -34,7 +34,7 @@ COPY . /wg-ui-plus
 
 RUN chown -R $UNAME:$UNAME /wg-ui-plus
 
-RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --prerender=false --deploy-url="/static/" --base-href="/static/"
+RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --configuration production --prerender=false --deploy-url="/" --base-href="/"
 
 FROM base-dev as dev
 

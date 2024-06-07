@@ -1,5 +1,9 @@
 <div class="card flex justify-content-center">
-    <p-menu [model]="items">
+    <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v"
+    severity="secondary" [raised]="true"
+    [rounded]="true"
+     *ngIf="popup"/>
+    <p-menu #menu [model]="items" [popup]="popup">
         <ng-template pTemplate="item" let-item>
             <ng-container *ngIf="item.route; else elseBlock">
                 <a [routerLink]="item.route" class="p-menuitem-link">

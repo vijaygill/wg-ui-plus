@@ -175,19 +175,19 @@ LOGGING = {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
         },
         "django.server": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
         },
         "django.db.backends": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "INFO"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
         },
     },
     "formatters": {

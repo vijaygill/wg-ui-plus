@@ -30,7 +30,7 @@ import { MessagesModule } from 'primeng/messages';
 import { OrganizationChartModule } from 'primeng/organizationchart';
 //import { PaginatorModule } from 'primeng/paginator';
 //import { PanelMenuModule } from 'primeng/panelmenu';
-//import { PanelModule } from 'primeng/panel';
+import { PanelModule } from 'primeng/panel';
 import { PasswordModule } from 'primeng/password';
 import { PickListModule } from 'primeng/picklist';
 //import { ProgressBarModule } from 'primeng/progressbar';
@@ -77,6 +77,7 @@ let modules = [
     MenuModule,
     MessagesModule,
     OrganizationChartModule,
+    PanelModule,
     PasswordModule,
     PickListModule,
     TableModule, TabViewModule, ToastModule,

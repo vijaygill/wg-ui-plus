@@ -6,9 +6,26 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard). So far, I like this combo and though this is WIP, I have already replaced my linuxserver's WireGuard image with this project.
+I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard). So far, I like this combo and though this is WIP, I have already replaced my lscr.io/linuxserver/wireguard based setup with this project.
 
 This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
+
+## Features
+* Easy management of Peers (clients).
+  * Using Peer-Groups, peers can be granted / denied access easily.
+* Allows access to various resources (Hosts / just some services on a Host / a Network )
+  * Allows scenarios like
+    * Peer-Group A can access intenet but nothing else.
+    * Peer-Group B can access only SSH on a host and nothing else.
+    * Peer-Group C can access only samba shares on NAS.
+    * Peer-Group D can access internet and every machine in the LAN.
+    * Peer-Group E can access only the LAN.
+* Hides complexity of managing IPTables rules.
+* Uses WireGuard (tm).
+* Web based UI can be accessed from anywhere.
+  * I demo'ed it to a colleague of mine at work by adding their mobile as peer and scanning the QR in their mobile (after installing QireGuard app). Got the new peer connected in less than a minute!
+* Distributed as docker image. So updates are very easy to perform. 
+* Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
 ## Usage
 #### Note: Default username/password is admin/admin. You can change it later in "Server Configuration page".
@@ -19,7 +36,7 @@ You can set up your own VPN in a few minutes by following the following steps:
 2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
 3. Now start the WG-UI-Plus using the following command
    ```
-   mkdir -p ./config && mkdir -p ./data && chmod og+w config data && docker run -it --rm  --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+   mkdir -p ./config ./data && chmod og+w config data && docker run -it --rm  --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
    ```
 4. Point your browser to the address "htttp://internal_ip_address:8000".
 5. In the server configuration page
@@ -43,11 +60,13 @@ Now you can start adding more targets and peer-groups and peers to configure the
 
 Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled the target "Internet" for "Everyone", hence my mobile phone can access the internet also via the VPN. This could be stopped by removing the Target from EveryOne peer-group in Peer-Group edit page.
 
+From here, you can go on the make this setup as advanced as you want. Use "docker compose", or put it behind nginx reverse proxy, add SSL and so on.
+
 ## Features
 
 At this early stage, this is more of an idea of what features this management will offer at some stage
 * Terms used in the applications and their definitions
-  * Target - a host, a network or whole world of internet.
+  * Target - a host, a network or the whole world of internet.
   * Peer - A device that connects to VPN
   * Peer-Group - A group of peers that can be granted / denied access to targets 
 * View the live status of the WG server, what clients are connected etc.
@@ -56,17 +75,16 @@ At this early stage, this is more of an idea of what features this management wi
 
 Functionality implemented/yet to be implemented so far (getting ready for first release)
 - [x] Manage targets - Add/Edit/Disable.
-  - [x] Add/Remove Peer-Groups from Target's list thus allowing/denying access.
+  - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
 - [x] Manage Peers - Add/Edit/Disable.
   - [x] Add/Remove Peers from Peer-Groups
-  - [x] Alow/Deny Targets for a given Peer-Group
 - [x] Manage Peer-Groups - Add/Edit/Disable
-  - [x] Add/Remove Peer-Groups from Peer's list, thus affecting the access to the target linked with the Peer-Group
+  - [x] Add/Remove Targets to/from Peer-Groups thus allowing/denying access.
 - [x] Live Dashboard
 - [x] Authentication
 - [ ] Ability to send configuration files for peers by email
 
-## Screenshots with some salient features
+## Screenshots with some features shown
 * Dashboard showing currently connected peers
   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/537356fa-6f67-4286-9874-37beb699807c)
 * Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "Everyone" group (by default, but can be changed).

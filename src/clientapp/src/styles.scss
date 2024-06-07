@@ -50,7 +50,7 @@ body {
 }
 
 .item {
-    border-style: hidden;
+    border-style: none;
     border-color: yellow;
 }
 
@@ -60,6 +60,7 @@ body {
 
 .item-main {
     grid-area: main;
+    overflow-y: scroll;
 }
 
 .item-sidebar {
@@ -74,13 +75,16 @@ body {
 }
 
 .container {
+    width: 100%;
     display: grid;
-    grid-template-columns: min-content auto;
+    height: 100vh;
+    padding: 8px 4px;
+    grid-template-columns: 100%;
     grid-template-rows: min-content auto min-content;
     grid-template-areas:
-        "header header"
-        "sidebar main"
-        "footer footer";
+        "header"
+        "main"
+        "footer";
 }
 
 table {

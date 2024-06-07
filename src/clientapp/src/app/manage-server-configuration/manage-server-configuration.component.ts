@@ -9,7 +9,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginService } from '../loginService';
+import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
 
 @Component({

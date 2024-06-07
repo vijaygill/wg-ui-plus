@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MenuItem, Message } from 'primeng/api';
@@ -8,7 +8,7 @@ import { AppSharedModule } from '../app-shared.module';
 import { routes } from '../app.routes';
 import { ServerStatus, UserSessionInfo } from '../webapi.entities';
 import { Subscription, interval } from 'rxjs';
-import { LoginService } from '../loginService';
+import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
 
 
@@ -27,10 +27,6 @@ export class SidepanelComponent implements OnInit {
       expanded: true,
       items: [
         {
-          label: 'Configuration',
-          route: '/server-configuration',
-        },
-        {
           label: 'VPN Layout',
           route: '/server-vpn-layout',
         },
@@ -41,6 +37,10 @@ export class SidepanelComponent implements OnInit {
         {
           label: 'Monitor IP-Tables',
           route: '/server-monitor-iptables',
+        },
+        {
+          label: 'Configuration',
+          route: '/server-configuration',
         },
       ]
     },
@@ -118,6 +118,8 @@ export class SidepanelComponent implements OnInit {
       ]
     }
   ];
+
+  @Input() popup:boolean = false;
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
