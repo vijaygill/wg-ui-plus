@@ -5,6 +5,7 @@ on:
 
 env:
   GH_TOKEN: ${{ github.token }}
+  REGEX_PATTERN: "^self-hosted-.*"
 
 jobs:
   delete-containers:
@@ -14,7 +15,7 @@ jobs:
       - name: List and Delete Containers
         run: |
           # Define the regex pattern
-          REGEX_PATTERN="^self-hosted-.*"
+          
           
           # Get the list of container tags
           gh api -H "Accept: application/vnd.github.v3+json" /user/packages/container/wg-ui-plus/versions \
