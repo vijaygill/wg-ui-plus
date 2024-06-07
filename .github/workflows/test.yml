@@ -20,6 +20,7 @@ jobs:
 
     - name: Get list of GHCR containers
       id: list_containers
+      if: 1 == 2
       run: |
         gh api -H "Accept: application/vnd.github+json" \
         /user/packages/container \
