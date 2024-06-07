@@ -7,9 +7,6 @@ on:
         description: 'Regex pattern to match containers to delete'
         required: true
 
-env:
-  GH_TOKEN: ${{ github.token }}
-
 jobs:
   delete-containers:
     runs-on: ubuntu-latest
