@@ -5,7 +5,7 @@ on:
 
 env:
   GH_TOKEN: ${{ github.token }}
-  REGEX_PATTERN: "^self-hosted-.*"
+  REGEX_PATTERN: "^(self-hosted|ubuntu-latest)-.*"
 
 jobs:
   delete-containers:
