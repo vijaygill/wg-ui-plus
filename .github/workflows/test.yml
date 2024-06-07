@@ -9,7 +9,6 @@ env:
 jobs:
   delete-containers:
     runs-on: ubuntu-latest
-    permissions: read:packages
 
     steps:
     - name: List packages
