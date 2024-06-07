@@ -7,6 +7,9 @@ on:
         description: 'Regex pattern to match containers to delete'
         required: true
 
+env:
+    GH_TOKEN: ${{ github.token }}
+
 jobs:
   delete-containers:
     runs-on: ubuntu-latest
@@ -15,27 +18,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Get list of GHCR containers
-      id: list_containers
-      if: 1 == 2
-      run: |
-        gh api -H "Accept: application/vnd.github+json" \
-        /user/packages/container \
-        | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'
-
-    - name: Delete matched containers
-      if: 1 == 2
-      run: |
-        for container in $(gh api -H "Accept: application/vnd.github+json" \
-          /user/packages/container \
-          | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'); do
-          echo "Deleting container: $container"
-          gh api -X DELETE -H "Accept: application/vnd.github+json" \
-            /user/packages/container/$container/versions --input - <<EOF
-          {
-            "query": "version:*"
-          } EOF; done
-
     - name: Confirm deletion
       run: |
         echo "Remaining containers:"
@@ -43,4 +25,4 @@ jobs:
         gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /user/packages?package_type=container
+          /user/packages
