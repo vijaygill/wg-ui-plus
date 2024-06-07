@@ -2,10 +2,6 @@ name: Delete GHCR Containers by Regex Pattern
 
 on:
   workflow_dispatch:
-    inputs:
-      regex_pattern:
-        description: 'Regex pattern to match containers to delete'
-        required: true
 
 env:
     GH_TOKEN: ${{ github.token }}
@@ -15,14 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Confirm deletion
+    - name: List packages
       run: |
-        echo "Remaining containers:"
-        # GitHub CLI api
-        gh api \
-          -H "Accept: application/vnd.github+json" \
+        gh api -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           /user/packages?package_type=container
