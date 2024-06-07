@@ -43,5 +43,5 @@ jobs:
       run: |
         echo "Remaining containers:"
         gh api -H "Accept: application/vnd.github+json" \
-          /user/packages/container
+          /user/packages?package_type=container
 
