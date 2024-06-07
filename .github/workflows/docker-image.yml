@@ -43,7 +43,7 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=raw,value=${{ matrix.runner }}-${{ github.sha }}
+          type=raw,value=${{ matrix.runner }}-${{ github.ref_name }}-${{ github.sha }}
 
     - name: Build and push Docker image (without cache)
       if: matrix.runner == 'ubuntu-latest'
@@ -110,8 +110,8 @@ jobs:
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:stable-${{ github.ref_name }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:stable-${{ steps.gen_timestamp.outputs.timestamp }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.ref_name }}-${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Create multiarch manifests (non-master branch)
         if: github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/tags/v')
@@ -120,8 +120,8 @@ jobs:
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ steps.gen_timestamp.outputs.timestamp }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.ref_name }}-${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
 
   clean_old_packages:
     needs: create-multiarch-image
