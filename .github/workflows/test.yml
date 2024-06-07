@@ -42,7 +42,8 @@ jobs:
     - name: Confirm deletion
       run: |
         echo "Remaining containers:"
+        # GitHub CLI api
         gh api \
-        -H "Accept: application/vnd.github+json" \
-        -H "X-GitHub-Api-Version: 2022-11-28" \
-        /user/packages?package_type=container
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /user/packages?package_type=container
