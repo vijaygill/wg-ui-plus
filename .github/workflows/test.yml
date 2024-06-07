@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGEX_PATTERN: '^your-regex-pattern$'
+  REGEX_PATTERN: '^self\-hosted\-.*'
   GH_TOKEN: ${{ github.token }}
   PACKAGE_NAME: wg-ui-plus
 
