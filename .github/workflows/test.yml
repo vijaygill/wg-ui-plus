@@ -21,5 +21,6 @@ jobs:
           | jq -r '.[] | select(.metadata.container.tags[] | test(env.REGEX_PATTERN)) | .id' \
           | while read -r version_id; do
               echo "Deleting container version: $version_id"
-              gh api --method DELETE -H "Accept: application/vnd.github.v3+json" /user/packages/container/wg-ui-plus/versions/"$version_id"
+              echo "gh api --method DELETE -H \"Accept: application/vnd.github.v3+json" /user/packages/container/wg-ui-plus/versions/\"$version_id\""
+              #gh api --method DELETE -H "Accept: application/vnd.github.v3+json" /user/packages/container/wg-ui-plus/versions/"$version_id"
             done
