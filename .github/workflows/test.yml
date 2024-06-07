@@ -22,18 +22,18 @@ jobs:
       id: list_containers
       run: |
         gh api -H "Accept: application/vnd.github+json" \
-        /vijaygill/packages/container \
+        /user/packages/container \
         | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'
 
     - name: Delete matched containers
       if: 1 == 2
       run: |
         for container in $(gh api -H "Accept: application/vnd.github+json" \
-          /vijaygill/packages/container \
+          /user/packages/container \
           | jq -r '.[] | select(.name | test("${{ github.event.inputs.regex_pattern }}")) | .name'); do
           echo "Deleting container: $container"
           gh api -X DELETE -H "Accept: application/vnd.github+json" \
-            /vijaygill/packages/container/$container/versions --input - <<EOF
+            /user/packages/container/$container/versions --input - <<EOF
           {
             "query": "version:*"
           } EOF; done
@@ -42,5 +42,5 @@ jobs:
       run: |
         echo "Remaining containers:"
         gh api -H "Accept: application/vnd.github+json" \
-          /vijaygill/packages/container
+          /user/packages/container
 
