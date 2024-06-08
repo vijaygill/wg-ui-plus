@@ -68,14 +68,14 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.runner }}-${{ github.ref_name }}
-        cache-to: type=local,dest=/tmp/.buildx-cache-new-${{ matrix.runner }}-${{ github.ref_name }},mode=max
+        cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.runner }}
+        cache-to: type=local,dest=/tmp/.buildx-cache-new-${{ matrix.runner }},mode=max
 
     - name: Move cache
       if: matrix.runner == 'self-hosted'
       run: |
-        rm -rf /tmp/.buildx-cache-${{ matrix.runner }}-${{ github.ref_name }}
-        mv /tmp/.buildx-cache-new-${{ matrix.runner }}-${{ github.ref_name }} /tmp/.buildx-cache-${{ matrix.runner }}-${{ github.ref_name }}
+        rm -rf /tmp/.buildx-cache-${{ matrix.runner }}
+        mv /tmp/.buildx-cache-new-${{ matrix.runner }} /tmp/.buildx-cache-${{ matrix.runner }}
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
 
