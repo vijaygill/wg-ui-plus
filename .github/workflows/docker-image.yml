@@ -111,7 +111,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Create multiarch manifests (non-master branch)
-        if: ! startsWith(github.ref, 'refs/tags/v')
+        if: !startsWith(github.ref, 'refs/tags/v')
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev \
