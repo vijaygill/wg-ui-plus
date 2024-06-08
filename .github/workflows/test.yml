@@ -8,14 +8,12 @@ env:
   REGEX_PATTERN: "^(self-hosted|ubuntu-latest)-.*"
 
 jobs:
-  delete-containers:
+  delete-containers-by-regex-pattern:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-
-      - name: List and Delete Containers
+      - name: Delete Containers
         run: |
-          # Define the regex pattern
           for i in {1..3}
           do
             # Get the list of container tags
