@@ -102,7 +102,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create multiarch manifests (published release only)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
@@ -111,7 +111,7 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
 
       - name: Create multiarch manifests (non-master branch)
-        if: !startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/heads/')
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev \
