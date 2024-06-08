@@ -41,17 +41,17 @@ You can set up your own VPN in a few minutes by following the following steps:
 4. Point your browser to the address "htttp://internal_ip_address:8000".
 5. In the server configuration page
    * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
-   ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/bfd8fe01-a9b9-4a27-b2ff-2d01f24e30f7)
+   ![image](./images/wg-ui-plus-server-config.png)
 
    * Change the upstream DNS server to suitable value. I have pihole on 192.168.0.5 in my setup. you can use 8.8.8.8 also.
    * Click on "Ok" to save data.
    * A message will pop up at the top of the page to tell you that the changes need to be applied and VPN restarted.
      Click on "Apply Changes" button.
-     ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/60dbb860-2baf-4db9-ab6c-f0ada77e1e0f)
+     ![image](./images/wg-ui-plus-apply-changes.png)
 
 6. In Peers management page, click on "Edit" button for any of the peers created by default.
    * Scan QR code in next step
-     ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/2851ad9b-9bfa-4b61-9aa1-0dfbdaf9d855)
+     ![image](./images/wg-ui-plus-peer-qr.png)
 
 7. Install WireGuard app on your mobile phone and add tunnel by scanning the QR code.
 8. You should be able to access internet on your mobile phone via the VPN.
@@ -86,11 +86,11 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/537356fa-6f67-4286-9874-37beb699807c)
+  ![image](./images/wg-ui-plus-monitor-peers.png)
 * Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "Everyone" group (by default, but can be changed).
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/3ce88394-83cc-44e6-ac89-a2b85f094cb6)
+  ![image](./images/wg-ui-plus-vpn-layout.png)
 * Monitor IPTables
-  ![image](https://github.com/vijaygill/wg-ui-plus/assets/8999486/c30c0a0a-aee4-464b-9e28-28719232e797)
+  ![image](./images/wg-ui-plus-monitor-iptables.png)
 
 
 ## Development guide
