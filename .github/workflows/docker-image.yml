@@ -121,13 +121,3 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.ref_name }}-${{ github.sha }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
 
-  clean_temporary_packages:
-    needs: create-multiarch-image
-    permissions: write-all
-    uses: ./.github/workflows/delete-ghcr-containers-by-regex-pattern.yml
-
-  clean_old_packages:
-    needs: create-multiarch-image
-    permissions: write-all
-    uses: ./.github/workflows/clean-up-oldpackages.yml
-
