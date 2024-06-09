@@ -13,7 +13,7 @@ import { ServerMonitorIptablesComponent } from './server-monitor-iptables/server
 import { ServerMonitorPeersComponent } from './server-monitor-peers/server-monitor-peers.component';
 
 export const routes: Routes = [
-    { path: '', component: ServerMonitorPeersComponent },
+    { path: '', redirectTo: 'login', pathMatch: 'full' },
     { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'logout', component: LoginComponent },
@@ -26,5 +26,5 @@ export const routes: Routes = [
     { path: 'server-vpn-layout', component: ServerVpnLayoutComponent },
     { path: 'server-monitor-iptables', component: ServerMonitorIptablesComponent },
     { path: 'test-page', component: TestpageComponent },
-    { path: '*', component: LoginComponent },
+    { path: '**', component: LoginComponent },
 ];
