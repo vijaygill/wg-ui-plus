@@ -23,7 +23,7 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
 * Hides complexity of managing IPTables rules.
 * Uses WireGuard (tm).
 * Web based UI can be accessed from anywhere.
-  * I demo'ed it to a colleague of mine at work by adding their mobile as peer and scanning the QR in their mobile (after installing QireGuard app). Got the new peer connected in less than a minute!
+  * I demo'ed it to a colleague of mine at work by adding their mobile as peer and scanning the QR in their mobile (after installing WireGuard app). Got the new peer connected in less than a minute!
 * Distributed as docker image. So updates are very easy to perform. 
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
