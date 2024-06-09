@@ -27,16 +27,16 @@ export class SidepanelComponent implements OnInit {
       expanded: true,
       items: [
         {
-          label: 'VPN Layout',
-          route: '/server-vpn-layout',
-        },
-        {
           label: 'Monitor Peers',
           route: '/server-monitor-peers',
         },
         {
           label: 'Monitor IP-Tables',
           route: '/server-monitor-iptables',
+        },
+        {
+          label: 'VPN Layout',
+          route: '/server-vpn-layout',
         },
         {
           label: 'Configuration',
@@ -89,16 +89,16 @@ export class SidepanelComponent implements OnInit {
       expanded: true,
       items: [
         {
-          label: 'VPN Layout',
-          route: '/server-vpn-layout',
-        },
-        {
           label: 'Monitor Peers',
           route: '/server-monitor-peers',
         },
         {
           label: 'Monitor IP-Tables',
           route: '/server-monitor-iptables',
+        },
+        {
+          label: 'VPN Layout',
+          route: '/server-vpn-layout',
         },
       ]
     },

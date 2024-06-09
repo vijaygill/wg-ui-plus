@@ -13,7 +13,7 @@ import { ServerMonitorIptablesComponent } from './server-monitor-iptables/server
 import { ServerMonitorPeersComponent } from './server-monitor-peers/server-monitor-peers.component';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'login', pathMatch: 'full' },
+    { path: '', redirectTo: 'server-monitor-peers', pathMatch: 'full' },
     { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'logout', component: LoginComponent },
