@@ -14,7 +14,6 @@ import { ServerMonitorPeersComponent } from './server-monitor-peers/server-monit
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
-    { path: '**', redirectTo: 'login', pathMatch: 'full' },
     { path: 'home', component: HomeComponent },
     { path: 'login', component: LoginComponent },
     { path: 'logout', component: LoginComponent },
@@ -27,4 +26,5 @@ export const routes: Routes = [
     { path: 'server-vpn-layout', component: ServerVpnLayoutComponent },
     { path: 'server-monitor-iptables', component: ServerMonitorIptablesComponent },
     { path: 'test-page', component: TestpageComponent },
+    { path: '**', redirectTo: 'login', pathMatch: 'full' },
 ];
