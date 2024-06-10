@@ -27,6 +27,9 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
 * Distributed as docker image. So updates are very easy to perform. 
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
+## Requirements
+You need to have docker setup and running on your machine where the VPN needs to be run.
+
 ## Usage
 #### Note: Default username/password is admin/admin. You can change it later in "Server Configuration page".
 You can set up your own VPN in a few minutes by following the following steps:
@@ -38,7 +41,7 @@ You can set up your own VPN in a few minutes by following the following steps:
    ```
    mkdir -p ./config ./data && chmod og+w config data && docker run -it --rm  --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
    ```
-4. Point your browser to the address "htttp://internal_ip_address:8000".
+4. Point your browser to the address "http://internal_ip_address:8000".
 5. In the server configuration page
    * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
    ![image](./images/wg-ui-plus-server-config.png)
