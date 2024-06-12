@@ -22,7 +22,7 @@ RUN apt-get update -y \
 
 RUN npm install -g @angular/cli
 
-RUN pip install --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields
+RUN pip install --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields channels daphne
 
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
@@ -49,10 +49,10 @@ ARG UID
 ARG GID
 
 RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata
-RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields
+RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields channels
 
 RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev \
-    &&  pip install --no-cache-dir cryptography \
+    &&  pip install --no-cache-dir cryptography daphne \
     &&  apk del gcc libressl-dev musl-dev libffi-dev
 
 RUN adduser -D $UNAME
