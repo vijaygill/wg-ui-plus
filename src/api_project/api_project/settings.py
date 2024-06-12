@@ -169,6 +169,8 @@ CORS_ALLOWED_ORIGINS = (
     else []
 )
 
+SECURE_REFERRER_POLICY=os.environ.get("SECURE_REFERRER_POLICY", "same-origin")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
