@@ -125,5 +125,4 @@ def get_target_ip_address_parts(value):
     r1, r2, r3, r4, r5, r6 = res
     errors = ", ".join(errors)
     res = (r1, r2, r3, r4, r5, r6, errors)
-    print(f'>>>> {value} = {res}')
     return res

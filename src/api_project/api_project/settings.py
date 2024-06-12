@@ -156,6 +156,19 @@ REST_FRAMEWORK = {
 
 STATIC_ROOT = "/app/clientapp"
 
+CORS_ALLOW_ALL_ORIGINS = (
+    True
+    if os.environ.get("CORS_ALLOW_ALL_ORIGINS", "False").lower()
+    in ("true", "1", "yes", "y")
+    else False
+)
+
+CORS_ALLOWED_ORIGINS = (
+    os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+    if os.environ.get("CORS_ALLOWED_ORIGINS", "")
+    else []
+)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
