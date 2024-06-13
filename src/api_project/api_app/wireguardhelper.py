@@ -120,7 +120,6 @@ Address = {{peer.ip_address}}
 ListenPort = {{peer_port}}
 PrivateKey = {{peer.private_key}}
 DNS = {{serverConfiguration.upstream_dns_ip_address}}
-PersistentKeepalive = 25
 
 # Settings for the peer on the server side.
 [Peer]
@@ -204,13 +203,12 @@ AllowedIPs = 0.0.0.0/0
         ]
 
         for dns_server in dns_servers:
-            rules = [
+            post_up += [
                 "# now make all DNS traffic flow to desired DNS server",
                 f"iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to {dns_server}:53",
                 f"iptables -t nat -I PREROUTING -p tcp --dport 53 -j DNAT --to {dns_server}:53",
                 "",
             ]
-            post_up += rules
 
         target_infos = []
         for target in targets:
@@ -288,10 +286,12 @@ AllowedIPs = 0.0.0.0/0
                     )
                 ]
 
+        # filter out disabled targets/peer-groups/peers
+
         # allow all DNS traffic
-        post_up += [
-            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"',
-        ]
+        post_up.append(
+            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
+        )
 
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
@@ -309,14 +309,19 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables 1--append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    )
+                    continue
                 if target_port:
                     for port in target_port:
                         post_up.append(
-                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                            f'iptables 2--append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
                         )
                 else:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        f'iptables 3--append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -337,9 +342,14 @@ AllowedIPs = 0.0.0.0/0
             if target_network_address == internet__network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                post_up += [
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
-                ]
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
+                    )
+                    continue
+                post_up.append(
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                )
 
         local_networks = []
         if serverConfiguration.local_networks:
@@ -370,13 +380,16 @@ AllowedIPs = 0.0.0.0/0
             if target_network_address != internet__network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                post_up += [
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
-                ]
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    )
+                    continue
+                post_up.append(
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                )
 
-        post_up += [
-            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"',
-        ]
+        post_up.append('iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"')
 
         post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
 
@@ -506,7 +519,7 @@ AllowedIPs = 0.0.0.0/0
         output = self.execute_process(command)
         dt = datetime.datetime.now().astimezone()
         res = {}
-        res["status"] = 'ok'
+        res["status"] = "ok"
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["output"] = output
         return res
@@ -521,8 +534,10 @@ AllowedIPs = 0.0.0.0/0
         last_file_change_timestamp = (
             max(last_file_change_timestamps) if last_file_change_timestamps else 0
         )
-        
-        last_file_change_datetime = datetime.datetime.fromtimestamp(last_file_change_timestamp, timezone.get_current_timezone())
+
+        last_file_change_datetime = datetime.datetime.fromtimestamp(
+            last_file_change_timestamp, timezone.get_current_timezone()
+        )
 
         res["last_db_change_datetime"] = last_db_change_datetime
         res["last_file_change_datetime"] = last_file_change_datetime
