@@ -86,10 +86,6 @@ PostDown = {{serverConfiguration.script_path_post_down}}
     @logged
     def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
         # returns tuple of server-side and client-side configurations
-        template_disabled = """
-# Server-side settings for the client.
-# {{peer.name}}: disabled
-"""
         template = """
 # Server-side settings for the client.
 # {{peer.name}}
@@ -101,17 +97,7 @@ PersistentKeepalive = 25
 
 """
         context = Context({"peer": peer})
-        peer_config_server_side = (
-            self.render_template(template_disabled, context)
-            if peer.disabled
-            else self.render_template(template, context)
-        )
-
-        template_disabled = """
-# Client-side settings for the peer on the other side of the pipe.
-# {{peer.name}}: disabled
-
-"""
+        peer_config_server_side = self.render_template(template, context)
 
         template = """
 # Settings for this client.
@@ -135,11 +121,7 @@ AllowedIPs = 0.0.0.0/0
                 "peer_port": peer_port,
             }
         )
-        peer_config_client_side = (
-            self.render_template(template_disabled, context)
-            if peer.disabled
-            else self.render_template(template, context)
-        )
+        peer_config_client_side = self.render_template(template, context)
 
         res = (peer_config_server_side, peer_config_client_side)
         return res
