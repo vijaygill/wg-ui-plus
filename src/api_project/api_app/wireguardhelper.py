@@ -206,14 +206,14 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = [
+                peer_infos = sorted([
                     (
                         x.name,
                         x.disabled,
                         x.ip_address,
                     )
                     for x in peer_group.peers.all()
-                ]
+                ], key=lambda x: x[0])
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -245,14 +245,14 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = [
+                peer_infos = sorted([
                     (
                         x.name,
                         x.disabled,
                         x.ip_address,
                     )
                     for x in peers.all()
-                ]
+                ], key=lambda x: x[0])
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -269,6 +269,32 @@ AllowedIPs = 0.0.0.0/0
                 ]
 
         # filter out disabled targets/peer-groups/peers
+        target_infos = [(
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            target_port,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) for (
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            target_port,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) in target_infos if not target_disabled and not peer_group_disabled]
+
+        # sort items
+        target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
 
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
