@@ -270,11 +270,6 @@ AllowedIPs = 0.0.0.0/0
 
         # filter out disabled targets/peer-groups/peers
 
-        # allow all DNS traffic
-        post_up.append(
-            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
-        )
-
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
             chain_name,
