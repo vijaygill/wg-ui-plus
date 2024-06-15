@@ -11,19 +11,19 @@ I was just exploring the combination of Django REST Framework + Angular. So I th
 This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
 
 ## Features
-* Easy management of Peers (clients).
-  * Using Peer-Groups, peers can be granted / denied access easily.
-* Allows access to various resources (Hosts / just some services on a Host / a Network )
+* Easy management of clients (a.k.a Peers).
+  * Clients (Peers) are managed in groups for easy granting/revoking of access.
+* Allows access to various resources (a.k.a Targets - a target can be a host or a network)
   * Allows scenarios like
-    * Peer-Group A can access intenet but nothing else.
-    * Peer-Group B can access only SSH on a host and nothing else.
-    * Peer-Group C can access only samba shares on NAS.
-    * Peer-Group D can access internet and every machine in the LAN.
-    * Peer-Group E can access only the LAN.
+    * Some users can access internet but nothing else.
+    * Some users can access only SSH on a host and nothing else.
+    * Some users can access only samba shares on NAS.
+    * Some users can access internet and every machine in the LAN.
+    * Some users can access only the LAN.
 * Hides complexity of managing IPTables rules.
 * Uses WireGuard (tm).
+  * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
-  * I demo'ed it to a colleague of mine at work by adding their mobile as peer and scanning the QR in their mobile (after installing WireGuard app). Got the new peer connected in less than a minute!
 * Distributed as docker image. So updates are very easy to perform. 
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
