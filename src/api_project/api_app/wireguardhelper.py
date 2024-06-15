@@ -314,17 +314,17 @@ AllowedIPs = 0.0.0.0/0
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
                     continue
                 if target_port:
                     for port in target_port:
                         post_up.append(
-                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                         )
                 else:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -347,11 +347,11 @@ AllowedIPs = 0.0.0.0/0
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
                     )
                     continue
                 post_up.append(
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
         local_networks = []
@@ -385,11 +385,11 @@ AllowedIPs = 0.0.0.0/0
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
                     continue
                 post_up.append(
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
         post_up.append('iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"')
