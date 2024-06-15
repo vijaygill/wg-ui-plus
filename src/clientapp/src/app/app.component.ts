@@ -5,7 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
-import { Message, MessageService, PrimeNGConfig } from 'primeng/api';
+import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from './webapi.service';

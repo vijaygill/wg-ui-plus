@@ -7,11 +7,8 @@ import {
   HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, catchError, tap, throwError } from 'rxjs';
-import { ConfirmationDialogService } from './confirmation-dialog-service';
-import { MessageService } from 'primeng/api';
 import { WebapiService } from './webapi.service';
 import { ServerStatus } from './webapi.entities';
-import { ErrorStateMatcher } from '@angular/material/core';
 
 @Injectable({
   providedIn: 'root',

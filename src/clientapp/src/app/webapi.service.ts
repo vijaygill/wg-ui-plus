@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
 import { TreeNode } from 'primeng/api';
 import { map, tap } from 'rxjs/operators'
