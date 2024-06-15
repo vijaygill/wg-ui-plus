@@ -1,11 +1,12 @@
 #!/usr/bin/python
 import os
-from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 from api_app.models import ServerConfiguration
+import traceback
+
 
 class Command(BaseCommand):
-    help = 'Updates some tables if needed'
+    help = 'Initialises DB tables.'
 
     def add_arguments(self, parser):
         pass
@@ -47,4 +48,4 @@ class Command(BaseCommand):
                     sc.save()
                     self.stdout.write(self.style.SUCCESS('Updated Server Configuration'))
         except:
-            raise CommandError('Error in setup_server_config')
+            raise CommandError('Error:' + traceback.format_exc())
