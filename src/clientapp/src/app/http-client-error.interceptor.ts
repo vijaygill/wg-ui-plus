@@ -22,6 +22,7 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
 
   private httpErrors: { [status: number]: string } = {
     0: 'Error while communicating with server.',
+    400: 'Bad request. Probably invalid data.',
     401: 'Unauthorised call to server.',
     403: 'Client is forbidden from calling server.',
     404: 'Client is forbidden from calling server.',

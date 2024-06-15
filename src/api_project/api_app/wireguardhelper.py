@@ -86,10 +86,6 @@ PostDown = {{serverConfiguration.script_path_post_down}}
     @logged
     def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
         # returns tuple of server-side and client-side configurations
-        template_disabled = """
-# Server-side settings for the client.
-# {{peer.name}}: disabled
-"""
         template = """
 # Server-side settings for the client.
 # {{peer.name}}
@@ -101,17 +97,7 @@ PersistentKeepalive = 25
 
 """
         context = Context({"peer": peer})
-        peer_config_server_side = (
-            self.render_template(template_disabled, context)
-            if peer.disabled
-            else self.render_template(template, context)
-        )
-
-        template_disabled = """
-# Client-side settings for the peer on the other side of the pipe.
-# {{peer.name}}: disabled
-
-"""
+        peer_config_server_side = self.render_template(template, context)
 
         template = """
 # Settings for this client.
@@ -120,7 +106,6 @@ Address = {{peer.ip_address}}
 ListenPort = {{peer_port}}
 PrivateKey = {{peer.private_key}}
 DNS = {{serverConfiguration.upstream_dns_ip_address}}
-PersistentKeepalive = 25
 
 # Settings for the peer on the server side.
 [Peer]
@@ -136,11 +121,7 @@ AllowedIPs = 0.0.0.0/0
                 "peer_port": peer_port,
             }
         )
-        peer_config_client_side = (
-            self.render_template(template_disabled, context)
-            if peer.disabled
-            else self.render_template(template, context)
-        )
+        peer_config_client_side = self.render_template(template, context)
 
         res = (peer_config_server_side, peer_config_client_side)
         return res
@@ -204,13 +185,12 @@ AllowedIPs = 0.0.0.0/0
         ]
 
         for dns_server in dns_servers:
-            rules = [
+            post_up += [
                 "# now make all DNS traffic flow to desired DNS server",
                 f"iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to {dns_server}:53",
                 f"iptables -t nat -I PREROUTING -p tcp --dport 53 -j DNAT --to {dns_server}:53",
                 "",
             ]
-            post_up += rules
 
         target_infos = []
         for target in targets:
@@ -226,14 +206,14 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = [
+                peer_infos = sorted([
                     (
                         x.name,
                         x.disabled,
                         x.ip_address,
                     )
                     for x in peer_group.peers.all()
-                ]
+                ], key=lambda x: x[0])
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -265,14 +245,14 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = [
+                peer_infos = sorted([
                     (
                         x.name,
                         x.disabled,
                         x.ip_address,
                     )
                     for x in peers.all()
-                ]
+                ], key=lambda x: x[0])
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -288,10 +268,33 @@ AllowedIPs = 0.0.0.0/0
                     )
                 ]
 
-        # allow all DNS traffic
-        post_up += [
-            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"',
-        ]
+        # filter out disabled targets/peer-groups/peers
+        target_infos = [(
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            target_port,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) for (
+            chain_name,
+            target_name,
+            target_disabled,
+            target_is_network_address,
+            target_ip_address,
+            target_network_address,
+            target_port,
+            peer_group_name,
+            peer_group_disabled,
+            peer_infos,
+        ) in target_infos if not target_disabled and not peer_group_disabled]
+
+        # sort items
+        target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
 
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
@@ -309,14 +312,19 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    )
+                    continue
                 if target_port:
                     for port in target_port:
                         post_up.append(
-                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                         )
                 else:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"'
+                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -337,9 +345,14 @@ AllowedIPs = 0.0.0.0/0
             if target_network_address == internet__network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                post_up += [
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
-                ]
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
+                    )
+                    continue
+                post_up.append(
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                )
 
         local_networks = []
         if serverConfiguration.local_networks:
@@ -370,13 +383,16 @@ AllowedIPs = 0.0.0.0/0
             if target_network_address != internet__network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                post_up += [
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} ({peer_ip_address}) => {peer_group_name} => {target_name}"',
-                ]
+                if peer_disabled:
+                    post_up.append(
+                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    )
+                    continue
+                post_up.append(
+                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                )
 
-        post_up += [
-            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"',
-        ]
+        post_up.append('iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"')
 
         post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
 
@@ -484,19 +500,28 @@ AllowedIPs = 0.0.0.0/0
             peer_data["public_key"] = ""
             if peer:
                 peer_data["peer_name"] = peer.name
+                if peer.disabled:
+                    peer_data["status"] = 'Disabled'
             else:
                 peer_data["peer_name"] = f"unknown-{match_num}"
-            if "latest_handshake" in peer_data.keys():
-                peer_data["latest_handshake"] = str(
-                    datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
-                    .astimezone(tz=dt.tzinfo)
-                    .strftime("%Y-%m-%d %H:%M:%S")
-                )
-            peer_data["is_connected"] = False
+
             if "end_point_ip" in peer_data.keys() and peer_data["end_point_ip"]:
-                peer_data["is_connected"] = True
+                peer_data["status"] = 'Connected'
+                if "latest_handshake" in peer_data.keys():
+                    peer_data["latest_handshake"] = str(
+                        datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
+                        .astimezone(tz=dt.tzinfo)
+                        .strftime("%Y-%m-%d %H:%M:%S")
+                    )
+                if 'transfer_rx' in peer_data.keys():
+                    peer_data["transfer_rx"] = int(peer_data["transfer_rx"])
+                if 'transfer_tx' in peer_data.keys():
+                    peer_data["transfer_tx"] = int(peer_data["transfer_tx"])
             else:
                 peer_data["end_point"] = None
+                peer_data["latest_handshake"] = None
+                peer_data["transfer_rx"] = None
+                peer_data["transfer_tx"] = None
             res["items"] += [peer_data]
         return res
 
@@ -506,7 +531,7 @@ AllowedIPs = 0.0.0.0/0
         output = self.execute_process(command)
         dt = datetime.datetime.now().astimezone()
         res = {}
-        res["status"] = 'ok'
+        res["status"] = "ok"
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["output"] = output
         return res
@@ -521,8 +546,10 @@ AllowedIPs = 0.0.0.0/0
         last_file_change_timestamp = (
             max(last_file_change_timestamps) if last_file_change_timestamps else 0
         )
-        
-        last_file_change_datetime = datetime.datetime.fromtimestamp(last_file_change_timestamp, timezone.get_current_timezone())
+
+        last_file_change_datetime = datetime.datetime.fromtimestamp(
+            last_file_change_timestamp, timezone.get_current_timezone()
+        )
 
         res["last_db_change_datetime"] = last_db_change_datetime
         res["last_file_change_datetime"] = last_file_change_datetime

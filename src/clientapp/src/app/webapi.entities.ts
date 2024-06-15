@@ -104,7 +104,7 @@ export interface ConnectedPeerInformation {
 
 export interface ConnectedPeerInformationItem {
     peer_name: string;
-    is_connected: boolean;
+    status: string;
     interface: string;
     public_key: string;
     preshared_key: string;
