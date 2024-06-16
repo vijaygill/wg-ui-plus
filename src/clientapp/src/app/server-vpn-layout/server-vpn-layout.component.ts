@@ -5,6 +5,7 @@ import { WebapiService } from '../webapi.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
+import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
   selector: 'app-server-vpn-layout',
@@ -15,11 +16,12 @@ import { AppSharedModule } from '../app-shared.module';
   styleUrl: './server-vpn-layout.component.scss'
 })
 export class ServerVpnLayoutComponent implements OnInit {
-  private refresh_timer = interval(5000);
   private timerSubscription !: Subscription;
   heirarchyData!: TreeNode[];
+  refreshDelay: number = 0;
 
-  constructor(private webapiService: WebapiService) {
+  constructor(private webapiService: WebapiService,
+    private periodicRefreshUiService: PeriodicRefreshUiService) {
   }
 
   ngOnInit(): void {
@@ -31,10 +33,11 @@ export class ServerVpnLayoutComponent implements OnInit {
   }
 
   subscribeTimer(): void {
-    this.timerSubscription = this.refresh_timer.subscribe(val => {
+    this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
+      this.refreshDelay = val;
       this.loadData();
     });
-    this.loadData();
+    this.periodicRefreshUiService.performRefresh();
   }
 
   unsubscribeTimer(): void {

@@ -1,5 +1,5 @@
-<p-card header="IP-Tables log" subheader="Refreshed every 10 seconds">
-    Last update time: {{ipTablesLog.datetime}}
+<p-card header="IP-Tables log">
+    Last update time: {{ipTablesLog.datetime}} (Refreshed every {{refreshDelay}} seconds)
     <div>
         <pre style="white-space:pre-wrap;">{{ipTablesLog.output}}</pre>
     </div>
