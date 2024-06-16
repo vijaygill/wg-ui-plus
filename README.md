@@ -34,7 +34,7 @@ You need to have docker setup and running on your machine where the VPN needs to
 #### Note: Default username/password is admin/admin. You can change it later in "Server Configuration page".
 You can set up your own VPN in a few minutes by following the following steps:
 1. Gather the following information
-   * IP address assigned to you router (refered to as External IP address in this document )
+   * IP address assigned to your router (refered to as External IP address in this document )
    * IP address of the machine / raspberry pi / any other SBC you are going to use to run the VPN (refered to as Internal IP address in this document ).
 2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
 3. Now start the WG-UI-Plus using the following command
