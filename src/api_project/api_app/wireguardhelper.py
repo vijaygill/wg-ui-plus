@@ -293,6 +293,11 @@ AllowedIPs = 0.0.0.0/0
         # sort items
         target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
 
+        # allow all DNS traffic
+        post_up.append(
+            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
+        )
+
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
             chain_name,
