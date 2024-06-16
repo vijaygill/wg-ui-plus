@@ -1,4 +1,4 @@
-<p-card header="Connected Peers" subheader="Refreshed every 5 seconds">
+<p-card header="Connected Peers" subheader="Refreshed every 10 seconds">
 	<p-table sortField="peer_name" [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 		<ng-template pTemplate="caption">
 			<div class="flex align-items-center justify-content-between">
@@ -9,9 +9,10 @@
 			<tr>
 				<th>Name</th>
 				<th>Status</th>
-				<th>End-point IP</th>
-				<th>Allowed IP's</th>
+				<th>IP Address</th>
+				<th>IP Address Assigned by VPN</th>
 				<th>Last Handshake</th>
+				<th>Ping Time (ms)</th>
 				<th>Data Tx</th>
 				<th>Data Rx</th>
 			</tr>
@@ -23,6 +24,7 @@
 				<td>{{ connectedPeer.end_point_ip }}</td>
 				<td>{{ connectedPeer.allowed_ips_ip }}</td>
 				<td>{{ connectedPeer.latest_handshake }}</td>
+				<td>{{ connectedPeer.ping_time_ms| number}}</td>
 				<td>{{ connectedPeer.transfer_rx | number}} </td>
 				<td>{{ connectedPeer.transfer_tx | number }}</td>
 			</tr>

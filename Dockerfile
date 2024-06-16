@@ -25,6 +25,8 @@ RUN pip install --break-system-packages --upgrade qrcode colorlog Django djangor
 RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME && echo "$UNAME:$UNAME" | chpasswd
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
+RUN pip install --break-system-packages --upgrade ping3
+
 FROM base-dev as builder
 ARG UNAME
 ARG UID
@@ -57,7 +59,7 @@ ARG UID
 ARG GID
 
 RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata
-RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields
+RUN pip install  --no-cache-dir  --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields ping3
 
 RUN apk add --no-cache gcc libressl-dev musl-dev libffi-dev \
     &&  pip install --no-cache-dir cryptography \

@@ -13,6 +13,8 @@ import qrcode
 import subprocess
 import re
 import logging
+from ping3 import ping
+
 from django.template import Template, Context
 from django.utils import timezone
 
@@ -492,37 +494,49 @@ AllowedIPs = 0.0.0.0/0
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["items"] = []
         for match_num, match in enumerate(matches, start=1):
+            peer_item = {}
+            peer_item["peer_name"] = f"unknown-{match_num}"
+            peer_item["end_point"] = None
+            peer_item["latest_handshake"] = None
+            peer_item["transfer_rx"] = None
+            peer_item["transfer_tx"] = None
+            peer_item["status"] = None
+            peer_item["ping_time_ms"] = None
+
             peer_data = match.groupdict()
+
+            peer_item["allowed_ips_ip"] = peer_data["allowed_ips_ip"]
+
             peers_filtered = [
                 x for x in peers if x.public_key == peer_data["public_key"]
             ]
             peer = peers_filtered[0] if peers_filtered else None
-            peer_data["public_key"] = ""
             if peer:
-                peer_data["peer_name"] = peer.name
-                if peer.disabled:
-                    peer_data["status"] = 'Disabled'
-            else:
-                peer_data["peer_name"] = f"unknown-{match_num}"
-
-            if "end_point_ip" in peer_data.keys() and peer_data["end_point_ip"]:
-                peer_data["status"] = 'Connected'
-                if "latest_handshake" in peer_data.keys():
-                    peer_data["latest_handshake"] = str(
-                        datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
-                        .astimezone(tz=dt.tzinfo)
-                        .strftime("%Y-%m-%d %H:%M:%S")
-                    )
-                if 'transfer_rx' in peer_data.keys():
-                    peer_data["transfer_rx"] = int(peer_data["transfer_rx"])
-                if 'transfer_tx' in peer_data.keys():
-                    peer_data["transfer_tx"] = int(peer_data["transfer_tx"])
-            else:
-                peer_data["end_point"] = None
-                peer_data["latest_handshake"] = None
-                peer_data["transfer_rx"] = None
-                peer_data["transfer_tx"] = None
-            res["items"] += [peer_data]
+                peer_item["peer_name"] = peer.name
+                peer_item["status"] = 'Disabled' if peer.disabled else ''
+                is_connected = False
+                if not peer.disabled:
+                    try:
+                        addr = str(peer_data['allowed_ips_ip'])
+                        ping_res = ping(addr, timeout=1, unit='ms')
+                        is_connected = True if ping_res else False
+                        peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
+                        peer_item["ping_time_ms"] = ping_res if ping_res else peer_item["ping_time_ms"]
+                    except:
+                        pass
+                    if is_connected:
+                        peer_item["end_point_ip"] = peer_data["end_point_ip"] if 'end_point_ip' in peer_data.keys() else None
+                        if "latest_handshake" in peer_data.keys():
+                            peer_item["latest_handshake"] = str(
+                                datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
+                                .astimezone(tz=dt.tzinfo)
+                                .strftime("%Y-%m-%d %H:%M:%S")
+                            )
+                        if 'transfer_rx' in peer_data.keys():
+                            peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
+                        if 'transfer_tx' in peer_data.keys():
+                            peer_item["transfer_tx"] = int(peer_data["transfer_tx"])
+            res["items"] += [peer_item]
         return res
 
     @logged
