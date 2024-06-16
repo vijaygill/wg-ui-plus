@@ -85,7 +85,10 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   - [x] Add/Remove Targets to/from Peer-Groups thus allowing/denying access.
 - [x] Live Dashboard
 - [x] Authentication
-- [ ] Ability to send configuration files for peers by email
+- [x] Configuration of Client Peer
+  - [x] Display QR-code for scanning using camera on the client device.
+  - [x] Download and share ".conf" file with the client device.
+  - [ ] Ability to send configuration files for peers by email by single click.
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers
