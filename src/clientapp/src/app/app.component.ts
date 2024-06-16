@@ -22,7 +22,7 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'wg-ui-plus';
+  title = 'WireGuard UI Plus';
 
   serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
