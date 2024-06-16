@@ -16,7 +16,7 @@ import { MessageService } from 'primeng/api';
   styleUrl: './server-monitor-iptables.component.scss'
 })
 export class ServerMonitorIptablesComponent implements OnInit {
-  private refresh_timer = interval(5000);
+  private refresh_timer = interval(10000);
   private timerSubscription !: Subscription;
   ipTablesLog: IpTablesLog = { output: '' } as IpTablesLog;
 

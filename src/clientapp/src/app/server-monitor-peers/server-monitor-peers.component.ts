@@ -18,7 +18,7 @@ import { WebapiService } from '../webapi.service';
 export class ServerMonitorPeersComponent implements OnInit {
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
 
-  private refresh_timer = interval(5000);
+  private refresh_timer = interval(10000);
   timerSubscription !: Subscription;
 
   constructor(private webapiService: WebapiService) {
