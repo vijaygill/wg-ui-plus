@@ -78,6 +78,7 @@ export interface ServerConfiguration {
     private_key: string;
     peer_default_port: number;
     upstream_dns_ip_address: string;
+    use_ping_to_check_connectivity: boolean;
 }
 
 export interface WireguardConfiguration {
@@ -99,6 +100,7 @@ export interface ServerValidationErrorItem {
 
 export interface ConnectedPeerInformation {
     datetime: string;
+    message: string;
     items: ConnectedPeerInformationItem[];
 }
 
@@ -138,6 +140,6 @@ export interface ServerStatus {
     last_file_change_datetime: Date;
 }
 
-export interface PlatformInformation{
+export interface PlatformInformation {
     is_small_screen: boolean;
 }

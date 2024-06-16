@@ -474,7 +474,7 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def get_connected_peers(self, peers):
+    def get_connected_peers(self, peers, serverConfiguration):
         regex = r"""
             (?P<interface> wg\d+) \s+
                         (?P<public_key> [^\s]+) \s+
@@ -491,6 +491,7 @@ AllowedIPs = 0.0.0.0/0
         matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
         dt = datetime.datetime.now().astimezone()
         res = {}
+        res["message"] = ""
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["items"] = []
         for match_num, match in enumerate(matches, start=1):
@@ -517,11 +518,18 @@ AllowedIPs = 0.0.0.0/0
                 is_connected = False
                 if not peer.disabled:
                     try:
-                        addr = str(peer_data['allowed_ips_ip'])
-                        ping_res = ping(addr, timeout=1, unit='ms')
-                        is_connected = True if ping_res else False
-                        peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
-                        peer_item["ping_time_ms"] = ping_res if ping_res else peer_item["ping_time_ms"]
+                        if serverConfiguration.use_ping_to_check_connectivity:
+                            res["message"] = "Using ping to check connectivity."
+                            addr = str(peer_data['allowed_ips_ip'])
+                            ping_res = ping(addr, timeout=1, unit='ms')
+                            is_connected = True if ping_res else False
+                            peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
+                            peer_item["ping_time_ms"] = ping_res if ping_res else peer_item["ping_time_ms"]
+                        else:
+                            res["message"] = "Not using ping to check connectivity."
+                            is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                            peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
+                            peer_item["ping_time_ms"] = None
                     except:
                         pass
                     if is_connected:

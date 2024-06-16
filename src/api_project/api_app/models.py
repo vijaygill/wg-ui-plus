@@ -183,6 +183,7 @@ class ServerConfiguration(models.Model):
     public_key = models.CharField(max_length=255, null=True, blank=True)
     private_key = models.CharField(max_length=255, null=True, blank=True)
     peer_default_port = models.IntegerField()
+    use_ping_to_check_connectivity = models.BooleanField(null=True, default=False)
     last_changed_datetime = models.DateTimeField(
         auto_now=True,
     )

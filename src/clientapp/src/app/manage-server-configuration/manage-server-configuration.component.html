@@ -72,6 +72,13 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td><label for="usePingToCheckConnectivity">Use Ping To Check Connectivity</label></td>
+                                <td><p-checkbox id="usePingToCheckConnectivity" [binary]="true"
+                                        [(ngModel)]="editItem.use_ping_to_check_connectivity"
+                                        pTooltip="Server will ping each peer to check connectivity. More reliable, but will use 64 bytes for every ping to every peer."
+                                        tooltipPosition="top" /></td>
+                            </tr>
+                            <tr>
                                 <td colspan="2">
                                     <div style="width:100%;align-items: center; text-align: center;">
                                         <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
@@ -96,7 +103,7 @@
                     <tr>
                         <td>New Password</td>
                         <td>
-                            <p-password [(ngModel)]="changeUserPasswordInfo.new_password" [feedback]="false"/>
+                            <p-password [(ngModel)]="changeUserPasswordInfo.new_password" [feedback]="false" />
                         </td>
                     </tr>
                     <tr>

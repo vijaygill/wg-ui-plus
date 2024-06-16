@@ -1,4 +1,4 @@
-<p-card header="Connected Peers">
+<p-card header="Connected Peers" [subheader]="connectedPeerData.message">
 	<p-table sortField="peer_name" [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 		<ng-template pTemplate="caption">
 			<div class="flex align-items-center justify-content-between">

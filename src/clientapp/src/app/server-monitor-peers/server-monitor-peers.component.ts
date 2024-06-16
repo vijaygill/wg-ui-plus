@@ -17,7 +17,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
   styleUrl: './server-monitor-peers.component.scss'
 })
 export class ServerMonitorPeersComponent implements OnInit {
-  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
+  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
   timerSubscription !: Subscription;
   refreshDelay: number = 0;
 
