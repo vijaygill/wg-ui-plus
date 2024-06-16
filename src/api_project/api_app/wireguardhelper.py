@@ -513,27 +513,15 @@ AllowedIPs = 0.0.0.0/0
             ]
             peer = peers_filtered[0] if peers_filtered else None
             if peer:
-                peer_item["peer_name"] = peer.name
-                peer_item["status"] = 'Disabled' if peer.disabled else ''
                 is_connected = False
-                if not peer.disabled:
-                    try:
-                        if serverConfiguration.use_ping_to_check_connectivity:
-                            res["message"] = "Using ping to check connectivity."
-                            addr = str(peer_data['allowed_ips_ip'])
-                            ping_res = ping(addr, timeout=1, unit='ms')
-                            is_connected = True if ping_res else False
-                            peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
-                            peer_item["ping_time_ms"] = ping_res if ping_res else peer_item["ping_time_ms"]
-                        else:
-                            res["message"] = "Not using ping to check connectivity."
-                            is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
-                            peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
-                            peer_item["ping_time_ms"] = None
-                    except:
-                        pass
+                is_disabled = peer.disabled
+                peer_item["peer_name"] = peer.name
+                peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
+                if not is_disabled:
+                    is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
                     if is_connected:
-                        peer_item["end_point_ip"] = peer_data["end_point_ip"] if 'end_point_ip' in peer_data.keys() else None
+                        peer_item["end_point_ip"] = peer_data["end_point_ip"]
                         if "latest_handshake" in peer_data.keys():
                             peer_item["latest_handshake"] = str(
                                 datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))

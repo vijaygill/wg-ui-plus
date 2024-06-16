@@ -78,7 +78,6 @@ export interface ServerConfiguration {
     private_key: string;
     peer_default_port: number;
     upstream_dns_ip_address: string;
-    use_ping_to_check_connectivity: boolean;
 }
 
 export interface WireguardConfiguration {
