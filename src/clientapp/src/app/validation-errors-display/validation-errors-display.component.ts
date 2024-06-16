@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ContentChild, Input, OnInit, TemplateRef } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Message } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { ServerValidationError } from '../webapi.entities';

@@ -61,7 +61,7 @@ import { ValidationErrorsDisplayComponent } from './validation-errors-display/va
 import { AutoFocusModule } from 'primeng/autofocus';
 
 import {MatButtonModule} from '@angular/material/button';
-import {MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogModule, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
+import {MatDialogModule} from '@angular/material/dialog';
 import {MatTableModule} from '@angular/material/table';
 
 let modules = [

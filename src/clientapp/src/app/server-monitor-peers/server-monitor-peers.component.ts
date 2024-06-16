@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
 import { ConnectedPeerInformation } from '../webapi.entities';
-import { Subscription, interval } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { WebapiService } from '../webapi.service';
+import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
   selector: 'app-server-monitor-peers',
@@ -16,12 +17,12 @@ import { WebapiService } from '../webapi.service';
   styleUrl: './server-monitor-peers.component.scss'
 })
 export class ServerMonitorPeersComponent implements OnInit {
-  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], } as ConnectedPeerInformation;
-
-  private refresh_timer = interval(5000);
+  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
   timerSubscription !: Subscription;
+  refreshDelay: number = 0;
 
-  constructor(private webapiService: WebapiService) {
+  constructor(private webapiService: WebapiService,
+    private periodicRefreshUiService: PeriodicRefreshUiService) {
   }
 
   ngOnInit(): void {
@@ -33,10 +34,11 @@ export class ServerMonitorPeersComponent implements OnInit {
   }
 
   subscribeTimer(): void {
-    this.timerSubscription = this.refresh_timer.subscribe(val => {
+    this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
+      this.refreshDelay = val;
       this.loadData();
     });
-    this.loadData();
+    this.periodicRefreshUiService.performRefresh();
   }
 
   unsubscribeTimer(): void {

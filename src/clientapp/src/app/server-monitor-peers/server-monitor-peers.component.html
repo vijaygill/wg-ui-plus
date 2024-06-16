@@ -1,16 +1,16 @@
-<p-card header="Connected Peers" subheader="Refreshed every 5 seconds">
+<p-card header="Connected Peers" [subheader]="connectedPeerData.message">
 	<p-table sortField="peer_name" [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
 		<ng-template pTemplate="caption">
 			<div class="flex align-items-center justify-content-between">
-				Last update time: {{connectedPeerData.datetime}}
+				Last update time: {{connectedPeerData.datetime}} (Refreshed every {{refreshDelay}} seconds)
 			</div>
 		</ng-template>
 		<ng-template pTemplate="header">
 			<tr>
 				<th>Name</th>
 				<th>Status</th>
-				<th>End-point IP</th>
-				<th>Allowed IP's</th>
+				<th>IP Address (Public)</th>
+				<th>IP Address (Internal)</th>
 				<th>Last Handshake</th>
 				<th>Data Tx</th>
 				<th>Data Rx</th>

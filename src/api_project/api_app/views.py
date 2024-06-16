@@ -118,8 +118,9 @@ def wireguard_get_configuration(request):
 @authentication_classes([SessionAuthentication])
 def wireguard_get_connected_peers(request):
     peers = Peer.objects.all()
+    sc = ServerConfiguration.objects.all()[0]
     wg = WireGuardHelper()
-    res = wg.get_connected_peers(peers)
+    res = wg.get_connected_peers(peers, sc)
     return Response(res)
 
 

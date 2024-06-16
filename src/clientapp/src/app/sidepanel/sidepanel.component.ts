@@ -1,16 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule, RouterOutlet } from '@angular/router';
-import { MenuItem, Message } from 'primeng/api';
+import { RouterModule, RouterOutlet } from '@angular/router';
+import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { AppSharedModule } from '../app-shared.module';
-import { routes } from '../app.routes';
-import { ServerStatus, UserSessionInfo } from '../webapi.entities';
-import { Subscription, interval } from 'rxjs';
+import { UserSessionInfo } from '../webapi.entities';
+import { Subscription } from 'rxjs';
 import { LoginService } from '../login-service';
-import { WebapiService } from '../webapi.service';
-
 
 @Component({
   selector: 'app-sidepanel',

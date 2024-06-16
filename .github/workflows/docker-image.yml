@@ -3,6 +3,11 @@ name: Docker Image CI
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'Dockerfile'
+      - 'LICENSE'
     branches:
       - develop
       - master

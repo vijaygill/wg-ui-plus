@@ -99,6 +99,7 @@ export interface ServerValidationErrorItem {
 
 export interface ConnectedPeerInformation {
     datetime: string;
+    message: string;
     items: ConnectedPeerInformationItem[];
 }
 
@@ -138,6 +139,6 @@ export interface ServerStatus {
     last_file_change_datetime: Date;
 }
 
-export interface PlatformInformation{
+export interface PlatformInformation {
     is_small_screen: boolean;
 }

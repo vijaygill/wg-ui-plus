@@ -5,12 +5,13 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
-import { Message, MessageService, PrimeNGConfig } from 'primeng/api';
+import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from './webapi.service';
 import { LoginService } from './login-service';
 import { PlatformInformationService } from './platform-information.service';
+import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +22,11 @@ import { PlatformInformationService } from './platform-information.service';
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'wg-ui-plus';
+  title = 'WireGuard UI Plus';
 
   serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
 
-  private refresh_timer = interval(5000);
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   loginServiceSubscription !: Subscription;
@@ -38,7 +38,8 @@ export class AppComponent implements OnInit {
     private messageService: MessageService,
     private webapiService: WebapiService,
     private loginService: LoginService,
-    private platformInformationService: PlatformInformationService) { }
+    private platformInformationService: PlatformInformationService,
+    private periodicRefreshUiService: PeriodicRefreshUiService) { }
 
   ngOnInit() {
     // this.primengConfig.zIndex = {
@@ -54,7 +55,7 @@ export class AppComponent implements OnInit {
       }
     );
 
-    this.timerSubscription = this.refresh_timer.subscribe(val => {
+    this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.webapiService.checkServerStatus();
     });
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {

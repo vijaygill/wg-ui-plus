@@ -4,22 +4,19 @@ import glob
 import datetime
 import ipaddress
 from functools import wraps
-import random
-import pathlib
 import codecs
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives import serialization
-import qrcode
 import subprocess
 import re
 import logging
+
 from django.template import Template, Context
 from django.utils import timezone
 
 from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
 from .util import (
     ensure_folder_exists_for_file,
-    is_network_address,
     get_target_ip_address_parts,
 )
 
@@ -296,6 +293,11 @@ AllowedIPs = 0.0.0.0/0
         # sort items
         target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
 
+        # allow all DNS traffic
+        post_up.append(
+            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
+        )
+
         # now add FORWARD and ACCEPT rules for each chain - hosts only
         for (
             chain_name,
@@ -472,7 +474,7 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def get_connected_peers(self, peers):
+    def get_connected_peers(self, peers, serverConfiguration):
         regex = r"""
             (?P<interface> wg\d+) \s+
                         (?P<public_key> [^\s]+) \s+
@@ -489,40 +491,48 @@ AllowedIPs = 0.0.0.0/0
         matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
         dt = datetime.datetime.now().astimezone()
         res = {}
+        res["message"] = ""
         res["datetime"] = dt.strftime("%Y-%m-%d %H:%M:%S")
         res["items"] = []
         for match_num, match in enumerate(matches, start=1):
+            peer_item = {}
+            peer_item["peer_name"] = f"unknown-{match_num}"
+            peer_item["end_point"] = None
+            peer_item["latest_handshake"] = None
+            peer_item["transfer_rx"] = None
+            peer_item["transfer_tx"] = None
+            peer_item["status"] = None
+            peer_item["ping_time_ms"] = None
+
             peer_data = match.groupdict()
+
+            peer_item["allowed_ips_ip"] = peer_data["allowed_ips_ip"]
+
             peers_filtered = [
                 x for x in peers if x.public_key == peer_data["public_key"]
             ]
             peer = peers_filtered[0] if peers_filtered else None
-            peer_data["public_key"] = ""
             if peer:
-                peer_data["peer_name"] = peer.name
-                if peer.disabled:
-                    peer_data["status"] = 'Disabled'
-            else:
-                peer_data["peer_name"] = f"unknown-{match_num}"
-
-            if "end_point_ip" in peer_data.keys() and peer_data["end_point_ip"]:
-                peer_data["status"] = 'Connected'
-                if "latest_handshake" in peer_data.keys():
-                    peer_data["latest_handshake"] = str(
-                        datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
-                        .astimezone(tz=dt.tzinfo)
-                        .strftime("%Y-%m-%d %H:%M:%S")
-                    )
-                if 'transfer_rx' in peer_data.keys():
-                    peer_data["transfer_rx"] = int(peer_data["transfer_rx"])
-                if 'transfer_tx' in peer_data.keys():
-                    peer_data["transfer_tx"] = int(peer_data["transfer_tx"])
-            else:
-                peer_data["end_point"] = None
-                peer_data["latest_handshake"] = None
-                peer_data["transfer_rx"] = None
-                peer_data["transfer_tx"] = None
-            res["items"] += [peer_data]
+                is_connected = False
+                is_disabled = peer.disabled
+                peer_item["peer_name"] = peer.name
+                peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
+                if not is_disabled:
+                    is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
+                    if is_connected:
+                        peer_item["end_point_ip"] = peer_data["end_point_ip"]
+                        if "latest_handshake" in peer_data.keys():
+                            peer_item["latest_handshake"] = str(
+                                datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
+                                .astimezone(tz=dt.tzinfo)
+                                .strftime("%Y-%m-%d %H:%M:%S")
+                            )
+                        if 'transfer_rx' in peer_data.keys():
+                            peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
+                        if 'transfer_tx' in peer_data.keys():
+                            peer_item["transfer_tx"] = int(peer_data["transfer_tx"])
+            res["items"] += [peer_item]
         return res
 
     @logged
