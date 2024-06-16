@@ -51,7 +51,7 @@ ENV IMAGE_STAGE=dev
 USER $UNAME
 WORKDIR /wg-ui-plus/src
 
-FROM python:alpine3.20 as base-live
+FROM python:alpine as base-live
 ARG UNAME
 ARG UID
 ARG GID
