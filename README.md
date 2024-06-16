@@ -66,24 +66,16 @@ Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled th
 From here, you can go on the make this setup as advanced as you want. Use "docker compose", or put it behind nginx reverse proxy, add SSL and so on.
 
 ## Features
-
-At this early stage, this is more of an idea of what features this management will offer at some stage
-* Terms used in the applications and their definitions
-  * Target - a host, a network or the whole world of internet.
-  * Peer - A device that connects to VPN
-  * Peer-Group - A group of peers that can be granted / denied access to targets 
-* View the live status of the WG server, what clients are connected etc.
-* Add/remove clients
-* General management of the server
-
 Functionality implemented/yet to be implemented so far (getting ready for first release)
 - [x] Manage targets - Add/Edit/Disable.
   - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
 - [x] Manage Peers - Add/Edit/Disable.
-  - [x] Add/Remove Peers from Peer-Groups
+  - [x] Add/Remove Peers from Peer-Groups, thus allowing/denying access to the targets a Peer-Group is associated with.
 - [x] Manage Peer-Groups - Add/Edit/Disable
-  - [x] Add/Remove Targets to/from Peer-Groups thus allowing/denying access.
+  - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
 - [x] Live Dashboard
+  - [x] Show current status of Peers.
+  - [x] Show IPTables rules along with the counters for various chains.
 - [x] Authentication
 - [x] Configuration of Client Peer
   - [x] Display QR-code for scanning using camera on the client device.
