@@ -4,16 +4,12 @@ import glob
 import datetime
 import ipaddress
 from functools import wraps
-import random
-import pathlib
 import codecs
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives import serialization
-import qrcode
 import subprocess
 import re
 import logging
-from ping3 import ping
 
 from django.template import Template, Context
 from django.utils import timezone
@@ -21,7 +17,6 @@ from django.utils import timezone
 from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
 from .util import (
     ensure_folder_exists_for_file,
-    is_network_address,
     get_target_ip_address_parts,
 )
 
