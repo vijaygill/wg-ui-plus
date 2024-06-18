@@ -1,16 +1,9 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include, re_path
 
 from . import views
-
-from .views import (
-    TargetViewSet,
-    PeerGroupViewSet,
-    PeerViewSet,
-    ServerConfigurationViewSet,
-)
-from .views import TargetHeirarchyViewSet
+from .views import (PeerGroupViewSet, PeerViewSet, ServerConfigurationViewSet,
+                    TargetHeirarchyViewSet, TargetViewSet)
 
 router = DefaultRouter()
 router.register(r"peer", PeerViewSet)

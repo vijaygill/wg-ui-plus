@@ -1,12 +1,13 @@
-from io import BytesIO
 import base64
 import logging
+from io import BytesIO
+
 import qrcode
 from rest_framework import serializers
-from rest_framework import permissions
-from .models import Peer, PeerGroup, Target, ServerConfiguration
-from .wireguardhelper import WireGuardHelper
+
 from .db_seed import PEER_GROUP_EVERYONE_NAME
+from .models import Peer, PeerGroup, ServerConfiguration, Target
+from .wireguardhelper import WireGuardHelper
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
         wg = WireGuardHelper()
         serverConfiguration = ServerConfiguration.objects.all()[0]
         peer = instance
-        s, c = wg.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+        s, c = wg.get_wireguard_configurations_for_peer(serverConfiguration, peer)
         if c:
             c = c.strip()
         return c

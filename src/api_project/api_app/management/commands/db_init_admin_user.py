@@ -1,7 +1,8 @@
 #!/usr/bin/python
-from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth.models import User
 import traceback
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand, CommandError
 
 DEFAULT_ADMIN_USER_NAME = 'admin'
 DEFAULT_ADMIN_USER_PASSWORD = 'admin'

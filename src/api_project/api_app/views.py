@@ -1,34 +1,18 @@
-import json
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.template import loader
-from rest_framework import viewsets
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import serializers
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
-from django.contrib.auth.models import User, auth
-
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.contrib.auth.models import auth
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import authentication_classes, permission_classes
 
-from .models import Peer, PeerGroup, Target, ServerConfiguration
-from .serializers import TargetSerializer
-from .serializers import PeerGroupSerializer
-from .serializers import PeerSerializer, PeerWithQrSerializer
-from .serializers import ServerConfigurationSerializer
-from .serializers import TargetHeirarchySerializer
-
+from .models import Peer, PeerGroup, ServerConfiguration, Target
+from .serializers import (PeerGroupSerializer, PeerSerializer,
+                          PeerWithQrSerializer, ServerConfigurationSerializer,
+                          TargetHeirarchySerializer, TargetSerializer)
 from .wireguardhelper import WireGuardHelper
 
 
@@ -87,7 +71,7 @@ def wireguard_generate_configuration_files(request):
     peer_groups = PeerGroup.objects.all()
     peers = Peer.objects.all()
     targets = Target.objects.all()
-    res = wg.generateConfigurationFiles(
+    res = wg.generate_configuration_files(
         serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
     )
     return Response(res)
@@ -110,7 +94,7 @@ def wireguard_get_configuration(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
     peers = Peer.objects.all()
-    res = wg.getWireguardConfiguration(serverConfiguration=sc, peers=peers)
+    res = wg.get_wireguard_configuration(serverConfiguration=sc, peers=peers)
     return Response(res)
 
 

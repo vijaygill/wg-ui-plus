@@ -1,14 +1,10 @@
-import datetime
 import ipaddress
-import re
-import traceback
-from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
+
 from django.core.exceptions import ValidationError
+from django.db import models
 
-from .util import ensure_folder_exists_for_file, get_target_ip_address_parts, is_network_address, is_single_address
-
+from .util import (get_target_ip_address_parts,
+                   is_network_address, is_single_address)
 from .wireguardhelper import generate_keys
 
 
@@ -31,6 +27,7 @@ def validator_is_network_address(value, throw_exception=True):
         )
     return res
 
+
 def validator_are_network_addresses(value, throw_exception=True):
     res = False
     if value:
@@ -50,7 +47,6 @@ def validator_are_network_addresses(value, throw_exception=True):
 
 
 def validator_is_single_address(value, throw_exception=True):
-    ip = None
     res = is_single_address(value)
     if (not res) and throw_exception:
         raise ValidationError(
