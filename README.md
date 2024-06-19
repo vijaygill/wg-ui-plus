@@ -136,6 +136,3 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   ![image](./images/wg-ui-plus-monitor-iptables.png)
 
 
-## Development guide
-
-This repository comes with a Docker based development environment, for more details, see [devenv.md](devenv.md). Needs some work to make it useful.
