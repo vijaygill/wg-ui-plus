@@ -22,6 +22,7 @@ from .util import (
 
 logger = logging.getLogger(__name__)
 
+MAX_LAST_HANDSHAKE_SECONDS = 120
 
 def logged(func):
     @wraps(func)
@@ -514,20 +515,20 @@ AllowedIPs = 0.0.0.0/0
             peer = peers_filtered[0] if peers_filtered else None
             if peer:
                 is_connected = False
+                last_handshake = None
                 is_disabled = peer.disabled
                 peer_item["peer_name"] = peer.name
                 peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
                 if not is_disabled:
                     is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    if is_connected and ("latest_handshake" in peer_data.keys()):
+                        last_handshake = datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"])).astimezone(tz=dt.tzinfo)
+                        timediff = dt - last_handshake
+                        is_connected = timediff.total_seconds() <= MAX_LAST_HANDSHAKE_SECONDS
                     peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
                     if is_connected:
+                        peer_item["latest_handshake"] = last_handshake.strftime("%Y-%m-%d %H:%M:%S") if last_handshake else None
                         peer_item["end_point_ip"] = peer_data["end_point_ip"]
-                        if "latest_handshake" in peer_data.keys():
-                            peer_item["latest_handshake"] = str(
-                                datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
-                                .astimezone(tz=dt.tzinfo)
-                                .strftime("%Y-%m-%d %H:%M:%S")
-                            )
                         if 'transfer_rx' in peer_data.keys():
                             peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
                         if 'transfer_tx' in peer_data.keys():
