@@ -26,9 +26,12 @@ export class ManagePeersEditorComponent {
     if (value.id) {
       this.webapiService.getPeer(value.id).subscribe(data => {
         this.peer = data;
+        this.getLookupData();
       });
     }
-    this.getLookupData();
+    else {
+      this.getLookupData();
+    }
   }
 
   peer: Peer = {} as Peer;
