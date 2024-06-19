@@ -80,20 +80,22 @@ Now let's take an example of your NAS which has Samba server running (port 139 a
 
 1. Login into the WireGuard UI Plus app.
 2. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
-    1. In the resulting page, enter following data
+    1. Click on "New" button
+    2. In the resulting page, enter following data
         1. Name (say NAS Shares Users)
         2. Description (enter any description here)
         3. Click on save "Ok" button.
         ![image](./images/example-add-peergroup.PNG)
 3. Go to Peers page (by clicking on "Peer" link under "Manage Data" section)
-    1. In the resulting page, enter following data
+    1. Click on "New" button
+    2. In the resulting page, enter following data
         1. Name (say Test NAS User)
         2. Description (enter any description here)
         3. Drag the Peer-Group "NAS Shares Users" from "Available" list to "Selected" list.
         4. Click on save "Ok" button.
         ![image](./images/example-add-peer.PNG)
 4. Go to page "Targets" under "Manage Data" section.
-    1. Click on new button
+    1. Click on "New" button
     2. In the resulting page, enter following data
         1. Name (say NAS Shares)
         2. Description (enter any description here)
@@ -104,7 +106,7 @@ Now let's take an example of your NAS which has Samba server running (port 139 a
 5. Click on "VPN Layout" under "Server" section. You should see the layout as following.
         ![image](./images/example-vpn-layout.PNG)
 6. Now click on "Apply Changes" button at the top.
-7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code.
+7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code (or download .conf file).
 8. That's it. Your client should be able to access the samba shares on NAS.
 
 
