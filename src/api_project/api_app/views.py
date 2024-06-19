@@ -22,7 +22,7 @@ class PeerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action == "retrieve" or self.action == "update":
+        if self.action == "retrieve" or self.action == "update" or self.action == "create":
             return PeerWithQrSerializer
         return super().get_serializer_class()
 
