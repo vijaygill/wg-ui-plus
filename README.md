@@ -79,19 +79,19 @@ Always remember: Targets are resources. Peers-groups are logical groups of Peers
 Now let's take an example of your NAS which has Samba server running (port 139 and port 445 are used) on say host 192.168.0.51. The IP addresses used in example are, well, just examples. You wll need to replace those with real IP addresses.
 
 1. Login into the WireGuard UI Plus app.
-2. Go to Peers page (by clicking on "Peer" link under "Manage Data" section)
+2. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
+    1. In the resulting page, enter following data
+        1. Name (say NAS Shares Users)
+        2. Description (enter any description here)
+        3. Click on save "Ok" button.
+        ![image](./images/example-add-peergroup.PNG)
+3. Go to Peers page (by clicking on "Peer" link under "Manage Data" section)
     1. In the resulting page, enter following data
         1. Name (say Test NAS User)
         2. Description (enter any description here)
         3. Drag the Peer-Group "NAS Shares Users" from "Available" list to "Selected" list.
         4. Click on save "Ok" button.
         ![image](./images/example-add-peer.PNG)
-3. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
-    1. In the resulting page, enter following data
-        1. Name (say NAS Shares Users)
-        2. Description (enter any description here)
-        3. Click on save "Ok" button.
-        ![image](./images/example-add-peergroup.PNG)
 4. Go to page "Targets" under "Manage Data" section.
     1. Click on new button
     2. In the resulting page, enter following data
