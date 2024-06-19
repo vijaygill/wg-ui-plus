@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import os
-from django.core.management.base import BaseCommand, CommandError
-from api_app.models import ServerConfiguration
 import traceback
+
+from api_app.models import ServerConfiguration
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Peer, PeerGroup, Target, ServerConfiguration
+from .models import Peer, PeerGroup, ServerConfiguration, Target
 
 
 class PeerAdmin(admin.ModelAdmin):

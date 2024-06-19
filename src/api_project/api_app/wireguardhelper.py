@@ -22,6 +22,7 @@ from .util import (
 
 logger = logging.getLogger(__name__)
 
+MAX_LAST_HANDSHAKE_SECONDS = 120
 
 def logged(func):
     @wraps(func)
@@ -64,7 +65,7 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def getWireguardConfigurationForServer(self, serverConfiguration):
+    def get_wireguard_configuration_for_server(self, serverConfiguration):
         template = """
 # Settings for Server.
 [Interface]
@@ -81,7 +82,7 @@ PostDown = {{serverConfiguration.script_path_post_down}}
         return res
 
     @logged
-    def getWireguardConfigurationsForPeer(self, serverConfiguration, peer):
+    def get_wireguard_configurations_for_peer(self, serverConfiguration, peer):
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
@@ -124,16 +125,16 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def getWireguardConfiguration(self, serverConfiguration, peers):
+    def get_wireguard_configuration(self, serverConfiguration, peers):
 
-        server_config = self.getWireguardConfigurationForServer(serverConfiguration)
+        server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
 
         # now generate configs for peers
         # both for the server side and client side
         peer_configs = []
         for peer in peers:
             peer_config_server_side, peer_config_client_side = (
-                self.getWireguardConfigurationsForPeer(serverConfiguration, peer)
+                self.get_wireguard_configurations_for_peer(serverConfiguration, peer)
             )
             server_config += peer_config_server_side
             peer_configs += [peer_config_client_side]
@@ -148,7 +149,7 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def getWireguardIpTablesScript(
+    def get_wireguard_iptables_script(
         self, serverConfiguration, targets, peer_groups, peers
     ):
         dns_servers = [serverConfiguration.upstream_dns_ip_address]
@@ -401,11 +402,11 @@ AllowedIPs = 0.0.0.0/0
         post_up = "\n".join(post_up)
 
         post_down = [
-            f"iptables --flush",
-            f"iptables --table nat --flush",
-            f"iptables --delete-chain",
-            f"",
-            f"iptables -n -L -v --line-numbers",
+            "iptables --flush",
+            "iptables --table nat --flush",
+            "iptables --delete-chain",
+            "",
+            "iptables -n -L -v --line-numbers",
         ]
 
         post_down = "\n".join(post_down)
@@ -413,13 +414,13 @@ AllowedIPs = 0.0.0.0/0
         return (post_up, post_down)
 
     @logged
-    def generateConfigurationFiles(
+    def generate_configuration_files(
         self, serverConfiguration, targets, peer_groups, peers
     ):
 
         # first save wg0.conf
         ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
-        configs = self.getWireguardConfiguration(
+        configs = self.get_wireguard_configuration(
             serverConfiguration=serverConfiguration, peers=peers
         )
         with open(serverConfiguration.wireguard_config_path, "w") as f:
@@ -430,7 +431,7 @@ AllowedIPs = 0.0.0.0/0
         ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
         ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
         iptables_scripts_post_up, iptables_scripts_post_down = (
-            self.getWireguardIpTablesScript(
+            self.get_wireguard_iptables_script(
                 serverConfiguration=serverConfiguration,
                 targets=targets,
                 peer_groups=peer_groups,
@@ -514,20 +515,20 @@ AllowedIPs = 0.0.0.0/0
             peer = peers_filtered[0] if peers_filtered else None
             if peer:
                 is_connected = False
+                last_handshake = None
                 is_disabled = peer.disabled
                 peer_item["peer_name"] = peer.name
                 peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
                 if not is_disabled:
                     is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    if is_connected and ("latest_handshake" in peer_data.keys()):
+                        last_handshake = datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"])).astimezone(tz=dt.tzinfo)
+                        timediff = dt - last_handshake
+                        is_connected = timediff.total_seconds() <= MAX_LAST_HANDSHAKE_SECONDS
                     peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
                     if is_connected:
+                        peer_item["latest_handshake"] = last_handshake.strftime("%Y-%m-%d %H:%M:%S") if last_handshake else None
                         peer_item["end_point_ip"] = peer_data["end_point_ip"]
-                        if "latest_handshake" in peer_data.keys():
-                            peer_item["latest_handshake"] = str(
-                                datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"]))
-                                .astimezone(tz=dt.tzinfo)
-                                .strftime("%Y-%m-%d %H:%M:%S")
-                            )
                         if 'transfer_rx' in peer_data.keys():
                             peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
                         if 'transfer_tx' in peer_data.keys():

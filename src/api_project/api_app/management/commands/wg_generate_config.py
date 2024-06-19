@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand, CommandError
-from api_app.wireguardhelper import WireGuardHelper
-from api_app.models import ServerConfiguration, PeerGroup, Peer, Target
 import traceback
+
+from api_app.models import Peer, PeerGroup, ServerConfiguration, Target
+from api_app.wireguardhelper import WireGuardHelper
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
@@ -14,7 +15,7 @@ class Command(BaseCommand):
             peer_groups = PeerGroup.objects.all()
             peers = Peer.objects.all()
             targets = Target.objects.all()
-            res = wg.generateConfigurationFiles(
+            res = wg.generate_configuration_files(
                 serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
             )
             self.stdout.write(f'{res["status"]}')

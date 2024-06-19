@@ -1,5 +1,5 @@
-import os
 import ipaddress
+import os
 import re
 import traceback
 
@@ -40,10 +40,10 @@ def is_network_address(addr):
 
 def get_target_ip_address_parts(value):
     regex = r"""
-	( ( (?P<ip1>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) / (?P<mask> .+)  ) )
-	| ( ( (?P<ip2>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) : (?P<port> .+)  ) )
-	| ( (?P<ip>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) )
-	"""
+    ( ( (?P<ip1>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) / (?P<mask> .+)  ) )
+    | ( ( (?P<ip2>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) : (?P<port> .+)  ) )
+    | ( (?P<ip>\d{1,3} \. \d{1,3} \. \d{1,3} \. \d{1,3}) )
+    """
     res = (False, None, None, None, None, None)
     errors = []
     try:
