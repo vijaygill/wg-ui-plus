@@ -19,7 +19,7 @@
     "@angular/forms": "^18.0.3",
     "@angular/material": "^18.0.3",
     "@angular/platform-browser": "^18.0.3",
-    "@angular/platform-browser-dynamic": "^18.0.3",
+    "@angular/platform-browser-dynamic": "^18.0.4",
     "@angular/router": "^18.0.3",
     "primeicons": "^7.0.0",
     "primeng": "^17.18.1",
