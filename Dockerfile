@@ -7,16 +7,18 @@ ARG UNAME
 ARG UID
 ARG GID
 
-
 RUN apt-get update -y \
 	&& apt-get upgrade -y \
 	&& apt-get install -y \
-		python3 \
-		python3-pip \
-		python-is-python3 \
-        git \
-		npm \
-		sqlite3 wireguard wireguard-tools python3-cryptography net-tools iproute2 iptables libcap2-bin libcap2 iptraf-ng procps tcpdump sudo conntrack tzdata 
+	python3 \
+	python3-pip \
+	python-is-python3 \
+	git \
+	npm \
+	sqlite3 wireguard wireguard-tools python3-cryptography \
+	net-tools iproute2 iptables libcap2-bin libcap2 \
+	iptraf-ng procps tcpdump \
+	sudo conntrack tzdata
 
 RUN npm install -g @angular/cli
 
@@ -59,8 +61,8 @@ ARG GID
 RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata
 
 RUN apk add --no-cache --update gcc libressl-dev musl-dev libffi-dev \
-    &&  pip install --no-cache-dir --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields cryptography \
-    &&  apk del gcc libressl-dev musl-dev libffi-dev
+	&&  pip install --no-cache-dir --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields cryptography \
+	&&  apk del gcc libressl-dev musl-dev libffi-dev
 
 RUN adduser -D $UNAME
 RUN echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers
