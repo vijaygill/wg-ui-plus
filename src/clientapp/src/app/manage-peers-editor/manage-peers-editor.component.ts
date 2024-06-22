@@ -131,7 +131,7 @@ export class ManagePeersEditorComponent {
     const downloadAncher = document.createElement("a");
     downloadAncher.style.display = "none";
     downloadAncher.href = this.fileUrl;
-    downloadAncher.download = this.peer.name + '.conf';
+    downloadAncher.download = this.peer.name.replace(/[^a-z0-9]+/gi, '') + '.conf';
     downloadAncher.click();
   }
 
