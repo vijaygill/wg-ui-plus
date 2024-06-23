@@ -67,32 +67,35 @@ From here, you can go on the make this setup as advanced as you want. Use "docke
 
 ## Further usage (configuration)
 Now you can start expanding your setup. But first let's get a few terms cleared in following text.
-Target: A target is a resource your users can access. It can be
+* Target: A target is a resource your users can access. It can be
   * a host (just IP address in the format A.B.C.D)
   * a host with ports (IP address with the format A.B.C.D:N1,N2,N3... where N1, N2, N3 and so on are port numbers)
   * a network address (a network address and a mask)
-Peer: A client - any device that accesses the targets via the VPN.
-Peer-Group - just a logical group of peers which allowed/denied access to a target. Peers-Groups were implemented to help easy management of access for Peers.
+* Peer: A client - any device that accesses the targets via the VPN.
+* Peer-Group - just a logical group of peers which allowed/denied access to a target. Peers-Groups were implemented to help easy management of access for Peers.
+
+Always remember: Targets are resources. Peers-groups are logical groups of Peers (clients) and are added/removed from targets (to grant/deny access). Peers are clients are added / removed from Peer-Groups (to grant/deny access).
 
 Now let's take an example of your NAS which has Samba server running (port 139 and port 445 are used) on say host 192.168.0.51. The IP addresses used in example are, well, just examples. You wll need to replace those with real IP addresses.
 
-
 1. Login into the WireGuard UI Plus app.
-2. Go to Peers page (by clicking on "Peer" link under "Manage Data" section)
-    1. In the resulting page, enter following data
+2. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
+    1. Click on "New" button
+    2. In the resulting page, enter following data
+        1. Name (say NAS Shares Users)
+        2. Description (enter any description here)
+        3. Click on save "Ok" button.
+        ![image](./images/example-add-peergroup.PNG)
+3. Go to Peers page (by clicking on "Peer" link under "Manage Data" section)
+    1. Click on "New" button
+    2. In the resulting page, enter following data
         1. Name (say Test NAS User)
         2. Description (enter any description here)
         3. Drag the Peer-Group "NAS Shares Users" from "Available" list to "Selected" list.
         4. Click on save "Ok" button.
         ![image](./images/example-add-peer.PNG)
-3. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
-    1. In the resulting page, enter following data
-        1. Name (say NAS Shares Users)
-        2. Description (enter any description here)
-        3. Click on save "Ok" button.
-        ![image](./images/example-add-peergroup.PNG)
 4. Go to page "Targets" under "Manage Data" section.
-    1. Click on new button
+    1. Click on "New" button
     2. In the resulting page, enter following data
         1. Name (say NAS Shares)
         2. Description (enter any description here)
@@ -103,7 +106,7 @@ Now let's take an example of your NAS which has Samba server running (port 139 a
 5. Click on "VPN Layout" under "Server" section. You should see the layout as following.
         ![image](./images/example-vpn-layout.PNG)
 6. Now click on "Apply Changes" button at the top.
-7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code.
+7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code (or download .conf file).
 8. That's it. Your client should be able to access the samba shares on NAS.
 
 
@@ -133,6 +136,3 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
   ![image](./images/wg-ui-plus-monitor-iptables.png)
 
 
-## Development guide
-
-This repository comes with a Docker based development environment, for more details, see [devenv.md](devenv.md). Needs some work to make it useful.
