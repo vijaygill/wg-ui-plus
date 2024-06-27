@@ -549,8 +549,17 @@ AllowedIPs = 0.0.0.0/0
 
     @logged
     def get_server_status(self, last_db_change_datetime):
+        import socket
+        import platform
         res = {}
         res["status"] = "ok"
+        res["hostname"] = socket.gethostname()
+        res["platform"] = platform.platform()
+        res["platform_version"] = platform.version()
+        res["platform_system"] = platform.system()
+        res["platform_processor"] = platform.processor()
+        res["platform_architecture"] = platform.machine()
+        
         res["need_regenerate_files"] = False
         files = glob.glob("/config/wireguard/**/*", recursive=True)
         last_file_change_timestamps = [os.path.getmtime(x) for x in files]

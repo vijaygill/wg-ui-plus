@@ -15,7 +15,7 @@ DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.vscode-remote-containers\":/home
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.vscode-server\":/home/pi/.vscode-server "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -p \"1196:51820/udp\" "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -p \"8000:8000\" "
-DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --name wg-ui-dev-app "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --hostname wg-ui-dev-app --name wg-ui-dev-app "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} wg-ui-plus-dev /wg-ui-plus/scripts/run-app.sh "
 
 eval ${DOCKER_RUN_CMD}

@@ -60,12 +60,15 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ValidationErrorsDisplayComponent } from './validation-errors-display/validation-errors-display.component';
 import { AutoFocusModule } from 'primeng/autofocus';
 
-import {MatButtonModule} from '@angular/material/button';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatTableModule} from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
 
 let modules = [
-    AutoFocusModule ,
+    AutoFocusModule,
     ButtonModule, CardModule, CheckboxModule,
     ConfirmDialogModule,
     DataViewModule, DialogModule, DividerModule,
@@ -84,7 +87,7 @@ let modules = [
     TooltipModule,
     ValidationErrorsDisplayComponent,
 
-    MatButtonModule, MatDialogModule, MatTableModule,
+    MatButtonModule, MatCardModule, MatDialogModule, MatDividerModule, MatExpansionModule, MatTableModule,
 ];
 
 @NgModule({

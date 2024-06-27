@@ -1,14 +1,19 @@
 <div class="container">
   <div class="item item-header">
-    <div style="display: flex;flex-direction: row;justify-content:flex-end;">
-      <div style="flex-grow: 1;">
-        <h3>WireGuard UI Plus!</h3>
-        <h5>Run and manage your WireGuard &trade; VPN in one UI.</h5>
-      </div>
-      <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
-        <app-sidepanel [popup]="true"></app-sidepanel>
-      </div>
-    </div>
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+          <div style="flex-grow: 1;">
+            <h4>WireGuard UI Plus!</h4>
+            <h6>Run &amp; manage your WireGuard &trade; VPN in one UI.</h6>
+          </div>
+          <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
+            <app-sidepanel [popup]="true"></app-sidepanel>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
     <div>
       <div *ngIf="serverStatus.need_regenerate_files && userSessionInfo.is_logged_in">
         <p-messages severity="warn">
@@ -39,6 +44,13 @@
   </div>
   <div class="item item-footer">
     <span>
-      (c) WireGuard UI Plus 2024.</span>
+      (c) WireGuard UI Plus 2024.
+    </span>
+    <br />
+    <small>
+      <span *ngIf="serverStatus.hostname">Host: {{serverStatus.hostname}}</span>
+      &nbsp;
+      <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
+    </small>
   </div>
 </div>
