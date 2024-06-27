@@ -2,7 +2,7 @@ ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
 
-FROM debian:latest as base-dev
+FROM debian:latest AS base-dev
 ARG UNAME
 ARG UID
 ARG GID
@@ -27,7 +27,7 @@ RUN pip install --break-system-packages --upgrade qrcode colorlog Django djangor
 RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME && echo "$UNAME:$UNAME" | chpasswd
 RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
 
-FROM base-dev as builder
+FROM base-dev AS builder
 ARG UNAME
 ARG UID
 ARG GID
@@ -42,7 +42,7 @@ RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --configurat
 
 ENV IMAGE_STAGE=base-dev
 
-FROM base-dev as dev
+FROM base-dev AS dev
 ARG UNAME
 ARG UID
 ARG GID
@@ -53,7 +53,7 @@ ENV IMAGE_STAGE=dev
 USER $UNAME
 WORKDIR /wg-ui-plus/src
 
-FROM python:alpine as base-live
+FROM python:alpine AS base-live
 ARG UNAME
 ARG UID
 ARG GID
@@ -70,7 +70,7 @@ RUN mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /conf
 VOLUME /data /config
 ENV IMAGE_STAGE=base-live
 
-FROM base-live as live
+FROM base-live AS live
 COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clientapp
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
