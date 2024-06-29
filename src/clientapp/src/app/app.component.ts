@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +7,7 @@ import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
-import { Subscription, interval } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { WebapiService } from './webapi.service';
 import { LoginService } from './login-service';
 import { PlatformInformationService } from './platform-information.service';
