@@ -134,6 +134,12 @@ export interface IpTablesLog {
 export interface ServerStatus {
     status: string;
     message: string;
+    hostname: string;
+    platform: string;
+    platform_version: string;
+    platform_system: string;
+    platform_processor: string;
+    platform_architecture: string;
     need_regenerate_files: boolean;
     last_db_change_datetime: Date;
     last_file_change_datetime: Date;

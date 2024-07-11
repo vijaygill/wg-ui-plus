@@ -36,7 +36,7 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
             + (error.status in this.httpErrors ? this.httpErrors[error.status] : 'Please check logs on server side.');
 
           this.webapiService.pushServerStatus({ status: 'error', message: message } as ServerStatus)
-          return throwError(error);
+          return throwError(()=> new Error(message));
         })
       );
   }
