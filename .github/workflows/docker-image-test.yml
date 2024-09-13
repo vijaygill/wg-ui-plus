@@ -1,15 +1,8 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches:
-      - master
-      - develop
-      - feature/ui-fixes
-  pull_request:
-    branches:
-      - master
-      - develop
+  workflow_dispatch:
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
