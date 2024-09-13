@@ -2,9 +2,23 @@ name: Docker Image CI - Test
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'Dockerfile'
+      - 'LICENSE'
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
   release:
     types:
       - published
+
 
 env:
   REGISTRY: ghcr.io
