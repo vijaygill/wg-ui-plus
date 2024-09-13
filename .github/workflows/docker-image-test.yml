@@ -40,10 +40,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=amd64-${{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
-            type=raw,value=amd64-${{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
-            type=raw,value=arm64-${{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner != 'ubuntu-latest' }}
-            type=raw,value=arm64-${{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner != 'ubuntu-latest' }}
+            type=raw,value=amd64-{{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=amd64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=arm64-{{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner != 'ubuntu-latest' }}
+            type=raw,value=arm64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner != 'ubuntu-latest' }}
           labels: |
             maintainer=Vijay Gill
             org.opencontainers.image.title=WireGuard UI Plus
