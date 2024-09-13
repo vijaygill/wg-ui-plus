@@ -6,7 +6,7 @@ on:
 
 env:
   GH_TOKEN: ${{ github.token }}
-  REGEX_PATTERN: "^(self-hosted|ubuntu-latest)-.*"
+  REGEX_PATTERN: "^(self-hosted|ubuntu-latest|develop|master)-.*"
 
 jobs:
   delete-containers-by-regex-pattern:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Delete Containers
         run: |
-          for i in {1..3}
+          for i in {2..3}
           do
             # Get the list of container tags
             gh api -H "Accept: application/vnd.github.v3+json" "/user/packages/container/wg-ui-plus/versions?page=${i}&per_page=100" \
