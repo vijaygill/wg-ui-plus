@@ -34,6 +34,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=amd64-${{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=amd64-${{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=arm64-${{branch}}-${{ steps.gen_timestamp.outputs.timestamp }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner != 'ubuntu-latest' }}
+            type=raw,value=arm64-${{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner != 'ubuntu-latest' }}
+          labels: |
+            maintainer=Vijay Gill
+            org.opencontainers.image.title=WireGuard UI Plus
+            org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
+            org.opencontainers.image.vendor=GillSoft Limited
+
       - name: Build and push Docker image (without cache)
         if: matrix.runner == 'ubuntu-latest'
         id: push_no_cache
@@ -41,14 +57,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            type=raw,value=amd64-{{branch}}-{{date 'YYYY-MM-DD-HH-mm'}},enable=${{ startsWith(github.ref, 'refs/heads/') }}
-            type=raw,value=amd64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-          labels: |
-            maintainer=Vijay Gill
-            org.opencontainers.image.title=WireGuard UI Plus
-            org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
-            org.opencontainers.image.vendor=GillSoft Limited
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           provenance: false
 
       - name: Build and push Docker image (with cache)
@@ -58,14 +68,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            type=raw,value={{branch}}-{{date 'YYYY-MM-DD-HH-mm'}},enable=${{ startsWith(github.ref, 'refs/heads/') }}
-            type=raw,value={{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-          labels: |
-            maintainer=Vijay Gill
-            org.opencontainers.image.title=WireGuard UI Plus
-            org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
-            org.opencontainers.image.vendor=GillSoft Limited
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           provenance: false
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
