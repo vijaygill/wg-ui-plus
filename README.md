@@ -15,11 +15,11 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
   * Clients (Peers) are managed in groups for easy granting/revoking of access.
 * Allows access to various resources (a.k.a Targets - a target can be a host or a network)
   * Allows scenarios like
-    * Some users can access internet but nothing else.
+    * Some users can access internet (via the VPN) but nothing else.
     * Some users can access only SSH on a host and nothing else.
     * Some users can access only samba shares on NAS.
     * Some users can access internet and every machine in the LAN.
-    * Some users can access only the LAN.
+    * Some users can access only the hosts in the LAN.
 * Hides complexity of managing IPTables rules.
 * Uses WireGuard (tm).
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
