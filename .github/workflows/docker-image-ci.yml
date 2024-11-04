@@ -15,9 +15,6 @@ on:
     branches:
       - develop
       - master
-  release:
-    types:
-      - published
 
 env:
   REGISTRY: ghcr.io
