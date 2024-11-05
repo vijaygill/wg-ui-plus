@@ -14,6 +14,7 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
 )
+from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -26,7 +27,7 @@ from .serializers import (
     TargetHeirarchySerializer,
     TargetSerializer,
 )
-from .wireguardhelper import WireGuardHelper
+from .wireguardhelper import WireGuardHelper, logger, logged
 
 
 class PeerViewSet(viewsets.ModelViewSet):
@@ -61,13 +62,15 @@ class TargetViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
 
-class ServerConfigurationViewSet(viewsets.ModelViewSet):
+class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     queryset = ServerConfiguration.objects.all()
     serializer_class = ServerConfigurationSerializer
     permission_classes = (IsAuthenticated,)
 
+    @logged
     def perform_update(self, serializer):
         serializer.save()
+        super().perform_update(serializer)
         cache.clear()
 
 
@@ -83,25 +86,27 @@ def get_license(request):
         return Response({"license": text})
 
 
-@cache_page(60 * 60)
+#@cache_page(60 * 60)
 @api_view(["GET"])
 def get_application_details(request):
     owner = "vijaygill"
     repo = "wg-ui-plus"
     latest_live_version = "unknown"
-    current_version = "0.0.0"
+    current_version = "v0.0.0"
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    allow_allow_check_updates = False
+    allow_check_updates = False
     try:
-        current_version = os.environ.get("APP_VERSION", "0.0.0")
+        current_version = os.environ.get("APP_VERSION", "v0.0.0")
     except:
-        latest_live_version = "**Error**"
+        current_version = "**Error**"
         pass
     try:
         sc = ServerConfiguration.objects.all()[0]
-        allow_allow_check_updates = sc.allow_check_updates
-        if allow_allow_check_updates:
-            response = requests.get(f"https://github.com/{owner}/{repo}/releases/latest")
+        allow_check_updates = sc.allow_check_updates
+        if allow_check_updates:
+            response = requests.get(
+                f"https://github.com/{owner}/{repo}/releases/latest"
+            )
             latest_live_version = response.url.split("/").pop()
     except:
         latest_live_version = "**Error**"
@@ -112,7 +117,7 @@ def get_application_details(request):
             "current_time": current_time,
             "latest_live_version": latest_live_version,
             "current_version": current_version,
-            "allow_allow_check_updates": allow_allow_check_updates,
+            "allow_allow_check_updates": allow_check_updates,
         }
     )
 
