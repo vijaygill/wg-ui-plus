@@ -51,6 +51,8 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
           type=raw,value=${{ matrix.runner }}-${{ github.ref_name }}-${{ github.sha }}
+          type=raw,value=amd64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
+          type=raw,value=arm64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
 
     - name: Build and push Docker image (without cache)
       if: matrix.runner == 'ubuntu-latest'
@@ -113,8 +115,8 @@ jobs:
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ github.ref_name }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.ref_name }}-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-${{ github.ref_name }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-${{ github.ref_name }}
 
       - name: Create multiarch manifests (non-master branch)
         if: startsWith(github.ref, 'refs/heads/')
