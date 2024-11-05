@@ -1,18 +1,30 @@
+import os
+import datetime
+import requests
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes)
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
-from .serializers import (PeerGroupSerializer, PeerSerializer,
-                          PeerWithQrSerializer, ServerConfigurationSerializer,
-                          TargetHeirarchySerializer, TargetSerializer)
+from .serializers import (
+    PeerGroupSerializer,
+    PeerSerializer,
+    PeerWithQrSerializer,
+    ServerConfigurationSerializer,
+    TargetHeirarchySerializer,
+    TargetSerializer,
+)
 from .wireguardhelper import WireGuardHelper
 
 
@@ -22,7 +34,11 @@ class PeerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action == "retrieve" or self.action == "update" or self.action == "create":
+        if (
+            self.action == "retrieve"
+            or self.action == "update"
+            or self.action == "create"
+        ):
             return PeerWithQrSerializer
         return super().get_serializer_class()
 
@@ -60,6 +76,35 @@ def get_license(request):
     with open("/app/LICENSE") as f:
         text = f.read()
         return Response({"license": text})
+
+
+@cache_page(60 * 60)
+@api_view(["GET"])
+def get_application_details(request):
+    owner = "vijaygill"
+    repo = "wg-ui-plus"
+    latest_live_version = "unknown"
+    current_version = "0.0.0"
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        current_version = os.environ.get("APP_VERSION", "0.0.0")
+    except:
+        latest_live_version = "**Error**"
+        pass
+    try:
+        response = requests.get(f"https://github.com/{owner}/{repo}/releases/latest")
+        latest_live_version = response.url.split("/").pop()
+    except:
+        latest_live_version = "**Error**"
+        pass
+
+    return Response(
+        {
+            "current_time": current_time,
+            "latest_live_version": latest_live_version,
+            "current_version": current_version,
+        }
+    )
 
 
 @api_view(["GET"])

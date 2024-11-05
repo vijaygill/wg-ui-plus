@@ -125,6 +125,12 @@ export interface LicenseInfo {
     license: string;
 }
 
+export interface ApplicationDetails {
+    current_time : Date;
+    latest_live_version: string;
+    current_version: string;
+}
+
 export interface IpTablesLog {
     status: string;
     datetime: string;

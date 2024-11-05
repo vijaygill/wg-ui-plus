@@ -4,9 +4,12 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 ARG_UNAME=$(whoami)
 ARG_UID=$(id -u)
 ARG_GID=$(id -g)
+APP_VERSION=$(git rev-parse HEAD)
+APP_VERSION="v0.0.0"
 
 DOCKER_RUN_CMD=""
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD}docker run -it --rm "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -e APP_VERSION=${APP_VERSION}"
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add CAP_NET_ADMIN "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add NET_ADMIN "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add SYS_MODULE "

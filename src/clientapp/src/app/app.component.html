@@ -51,6 +51,10 @@
       <span *ngIf="serverStatus.hostname">Host: {{serverStatus.hostname}}</span>
       &nbsp;
       <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
+      &nbsp;
+      <span *ngIf="applicationDetails.current_version">Running Version: {{applicationDetails.current_version}}</span>
+      <span *ngIf="applicationDetails.latest_live_version != applicationDetails.current_version"> &nbsp;
+        Available Version: {{applicationDetails.latest_live_version}}</span>
     </small>
   </div>
 </div>
