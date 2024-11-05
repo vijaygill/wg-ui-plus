@@ -19,7 +19,6 @@ on:
     types:
       - published
       - edited
-      - released 
 
 env:
   REGISTRY: ghcr.io
