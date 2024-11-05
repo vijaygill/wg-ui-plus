@@ -51,9 +51,15 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=raw,value=${{ matrix.runner }}-${{ github.ref_name }}-${{ github.sha }},enable=${{ startsWith(github.ref, 'refs/heads/') }}
+          type=raw,value=${{ github.ref_name }}-amd64-${{ github.sha }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
+          type=raw,value=${{ github.ref_name }}-arm64-${{ github.sha }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'self-hosted' }}
           type=raw,value=amd64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
           type=raw,value=arm64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
+        labels: |
+          maintainer=Vijay Gill
+          org.opencontainers.image.title=WireGuard UI Plus
+          org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
+          org.opencontainers.image.vendor=GillSoft Limited
 
     - name: Build and push Docker image (without cache)
       if: matrix.runner == 'ubuntu-latest'
@@ -110,22 +116,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create multiarch manifests (published release only)
+      - name: Create multiarch manifests (release only)
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           docker buildx imagetools create \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-${{ github.ref_name }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64-${{ github.ref_name }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64-${{ github.ref_name }}
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-arm64 \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-amd64
 
-      - name: Create multiarch manifests (non-master branch)
+      - name: Create multiarch manifests (non-release)
         if: startsWith(github.ref, 'refs/heads/')
         run: |
           docker buildx imagetools create \
-          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev \
+          -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ steps.gen_timestamp.outputs.timestamp }} \
           -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ubuntu-latest-${{ github.ref_name }}-${{ github.sha }} \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:self-hosted-${{ github.ref_name }}-${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-amd64-${{ github.sha }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-arm64-${{ github.sha }}
 
