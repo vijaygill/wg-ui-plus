@@ -51,7 +51,7 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=raw,value=${{ matrix.runner }}-${{ github.ref_name }}-${{ github.sha }} enable=${{ startsWith(github.ref, 'refs/heads/') }}
+          type=raw,value=${{ matrix.runner }}-${{ github.ref_name }}-${{ github.sha }},enable=${{ startsWith(github.ref, 'refs/heads/') }}
           type=raw,value=amd64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
           type=raw,value=arm64-{{tag}},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
 
