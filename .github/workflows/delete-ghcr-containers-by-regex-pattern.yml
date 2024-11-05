@@ -16,7 +16,7 @@ jobs:
       - name: Delete Containers
         run: |
           set +e
-          for i in {2..2}
+          for i in {1..2}
           do
             # Get the list of container tags
             gh api -H "Accept: application/vnd.github.v3+json" "/user/packages/container/wg-ui-plus/versions?page=${1}&per_page=100" \
