@@ -27,7 +27,7 @@ from .serializers import (
     TargetHeirarchySerializer,
     TargetSerializer,
 )
-from .wireguardhelper import WireGuardHelper, logger, logged
+from .wireguardhelper import WireGuardHelper
 
 
 class PeerViewSet(viewsets.ModelViewSet):
@@ -67,7 +67,6 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     serializer_class = ServerConfigurationSerializer
     permission_classes = (IsAuthenticated,)
 
-    @logged
     def perform_update(self, serializer):
         serializer.save()
         super().perform_update(serializer)
