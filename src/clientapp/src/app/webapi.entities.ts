@@ -78,6 +78,7 @@ export interface ServerConfiguration {
     private_key: string;
     peer_default_port: number;
     upstream_dns_ip_address: string;
+    allow_check_updates: boolean;
 }
 
 export interface WireguardConfiguration {
@@ -129,6 +130,7 @@ export interface ApplicationDetails {
     current_time : Date;
     latest_live_version: string;
     current_version: string;
+    allow_allow_check_updates: boolean;
 }
 
 export interface IpTablesLog {

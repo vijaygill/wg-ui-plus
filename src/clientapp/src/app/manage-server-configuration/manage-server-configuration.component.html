@@ -72,6 +72,16 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td> <label for="allowCheckUpdates">Allow Check Updates</label></td>
+                                <td>
+                                    <p-checkbox id="allowCheckUpdates" [binary]="true"
+                                        [(ngModel)]="editItem.allow_check_updates" variant="filled"
+                                        pTooltip="Allow checking updates by contacting GitHub releases page."
+                                        tooltipPosition="top" />
+                                </td>
+                            </tr>
+
+                            <tr>
                                 <td colspan="2">
                                     <div style="width:100%;align-items: center; text-align: center;">
                                         <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>

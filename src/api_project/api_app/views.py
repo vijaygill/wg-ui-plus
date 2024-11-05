@@ -4,6 +4,7 @@ import requests
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
+from django.core.cache import cache
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
@@ -65,6 +66,10 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet):
     serializer_class = ServerConfigurationSerializer
     permission_classes = (IsAuthenticated,)
 
+    def perform_update(self, serializer):
+        serializer.save()
+        cache.clear()
+
 
 @api_view(["GET"])
 def test(request):
@@ -86,14 +91,18 @@ def get_application_details(request):
     latest_live_version = "unknown"
     current_version = "0.0.0"
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    allow_allow_check_updates = False
     try:
         current_version = os.environ.get("APP_VERSION", "0.0.0")
     except:
         latest_live_version = "**Error**"
         pass
     try:
-        response = requests.get(f"https://github.com/{owner}/{repo}/releases/latest")
-        latest_live_version = response.url.split("/").pop()
+        sc = ServerConfiguration.objects.all()[0]
+        allow_allow_check_updates = sc.allow_check_updates
+        if allow_allow_check_updates:
+            response = requests.get(f"https://github.com/{owner}/{repo}/releases/latest")
+            latest_live_version = response.url.split("/").pop()
     except:
         latest_live_version = "**Error**"
         pass
@@ -103,6 +112,7 @@ def get_application_details(request):
             "current_time": current_time,
             "latest_live_version": latest_live_version,
             "current_version": current_version,
+            "allow_allow_check_updates": allow_allow_check_updates,
         }
     )
 

@@ -53,7 +53,7 @@
       <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
       &nbsp;
       <span *ngIf="applicationDetails.current_version">Running Version: {{applicationDetails.current_version}}</span>
-      <span *ngIf="applicationDetails.latest_live_version != applicationDetails.current_version"> &nbsp;
+      <span *ngIf="applicationDetails.allow_allow_check_updates && (applicationDetails.latest_live_version != applicationDetails.current_version)"> &nbsp;
         Available Version: {{applicationDetails.latest_live_version}}</span>
     </small>
   </div>
