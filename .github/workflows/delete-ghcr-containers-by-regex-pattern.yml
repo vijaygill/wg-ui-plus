@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Delete Containers
         run: |
+          set +e
           for i in {3..2}
           do
             # Get the list of container tags
