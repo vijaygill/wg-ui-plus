@@ -18,6 +18,8 @@ on:
   release:
     types:
       - published
+      - edited
+      - released 
 
 env:
   REGISTRY: ghcr.io
