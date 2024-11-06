@@ -62,6 +62,9 @@ class TargetViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
 
+CACHE_KEY_APP_LIVE_VERSION = "CACHE_KEY_APP_LIVE_VERSION"
+
+
 class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     queryset = ServerConfiguration.objects.all()
     serializer_class = ServerConfigurationSerializer
@@ -70,7 +73,7 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     def perform_update(self, serializer):
         serializer.save()
         super().perform_update(serializer)
-        cache.clear()
+        cache.delete(CACHE_KEY_APP_LIVE_VERSION)
 
 
 @api_view(["GET"])
@@ -85,7 +88,6 @@ def get_license(request):
         return Response({"license": text})
 
 
-@cache_page(60 * 60)
 @api_view(["GET"])
 def get_application_details(request):
     owner = "vijaygill"
@@ -102,11 +104,18 @@ def get_application_details(request):
     try:
         sc = ServerConfiguration.objects.all()[0]
         allow_check_updates = sc.allow_check_updates
-        if allow_check_updates:
-            response = requests.get(
-                f"https://github.com/{owner}/{repo}/releases/latest"
-            )
-            latest_live_version = response.url.split("/").pop()
+        latest_live_version = "v0.0.0" if allow_check_updates else "Updates check diabled."
+
+        latest_live_version_temp = cache.get(CACHE_KEY_APP_LIVE_VERSION)
+        if latest_live_version_temp:
+            latest_live_version = latest_live_version_temp
+        else:
+            if allow_check_updates:
+                response = requests.get(
+                    f"https://github.com/{owner}/{repo}/releases/latest"
+                )
+                latest_live_version = response.url.split("/").pop()
+                cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, 60 * 60)
     except:
         latest_live_version = "**Error**"
         pass

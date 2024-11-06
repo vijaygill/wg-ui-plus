@@ -9,20 +9,18 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 import subprocess
 import re
-import logging
 import socket
 import platform
 
 from django.template import Template, Context
 from django.utils import timezone
 
-from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
+from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET, logger
 from .util import (
     ensure_folder_exists_for_file,
     get_target_ip_address_parts,
 )
 
-logger = logging.getLogger(__name__)
 
 MAX_LAST_HANDSHAKE_SECONDS = 120
 
@@ -207,14 +205,17 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = sorted([
-                    (
-                        x.name,
-                        x.disabled,
-                        x.ip_address,
-                    )
-                    for x in peer_group.peers.all()
-                ], key=lambda x: x[0])
+                peer_infos = sorted(
+                    [
+                        (
+                            x.name,
+                            x.disabled,
+                            x.ip_address,
+                        )
+                        for x in peer_group.peers.all()
+                    ],
+                    key=lambda x: x[0],
+                )
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -246,14 +247,17 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = sorted([
-                    (
-                        x.name,
-                        x.disabled,
-                        x.ip_address,
-                    )
-                    for x in peers.all()
-                ], key=lambda x: x[0])
+                peer_infos = sorted(
+                    [
+                        (
+                            x.name,
+                            x.disabled,
+                            x.ip_address,
+                        )
+                        for x in peers.all()
+                    ],
+                    key=lambda x: x[0],
+                )
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -270,29 +274,33 @@ AllowedIPs = 0.0.0.0/0
                 ]
 
         # filter out disabled targets/peer-groups/peers
-        target_infos = [(
-            chain_name,
-            target_name,
-            target_disabled,
-            target_is_network_address,
-            target_ip_address,
-            target_network_address,
-            target_port,
-            peer_group_name,
-            peer_group_disabled,
-            peer_infos,
-        ) for (
-            chain_name,
-            target_name,
-            target_disabled,
-            target_is_network_address,
-            target_ip_address,
-            target_network_address,
-            target_port,
-            peer_group_name,
-            peer_group_disabled,
-            peer_infos,
-        ) in target_infos if not target_disabled and not peer_group_disabled]
+        target_infos = [
+            (
+                chain_name,
+                target_name,
+                target_disabled,
+                target_is_network_address,
+                target_ip_address,
+                target_network_address,
+                target_port,
+                peer_group_name,
+                peer_group_disabled,
+                peer_infos,
+            )
+            for (
+                chain_name,
+                target_name,
+                target_disabled,
+                target_is_network_address,
+                target_ip_address,
+                target_network_address,
+                target_port,
+                peer_group_name,
+                peer_group_disabled,
+                peer_infos,
+            ) in target_infos
+            if not target_disabled and not peer_group_disabled
+        ]
 
         # sort items
         target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
@@ -398,7 +406,9 @@ AllowedIPs = 0.0.0.0/0
                     f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
-        post_up.append('iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"')
+        post_up.append(
+            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"'
+        )
 
         post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
 
@@ -522,21 +532,38 @@ AllowedIPs = 0.0.0.0/0
                 last_handshake = None
                 is_disabled = peer.disabled
                 peer_item["peer_name"] = peer.name
-                peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
+                peer_item["status"] = "Disabled" if is_disabled else peer_item["status"]
                 if not is_disabled:
-                    is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    is_connected = (
+                        True
+                        if "end_point_ip" in peer_data.keys()
+                        and peer_data["end_point_ip"]
+                        else False
+                    )
                     if is_connected and ("latest_handshake" in peer_data.keys()):
-                        last_handshake = datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"])).astimezone(tz=dt.tzinfo)
+                        last_handshake = datetime.datetime.fromtimestamp(
+                            int(peer_data["latest_handshake"])
+                        ).astimezone(tz=dt.tzinfo)
                         timediff = dt - last_handshake
-                        is_inactive = timediff.total_seconds() >= MAX_LAST_HANDSHAKE_SECONDS
+                        is_inactive = (
+                            timediff.total_seconds() >= MAX_LAST_HANDSHAKE_SECONDS
+                        )
                     if is_connected:
-                        peer_item["latest_handshake"] = last_handshake.strftime("%Y-%m-%d %H:%M:%S") if last_handshake else None
+                        peer_item["latest_handshake"] = (
+                            last_handshake.strftime("%Y-%m-%d %H:%M:%S")
+                            if last_handshake
+                            else None
+                        )
                         peer_item["end_point_ip"] = peer_data["end_point_ip"]
-                        if 'transfer_rx' in peer_data.keys():
+                        if "transfer_rx" in peer_data.keys():
                             peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
-                        if 'transfer_tx' in peer_data.keys():
+                        if "transfer_tx" in peer_data.keys():
                             peer_item["transfer_tx"] = int(peer_data["transfer_tx"])
-                    peer_item["status"] = 'Inactive' if is_inactive else 'Connected' if is_connected else peer_item["status"]
+                    peer_item["status"] = (
+                        "Inactive"
+                        if is_inactive
+                        else "Connected" if is_connected else peer_item["status"]
+                    )
                 peer_item["is_connected"] = is_connected
                 peer_item["is_inactive"] = is_inactive
             res["items"] += [peer_item]

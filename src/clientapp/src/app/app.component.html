@@ -45,7 +45,7 @@
   <div class="item item-footer">
     <small>
       <span>
-        (c) WireGuard UI Plus 2024.
+        (c) <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
       </span>
       <br />
       <span *ngIf="serverStatus.hostname">Host: {{serverStatus.hostname}}</span>
@@ -53,8 +53,12 @@
       <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
       &nbsp;
       <span *ngIf="applicationDetails.current_version">Running Version: {{applicationDetails.current_version}}</span>
-      <span *ngIf="applicationDetails.allow_allow_check_updates && (applicationDetails.latest_live_version != applicationDetails.current_version)"> &nbsp;
-        Available Version: {{applicationDetails.latest_live_version}}</span>
+      <span
+        *ngIf="applicationDetails.allow_allow_check_updates && (applicationDetails.latest_live_version != applicationDetails.current_version)">
+        &nbsp;
+        Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
+          {{applicationDetails.latest_live_version}}</a>
+      </span>
     </small>
   </div>
 </div>
