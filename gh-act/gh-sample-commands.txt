@@ -1,0 +1,3 @@
+gh act release --action-offline-mode -W .github/workflows/docker-image-ci.yml --actor vijaygill/wg-ui-plus --env-file=/code/gh-env.txt --secret-file=/code/gh-secret.txt --eventpath /code/gh-event-release.txt --dryrun
+
+

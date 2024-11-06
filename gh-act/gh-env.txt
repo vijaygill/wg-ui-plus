@@ -1,0 +1,3 @@
+REGISTRY=ghcr.io
+IMAGE_NAME=vijaygill/wg-ui-plus
+

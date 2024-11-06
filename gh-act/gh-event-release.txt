@@ -1,0 +1,12 @@
+{
+  "action": "published",
+  "release": {
+    "name": "v0.0.1-test",
+    "body": "This is a test",
+    "html_url": "https://example.com"
+  },
+  "repository": {
+    "name": "wg-ui-plus",
+    "ref": "refs/tags/v0.0.1-test"
+  }
+}
