@@ -4,8 +4,7 @@ BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 ARG_UNAME=$(whoami)
 ARG_UID=$(id -u)
 ARG_GID=$(id -g)
-APP_VERSION=$(git rev-parse HEAD)
-APP_VERSION="v0.0.0"
+APP_VERSION="dev-$(git rev-parse HEAD)"
 
 DOCKER_RUN_CMD=""
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD}docker run -it --rm "

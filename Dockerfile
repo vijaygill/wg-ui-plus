@@ -1,7 +1,7 @@
 ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
-ARG APP_VERSION=unknown
+ARG APP_VERSION="v0.0.0"
 
 # Stage: base-dev
 FROM debian:latest AS base-dev
