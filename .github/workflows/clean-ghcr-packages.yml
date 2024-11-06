@@ -1,4 +1,4 @@
-name: Delete GHCR Containers by Regex Pattern
+name: Clean GHCR packages
 
 on:
   - workflow_dispatch
