@@ -25,7 +25,7 @@ RUN apt-get update -y \
 
 RUN npm install -g @angular/cli
 
-RUN pip install --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests
+RUN pip install --break-system-packages --upgrade qrcode[pil] colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
@@ -67,8 +67,8 @@ ENV IMAGE_STAGE=dev
 USER $UNAME
 WORKDIR /wg-ui-plus/src
 
-# Stage: base-live
-FROM python:alpine AS base-live
+# Stage: live
+FROM python:alpine AS live
 ARG UNAME
 ARG UID
 ARG GID
@@ -77,31 +77,28 @@ ARG APP_VERSION
 RUN apk update && apk upgrade && apk add --no-cache --update wireguard-tools iptables openresolv net-tools iptraf-ng procps tcpdump sudo conntrack-tools tzdata
 
 RUN apk add --no-cache --update gcc libressl-dev musl-dev libffi-dev \
-	&&  pip install --no-cache-dir --break-system-packages --upgrade qrcode colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields cryptography requests \
-	&&  apk del gcc libressl-dev musl-dev libffi-dev
+	&&  pip install --no-cache-dir --break-system-packages --upgrade qrcode[pil] colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields cryptography requests \
+	&&  apk del gcc libressl-dev musl-dev libffi-dev 
 
 ENV APP_VERSION=${APP_VERSION}
-ENV IMAGE_STAGE=base-live
+ENV IMAGE_STAGE=live
 
-RUN adduser -D $UNAME
-RUN echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers
 RUN mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /config
-VOLUME /data /config
 
-# Stage: live
-FROM base-live AS live
-ARG UNAME
-ARG UID
-ARG GID
-ARG APP_VERSION
 COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clientapp
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
 COPY --from=builder /wg-ui-plus/scripts/monitor-*.sh /app/scripts
 COPY --from=builder /wg-ui-plus/LICENSE /app
-ENV APP_VERSION=${APP_VERSION}
-ENV IMAGE_STAGE=live
-USER $UNAME
+
+RUN addgroup --gid "$GID" "$UNAME"
+RUN adduser $UNAME --disabled-password --gecos "" --ingroup "$UNAME" --no-create-home --uid "$UID"
+
+RUN echo '%pi ALL=(ALL) NOPASSWD:ALL'>>/etc/sudoers
+VOLUME /data /config
+
 WORKDIR /app
+
+USER $UNAME
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]
 
