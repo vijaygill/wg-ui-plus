@@ -135,4 +135,29 @@ export class ManagePeersEditorComponent {
     downloadAncher.click();
   }
 
+  sendConfigurationByEmail(event: Event): void {
+
+    this.confirmationDialogService.confirm('Confirm', 'Are you sure you want to send email to ' + this.editItem.name + '?')
+      .subscribe(dialogResult => {
+        if (dialogResult) {
+
+          this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
+            next: data => {
+            },
+            error: error => {
+              let response = error as HttpErrorResponse;
+              if (response) {
+                this.validationResult = response.error as ServerValidationError;
+              }
+            },
+            complete: () => {
+
+            },
+          });
+
+        }
+      });
+
+  }
+
 }

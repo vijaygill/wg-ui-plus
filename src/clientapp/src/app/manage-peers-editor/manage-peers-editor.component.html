@@ -33,6 +33,12 @@
                                     pTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
                                     tooltipPosition="top" [disabled]="true" /></td>
                         </tr>
+                        <tr>
+                            <td><label for="peerEmailAddress">e-Mail Address</label></td>
+                            <td><input pInputText id="peerEmailAddress" [(ngModel)]="editItem.email_address"
+                                    pTooltip="e-Mail Address for sending VPN/Tunnel configuration."
+                                    tooltipPosition="top"/></td>
+                        </tr>
                         <!-- <tr>
                             <td><label for="portnumber">Port</label></td>
                             <td>
@@ -89,6 +95,7 @@
                                     <span *ngIf="editItem.id">
                                         <p-button icon="pi pi-times" label="Delete" severity="danger"
                                             (onClick)="delete($event)"></p-button>
+                                        &nbsp;
                                     </span>
                                 </div>
                             </td>
@@ -109,6 +116,11 @@
                 <br />
                 <p-button label="Download .conf file" (onClick)="downloadConfigFile($event)"
                     *ngIf="editItem.configuration"></p-button>
+                <br />
+                <br />
+                <p-button icon="pi pi-mail" label="Send Config By Email" (onClick)="sendConfigurationByEmail($event)"
+                    *ngIf="editItem.id && editItem.email_address"></p-button>
+
             </td>
         </tr>
     </tbody>

@@ -21,6 +21,7 @@ export interface Entity {
 export interface Peer extends Entity {
     name: string;
     description: string;
+    email_address : string;
     ip_address: string;
     port: number;
     disabled: boolean;

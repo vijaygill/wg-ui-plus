@@ -70,4 +70,10 @@ urlpatterns = [
         views.wireguard_get_server_status,
         name="get_server_status",
     ),
+    path(
+        "api/v1/data/peer/send_peer_email",
+        views.send_peer_email,
+        name="send_peer_email",
+    ),
+    
 ]
