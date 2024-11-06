@@ -85,7 +85,7 @@ def get_license(request):
         return Response({"license": text})
 
 
-#@cache_page(60 * 60)
+@cache_page(60 * 60)
 @api_view(["GET"])
 def get_application_details(request):
     owner = "vijaygill"
