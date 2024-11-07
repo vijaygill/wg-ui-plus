@@ -3,10 +3,6 @@ import os
 import glob
 import datetime
 import ipaddress
-from functools import wraps
-import codecs
-from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
-from cryptography.hazmat.primitives import serialization
 import subprocess
 import re
 import socket
@@ -15,46 +11,17 @@ import platform
 from django.template import Template, Context
 from django.utils import timezone
 
-from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET, logger
+from .common import (
+    PEER_GROUP_EVERYONE_NAME,
+    IP_ADDRESS_INTERNET,
+    MAX_LAST_HANDSHAKE_SECONDS,
+    logged,
+    logger,
+)
 from .util import (
     ensure_folder_exists_for_file,
     get_target_ip_address_parts,
 )
-
-
-MAX_LAST_HANDSHAKE_SECONDS = 120
-
-
-def logged(func):
-    @wraps(func)
-    def logger_func(*args, **kwargs):
-        func_name = func.__name__
-        try:
-            logger.debug(f"{func_name}: start")
-            res = func(*args, **kwargs)
-            return res
-        finally:
-            logger.debug(f"{func_name}: end")
-
-    return logger_func
-
-
-def generate_keys():
-    # generate private key
-    private_key = X25519PrivateKey.generate()
-    private_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PrivateFormat.Raw,
-        encryption_algorithm=serialization.NoEncryption(),
-    )
-    key_private = codecs.encode(private_bytes, "base64").decode("utf8").strip()
-
-    # derive public key
-    public_bytes = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
-    )
-    key_public = codecs.encode(public_bytes, "base64").decode("utf8").strip()
-    return (key_public, key_private)
 
 
 class WireGuardHelper(object):

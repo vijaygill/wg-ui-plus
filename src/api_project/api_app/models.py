@@ -3,8 +3,12 @@ import ipaddress
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .util import get_target_ip_address_parts, is_network_address, is_single_address
-from .wireguardhelper import generate_keys
+from .util import (
+    generate_keys,
+    get_target_ip_address_parts,
+    is_network_address,
+    is_single_address,
+)
 
 
 def validator_is_network_address(value, throw_exception=True):
