@@ -5,7 +5,6 @@ from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
 from django.core.cache import cache
-from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
@@ -98,7 +97,7 @@ def get_application_details(request):
     allow_check_updates = False
     try:
         current_version = os.environ.get("APP_VERSION", "v0.0.0")
-    except:
+    except Exception:
         current_version = "**Error**"
         pass
     try:
@@ -116,7 +115,7 @@ def get_application_details(request):
                 )
                 latest_live_version = response.url.split("/").pop()
                 cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, 60 * 60)
-    except:
+    except Exception:
         latest_live_version = "**Error**"
         pass
 

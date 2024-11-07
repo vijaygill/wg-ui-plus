@@ -5,7 +5,7 @@ import ipaddress
 
 from .common import (IP_ADDRESS_INTERNET, PEER_GROUP_EVERYONE_NAME,
                      TARGET_INTERNET_NAME)
-from .wireguardhelper import generate_keys
+from .util import generate_keys
 
 IP_ADDRESS_SERVER_DEFAULT = "192.168.2.0/24"
 SERVER_FQDN_DEFAULT = "myvpn.duckdns.org"
