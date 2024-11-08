@@ -132,6 +132,7 @@ export interface ApplicationDetails {
     latest_live_version: string;
     current_version: string;
     allow_allow_check_updates: boolean;
+    is_email_enabled: boolean;
 }
 
 export interface IpTablesLog {

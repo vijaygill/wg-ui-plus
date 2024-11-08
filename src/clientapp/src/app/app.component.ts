@@ -24,7 +24,10 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 export class AppComponent implements OnInit {
   title = 'WireGuard UI Plus';
 
-  serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
+  serverStatus: ServerStatus = {
+    need_regenerate_files: false,
+    application_details: { current_version: '', latest_live_version: '', },
+  } as ServerStatus;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
 
   timerSubscription !: Subscription;
@@ -61,6 +64,7 @@ export class AppComponent implements OnInit {
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
+      debugger;
       this.messageService.clear();
       if (this.serverStatus && this.serverStatus.message) {
         let severity = this.serverStatus.status == 'error' ? 'error'

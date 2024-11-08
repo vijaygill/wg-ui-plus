@@ -6,7 +6,7 @@ from django.core.cache import cache
 
 from .models import ServerConfiguration
 
-from .common import CACHE_KEY_APP_LIVE_VERSION, APP_URL
+from .common import CACHE_KEY_APP_LIVE_VERSION, APP_URL, IS_EMAIL_ENABLED
 
 
 def get_application_details():
@@ -41,4 +41,5 @@ def get_application_details():
 
     res["latest_live_version"] = latest_live_version
     res["allow_allow_check_updates"] = allow_check_updates
+    res['is_email_enabled'] = IS_EMAIL_ENABLED
     return res

@@ -17,7 +17,7 @@ from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION
+from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION, IS_EMAIL_ENABLED
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .serializers import (
@@ -285,6 +285,9 @@ How to use {tunnel_conf_file}:
     While adding a new tunnel, add the tunnel by importing the file '{tunnel_conf_file}'.
 
 """
+        if not IS_EMAIL_ENABLED:
+            raise Exception(("e-Mail is not enabled on the server."))
+
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [request.data["email_address"]]
         email = EmailMessage(
@@ -294,5 +297,6 @@ How to use {tunnel_conf_file}:
         email.attach(tunnel_conf_file, request.data["configuration"], "text/plain")
         email.send(fail_silently=False)
         return Response({"message": "Email sent successfully!"})
-    except Exception:
-        return Response({"message": "Sending Email failed."}, status=503)
+    except Exception as e:
+        message = e.args[0] if e.args else ""
+        return Response({"message": "Sending Email failed." + message}, status=500)

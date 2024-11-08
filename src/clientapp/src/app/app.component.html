@@ -55,7 +55,7 @@
       <span *ngIf="serverStatus.application_details">Running Version:
         {{serverStatus.application_details.current_version}}</span>
       <span
-        *ngIf="serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)">
+        *ngIf="serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)">
         &nbsp;
         Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
           {{serverStatus.application_details.latest_live_version}}</a>
