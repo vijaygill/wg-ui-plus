@@ -141,12 +141,14 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", None)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", None)
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
-EMAIL_PORT = os.environ.get("EMAIL_PORT", 465)
-EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", False)
+EMAIL_PORT = os.environ.get("EMAIL_PORT", None)
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", None)
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", None)
+
 
 LOGGING = {
     "version": 1,
