@@ -3,7 +3,7 @@
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
 source ${BASE_DIR}/set-script-vars.sh
-source ${BASE_DIR}/build-docker-images.sh dev-only
+#source ${BASE_DIR}/build-docker-images.sh dev-only
 
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}\":/wg-ui-plus "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}/src/api_project/\":/app/api_project "
