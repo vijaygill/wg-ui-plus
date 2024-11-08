@@ -52,12 +52,13 @@
       &nbsp;
       <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
       &nbsp;
-      <span *ngIf="applicationDetails.current_version">Running Version: {{applicationDetails.current_version}}</span>
+      <span *ngIf="serverStatus.application_details">Running Version:
+        {{serverStatus.application_details.current_version}}</span>
       <span
-        *ngIf="applicationDetails.allow_allow_check_updates && (applicationDetails.latest_live_version != applicationDetails.current_version)">
+        *ngIf="serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)">
         &nbsp;
         Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
-          {{applicationDetails.latest_live_version}}</a>
+          {{serverStatus.application_details.latest_live_version}}</a>
       </span>
     </small>
   </div>

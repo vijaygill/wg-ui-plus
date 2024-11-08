@@ -1,7 +1,4 @@
-import os
 import base64
-import datetime
-import requests
 from django.conf import settings
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
@@ -20,7 +17,7 @@ from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .common import APP_NAME
+from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .serializers import (
@@ -31,6 +28,8 @@ from .serializers import (
     TargetHeirarchySerializer,
     TargetSerializer,
 )
+
+from .server_helper import get_application_details
 from .wireguardhelper import WireGuardHelper
 
 
@@ -66,9 +65,6 @@ class TargetViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
 
-CACHE_KEY_APP_LIVE_VERSION = "CACHE_KEY_APP_LIVE_VERSION"
-
-
 class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     queryset = ServerConfiguration.objects.all()
     serializer_class = ServerConfigurationSerializer
@@ -90,50 +86,6 @@ def get_license(request):
     with open("/app/LICENSE") as f:
         text = f.read()
         return Response({"license": text})
-
-
-@api_view(["GET"])
-def get_application_details(request):
-    owner = "vijaygill"
-    repo = "wg-ui-plus"
-    latest_live_version = "unknown"
-    current_version = "v0.0.0"
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    allow_check_updates = False
-    try:
-        current_version = os.environ.get("APP_VERSION", "v0.0.0")
-    except Exception:
-        current_version = "**Error**"
-        pass
-    try:
-        sc = ServerConfiguration.objects.all()[0]
-        allow_check_updates = sc.allow_check_updates
-        latest_live_version = (
-            "v0.0.0" if allow_check_updates else "Updates check diabled."
-        )
-
-        latest_live_version_temp = cache.get(CACHE_KEY_APP_LIVE_VERSION)
-        if latest_live_version_temp:
-            latest_live_version = latest_live_version_temp
-        else:
-            if allow_check_updates:
-                response = requests.get(
-                    f"https://github.com/{owner}/{repo}/releases/latest"
-                )
-                latest_live_version = response.url.split("/").pop()
-                cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, 60 * 60)
-    except Exception:
-        latest_live_version = "**Error**"
-        pass
-
-    return Response(
-        {
-            "current_time": current_time,
-            "latest_live_version": latest_live_version,
-            "current_version": current_version,
-            "allow_allow_check_updates": allow_check_updates,
-        }
-    )
 
 
 @api_view(["GET"])
@@ -281,7 +233,7 @@ def auth_change_password(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-def wireguard_get_server_status(request):
+def get_server_status(request):
     peers = Peer.objects.all()
     peer_groups = PeerGroup.objects.all()
     targets = Target.objects.all()
@@ -297,6 +249,7 @@ def wireguard_get_server_status(request):
     )
     wg = WireGuardHelper()
     res = wg.get_server_status(last_db_change_datetime=last_changed_datetime)
+    res["application_details"] = get_application_details()
     return Response(res)
 
 

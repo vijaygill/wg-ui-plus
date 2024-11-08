@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
-import { ApplicationDetails, PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
+import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription } from 'rxjs';
 import { WebapiService } from './webapi.service';
 import { LoginService } from './login-service';
@@ -30,11 +30,9 @@ export class AppComponent implements OnInit {
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   loginServiceSubscription !: Subscription;
-  applicationDetailsSubscription!: Subscription;
   platformInformationServiceSubscription !: Subscription;
 
   platformInformation: PlatformInformation = {} as PlatformInformation;
-  applicationDetails: ApplicationDetails = {} as ApplicationDetails;
 
   constructor(private primengConfig: PrimeNGConfig,
     private messageService: MessageService,
@@ -59,7 +57,6 @@ export class AppComponent implements OnInit {
 
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.webapiService.checkServerStatus();
-      this.webapiService.checkApplicationVersion();
     });
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
@@ -76,10 +73,6 @@ export class AppComponent implements OnInit {
           closable: false,
         });
       }
-    });
-
-    this.applicationDetailsSubscription = this.webapiService.applicationDetails.subscribe(data => {
-      this.applicationDetails = data;
     });
 
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
