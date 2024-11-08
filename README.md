@@ -24,7 +24,8 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
 * Uses WireGuard (tm).
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
-* Distributed as docker image. So updates are very easy to perform. 
+* Distributed as docker image. So updates are very easy to perform.
+* Can send tunnel information via email if email is snabled (see below).
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
 ## Requirements
@@ -136,6 +137,13 @@ I tested it with GMail account (I created the password using App Passwords featu
  * EMAIL_HOST_PASSWORD
  * EMAIL_PORT
  * EMAIL_USE_SSL
+
+In my case
+ * EMAIL_HOST=smtp.gmail.com
+ * EMAIL_HOST_USER=my_gmail_address
+ * EMAIL_HOST_PASSWORD=my_password_genrated_in_gmail_app_passwords
+ * EMAIL_PORT=587
+ * EMAIL_USE_TLS=True
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers
