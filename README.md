@@ -125,7 +125,17 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 - [x] Configuration of Client Peer
   - [x] Display QR-code for scanning using camera on the client device.
   - [x] Download and share ".conf" file with the client device.
-  - [ ] Ability to send configuration files for peers by email by single click.
+  - [x] Ability to send configuration files for peers by email by single click.
+
+## Sending tunnel information using email
+The ".conf" file and the QR code can be sent to the peers via email. If the email address is entered in the Peer information, user can send the files by just click of a button.
+But for this, a few more parameters need to be passed as environment variables to the docker container.
+I tested it with GMail account (I created the password using App Passwords feature in GMail).
+ * EMAIL_HOST
+ * EMAIL_HOST_USER
+ * EMAIL_HOST_PASSWORD
+ * EMAIL_PORT
+ * EMAIL_USE_SSL
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers
