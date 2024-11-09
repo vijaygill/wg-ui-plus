@@ -99,13 +99,15 @@ ARG UID
 ARG GID
 ARG APP_VERSION
 
-RUN mkdir -p /app /app/scripts /data /config && chown $UID:$GID /app /data /config
+RUN mkdir -p /app /app/scripts /data /config
 
 COPY --from=builder /wg-ui-plus/src/clientapp/dist/wg-ui-plus/browser /app/clientapp
 COPY --from=builder /wg-ui-plus/src/api_project/ /app/api_project
 COPY --from=builder /wg-ui-plus/scripts/run-app.sh /app/scripts
 COPY --from=builder /wg-ui-plus/scripts/monitor-*.sh /app/scripts
 COPY --from=builder /wg-ui-plus/LICENSE /app
+
+RUN chown -R $UID:$GID /app /data /config
 
 VOLUME /data /config
 WORKDIR /app
