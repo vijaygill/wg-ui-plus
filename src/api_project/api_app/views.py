@@ -258,11 +258,12 @@ def get_server_status(request):
 @permission_classes([IsAuthenticated])
 def send_peer_email(request):
     try:
+        peer_name = request.data["name"]
         tunnel_qr_file = "tunnel.png"
         tunnel_conf_file = "tunnel.conf"
-        subject = "Tunnel configuration sent from wg-ui-plus"
+        subject = f"Tunnel configuration sent from wg-ui-plus for {peer_name}"
         body = f"""
-The attached files are sent from {APP_NAME}.
+The attached files are sent from {APP_NAME} for the peer {peer_name}.
 Keep them safe.
 
 Notify the administrator if you think the files have been compromised.
