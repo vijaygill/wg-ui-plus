@@ -9,3 +9,7 @@ updates:
     directory: "/src/clientapp" # Location of package manifests
     schedule:
       interval: "daily"
+    groups:
+      dev-dependencies:
+        patterns: 
+          - "*"
