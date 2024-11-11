@@ -64,7 +64,6 @@ export class AppComponent implements OnInit {
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
-      debugger;
       this.messageService.clear();
       if (this.serverStatus && this.serverStatus.message) {
         let severity = this.serverStatus.status == 'error' ? 'error'
