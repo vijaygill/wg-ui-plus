@@ -12,6 +12,8 @@ on:
       - develop
       - master
   pull_request:
+    types:
+      - opened
     branches:
       - develop
       - master
@@ -29,9 +31,22 @@ env:
   IMAGE_TAG_ARM64 : "${{ github.ref_name }}-arm64"
   IMAGE_TAG_AMD64_SHA : "${{ github.ref_name }}-amd64-${{ github.sha }}"
   IMAGE_TAG_ARM64_SHA : "${{ github.ref_name }}-arm64-${{ github.sha }}"
+  IMAGE_TAG_AMD64_PULL : "merge-amd64-${{ github.sha }}"
+  IMAGE_TAG_ARM64_PULL : "merge-arm64-${{ github.sha }}"
 
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Show context values
+      run: |
+        echo "github.event_name: ${{ github.event_name }}"
+        echo "github.event_path: ${{ github.event_path }}"
+        echo "github.ref_name  : ${{ github.ref_name }}"
+        echo "github.ref       : ${{ github.ref }}"
+
   build:
+    needs: init
     strategy:
       matrix:
         runner: ["ubuntu-latest", "self-hosted"]
@@ -59,6 +74,8 @@ jobs:
         tags: |
           type=raw,value=${{ env.IMAGE_TAG_AMD64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
           type=raw,value=${{ env.IMAGE_TAG_ARM64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'self-hosted' }}
+          type=raw,value=${{ env.IMAGE_TAG_AMD64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull/') && matrix.runner == 'ubuntu-latest' }}
+          type=raw,value=${{ env.IMAGE_TAG_ARM64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull') && matrix.runner == 'self-hosted' }}
           type=raw,value=${{ env.IMAGE_TAG_AMD64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
           type=raw,value=${{ env.IMAGE_TAG_ARM64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
         labels: |
