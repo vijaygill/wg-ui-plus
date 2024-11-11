@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
 import { TreeNode } from 'primeng/api';
 import { map, tap } from 'rxjs/operators'
-import { ApplicationDetails, ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCrendentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCrendentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -11,9 +11,9 @@ import { ApplicationDetails, ChangeUserPasswordInfo, ConnectedPeerInformation, I
 export class WebapiService {
 
     private urlGetLicense = '/api/v1/license';
-    private urlGetApplicationDetails = '/api/v1/get_application_details';
     private urlPeerGroup = '/api/v1/data/peer_group/';
     private urlPeer = '/api/v1/data/peer/';
+    private urlPeerSendEmail = '/api/v1/data/peer/send_peer_email';
     private urlTarget = '/api/v1/data/target/';
     private urlServerConfiguration = '/api/v1/data/server_configuration/';
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
@@ -28,7 +28,6 @@ export class WebapiService {
     private urlChangeUserPassword = '/api/v1/auth/change_password';
 
     serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
-    applicationDetails: Subject<ApplicationDetails> = new Subject<ApplicationDetails>();
 
     constructor(private http: HttpClient) { }
 
@@ -90,6 +89,14 @@ export class WebapiService {
 
     deletePeer(item: Peer): Observable<Peer> {
         var res = this.http.delete<Peer>(this.urlPeer + item.id + '/');
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
+        return res;
+    }
+
+    sendConfigurationByEmail(item: Peer): Observable<Peer> {
+        var res = this.http.post<Peer>(this.urlPeerSendEmail, item);
         res = res.pipe(tap(() => {
             this.checkServerStatus();
         }));
@@ -224,12 +231,6 @@ export class WebapiService {
     checkServerStatus(): void {
         this.http.get<ServerStatus>(this.urlGetServerStatus).subscribe(data => {
             this.serverStatus.next(data);
-        });
-    }
-
-    checkApplicationVersion(): void {
-        this.http.get<ApplicationDetails>(this.urlGetApplicationDetails).subscribe(data => {
-            this.applicationDetails.next(data);
         });
     }
 

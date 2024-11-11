@@ -21,6 +21,7 @@ export interface Entity {
 export interface Peer extends Entity {
     name: string;
     description: string;
+    email_address: string;
     ip_address: string;
     port: number;
     disabled: boolean;
@@ -127,10 +128,11 @@ export interface LicenseInfo {
 }
 
 export interface ApplicationDetails {
-    current_time : Date;
+    current_time: Date;
     latest_live_version: string;
     current_version: string;
     allow_allow_check_updates: boolean;
+    is_email_enabled: boolean;
 }
 
 export interface IpTablesLog {
@@ -151,6 +153,7 @@ export interface ServerStatus {
     need_regenerate_files: boolean;
     last_db_change_datetime: Date;
     last_file_change_datetime: Date;
+    application_details: ApplicationDetails;
 }
 
 export interface PlatformInformation {

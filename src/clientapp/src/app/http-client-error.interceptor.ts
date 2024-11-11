@@ -30,13 +30,15 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
     return next.handle(request)
       .pipe(
         catchError((error: HttpErrorResponse) => {
+          let m = error.error && error.error.message ? error.error.message : '';
           let message = 'Server returned HTTP Error '
             + error.status
             + '. '
+            + (m ? m + '. ' : '')
             + (error.status in this.httpErrors ? this.httpErrors[error.status] : 'Please check logs on server side.');
 
           this.webapiService.pushServerStatus({ status: 'error', message: message } as ServerStatus)
-          return throwError(()=> new Error(message));
+          return throwError(() => new Error(message));
         })
       );
   }

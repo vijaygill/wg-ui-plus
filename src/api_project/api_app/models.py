@@ -3,9 +3,12 @@ import ipaddress
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .util import (get_target_ip_address_parts,
-                   is_network_address, is_single_address)
-from .wireguardhelper import generate_keys
+from .util import (
+    generate_keys,
+    get_target_ip_address_parts,
+    is_network_address,
+    is_single_address,
+)
 
 
 def validator_is_network_address(value, throw_exception=True):
@@ -18,7 +21,7 @@ def validator_is_network_address(value, throw_exception=True):
         res = (
             int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
         )
-    except:
+    except Exception:
         res = False
     if (not res) and throw_exception:
         raise ValidationError(
@@ -57,7 +60,9 @@ def validator_is_single_address(value, throw_exception=True):
 
 
 def validator_is_network_or_single_address(value):
-    res = validator_is_network_address(value, False) or validator_is_single_address(value, False)
+    res = validator_is_network_address(value, False) or validator_is_single_address(
+        value, False
+    )
     if not res:
         raise ValidationError(
             f"{value} is not a valid IP address or network address. Example 192.168.0.10 Or 192.168.0.0/24.",
@@ -69,7 +74,7 @@ def validator_is_valid_target_ip_address(value):
     parts = get_target_ip_address_parts(value=value)
     res = parts[0]
     error = parts[-1]
-    if (not res):
+    if not res:
         raise ValidationError(
             f"{value} is not a valid IP address. Error: {error}",
             params={"value": value},
@@ -98,6 +103,7 @@ class PeerGroup(models.Model):
 class Peer(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255, null=True)
+    email_address = models.CharField(max_length=255, null=True)
     disabled = models.BooleanField(null=True, default=False)
     ip_address = models.CharField(max_length=255, null=True, blank=True)
     port = models.IntegerField(null=True, blank=True)
@@ -168,10 +174,16 @@ class ServerConfiguration(models.Model):
     port_external = models.IntegerField(null=False)
     port_internal = models.IntegerField(null=False)
     upstream_dns_ip_address = models.CharField(
-        max_length=255, null=False, blank=False, validators=[validator_is_single_address]
+        max_length=255,
+        null=False,
+        blank=False,
+        validators=[validator_is_single_address],
     )
     local_networks = models.CharField(
-        max_length=512, null=True, blank=True, validators=[validator_are_network_addresses]
+        max_length=512,
+        null=True,
+        blank=True,
+        validators=[validator_are_network_addresses],
     )
     wireguard_config_path = models.CharField(max_length=255)
     script_path_post_down = models.CharField(max_length=255)

@@ -24,7 +24,8 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
 * Uses WireGuard (tm).
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
-* Distributed as docker image. So updates are very easy to perform. 
+* Distributed as docker image. So updates are very easy to perform.
+* Can send tunnel information via email if email is snabled (see below).
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
 ## Requirements
@@ -125,7 +126,24 @@ Functionality implemented/yet to be implemented so far (getting ready for first 
 - [x] Configuration of Client Peer
   - [x] Display QR-code for scanning using camera on the client device.
   - [x] Download and share ".conf" file with the client device.
-  - [ ] Ability to send configuration files for peers by email by single click.
+  - [x] Ability to send configuration files for peers by email by single click.
+
+## Sending tunnel information using email
+The ".conf" file and the QR code can be sent to the peers via email. If the email address is entered in the Peer information, user can send the files by just click of a button.
+But for this, a few more parameters need to be passed as environment variables to the docker container.
+I tested it with GMail account (I created the password using App Passwords feature in GMail).
+ * EMAIL_HOST
+ * EMAIL_HOST_USER
+ * EMAIL_HOST_PASSWORD
+ * EMAIL_PORT
+ * EMAIL_USE_SSL
+
+In my case
+ * EMAIL_HOST=smtp.gmail.com
+ * EMAIL_HOST_USER=my_gmail_address
+ * EMAIL_HOST_PASSWORD=my_password_genrated_in_gmail_app_passwords
+ * EMAIL_PORT=587
+ * EMAIL_USE_TLS=True
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers

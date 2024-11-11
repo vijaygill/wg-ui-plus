@@ -21,11 +21,6 @@ urlpatterns = [
         name="get_license",
     ),
     path(
-        "api/v1/get_application_details",
-        views.get_application_details,
-        name="get_application_details",
-    ),
-    path(
         "api/v1/control/wireguard_generate_configuration_files",
         views.wireguard_generate_configuration_files,
         name="wireguard_generate_configuration_files",
@@ -67,7 +62,13 @@ urlpatterns = [
     ),
     path(
         "api/v1/control/get_server_status",
-        views.wireguard_get_server_status,
+        views.get_server_status,
         name="get_server_status",
     ),
+    path(
+        "api/v1/data/peer/send_peer_email",
+        views.send_peer_email,
+        name="send_peer_email",
+    ),
+    
 ]
