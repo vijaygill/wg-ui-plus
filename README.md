@@ -6,9 +6,9 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard). So far, I like this combo and though this is WIP, I have already replaced my lscr.io/linuxserver/wireguard based setup with this project.
+I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
 
-This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
+Use it and raise issues and/or PR's to make it better.
 
 ## Features
 * Easy management of clients (a.k.a Peers).
@@ -25,8 +25,25 @@ This is going to grow more in coming times. So keep an eye on this project. Use 
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
 * Distributed as docker image. So updates are very easy to perform.
-* Can send tunnel information via email if email is snabled (see below).
+* Can send tunnel information (both QR code image and .conf file) via email if email is snabled (see below).
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
+
+Functionality implemented so far
+- [x] Manage targets - Add/Edit/Disable.
+  - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
+- [x] Manage Peers - Add/Edit/Disable.
+  - [x] Add/Remove Peers from Peer-Groups, thus allowing/denying access to the targets a Peer-Group is associated with.
+- [x] Manage Peer-Groups - Add/Edit/Disable
+  - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
+- [x] Live Dashboard
+  - [x] Show current status of Peers.
+  - [x] Show IPTables rules along with the counters for various chains.
+- [x] Authentication
+- [x] Configuration of Client Peer
+  - [x] Display QR-code for scanning using camera on the client device.
+  - [x] Download and share ".conf" file with the client device.
+  - [x] Ability to send configuration files for peers by email by single click.
+
 
 ## Requirements
 You need to have docker setup and running on your machine where the VPN needs to be run.
@@ -110,24 +127,6 @@ Now let's take an example of your NAS which has Samba server running (port 139 a
 7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code (or download .conf file).
 8. That's it. Your client should be able to access the samba shares on NAS.
 
-
-## Features
-Functionality implemented/yet to be implemented so far (getting ready for first release)
-- [x] Manage targets - Add/Edit/Disable.
-  - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
-- [x] Manage Peers - Add/Edit/Disable.
-  - [x] Add/Remove Peers from Peer-Groups, thus allowing/denying access to the targets a Peer-Group is associated with.
-- [x] Manage Peer-Groups - Add/Edit/Disable
-  - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
-- [x] Live Dashboard
-  - [x] Show current status of Peers.
-  - [x] Show IPTables rules along with the counters for various chains.
-- [x] Authentication
-- [x] Configuration of Client Peer
-  - [x] Display QR-code for scanning using camera on the client device.
-  - [x] Download and share ".conf" file with the client device.
-  - [x] Ability to send configuration files for peers by email by single click.
-
 ## Sending tunnel information using email
 The ".conf" file and the QR code can be sent to the peers via email. If the email address is entered in the Peer information, user can send the files by just click of a button.
 But for this, a few more parameters need to be passed as environment variables to the docker container.
@@ -136,7 +135,7 @@ I tested it with GMail account (I created the password using App Passwords featu
  * EMAIL_HOST_USER
  * EMAIL_HOST_PASSWORD
  * EMAIL_PORT
- * EMAIL_USE_SSL
+ * EMAIL_USE_SSL or EMAIL_USE_TLS
 
 In my case
  * EMAIL_HOST=smtp.gmail.com
