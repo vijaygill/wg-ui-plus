@@ -13,3 +13,7 @@ updates:
       dev-dependencies:
         patterns: 
           - "*"
+    ignore:
+      - dependency-name: "typescript"
+        # For Express, ignore all Dependabot updates for version 4 and 5
+        versions: ["5.x"]
