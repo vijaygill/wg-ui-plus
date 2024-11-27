@@ -102,6 +102,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
+        target: live
         build-args: |
           APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
         push: true
@@ -115,6 +116,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
+        target: live
         build-args: |
           APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
         push: true
