@@ -4,25 +4,25 @@ ARG GID=1000
 ARG APP_VERSION="v0.0.0"
 
 # Stage: base-dev
-FROM debian:latest AS base-dev
+FROM python:latest AS base-dev
 ARG UNAME
 ARG UID
 ARG GID
 ARG APP_VERSION
 
 RUN apt-get update -y \
-	&& apt-get upgrade -y
-
-RUN	apt-get install -y \
-	python3 \
-	python3-pip \
-	python-is-python3 \
+#	&& apt-get upgrade -y \
+	&& apt-get install -y \
+#	python3 \
+#	python3-pip \
+#	python-is-python3 \
 	git \
 	npm \
 	sqlite3 wireguard wireguard-tools python3-cryptography \
 	net-tools iproute2 iptables libcap2-bin libcap2 \
 	iptraf-ng procps tcpdump \
-	sudo conntrack tzdata
+	sudo conntrack tzdata \
+    && apt-get clean
 
 RUN npm install -g @angular/cli
 
