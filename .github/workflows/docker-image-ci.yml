@@ -98,7 +98,7 @@ jobs:
 
     - name: Build and push Docker image (without cache)
       if: matrix.runner == 'ubuntu-latest'
-      id: push_cache_gh
+      id: push_gh_hosted
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -109,12 +109,12 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+          #        cache-from: type=gha
+          #        cache-to: type=gha,mode=max
 
     - name: Build and push Docker image (with cache)
       if: matrix.runner == 'self-hosted'
-      id: push_cache_local
+      id: push_self_hosted
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -125,8 +125,8 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
-        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
+          #        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
+          #        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
 
   create-multiarch-image:
     runs-on: ubuntu-latest
