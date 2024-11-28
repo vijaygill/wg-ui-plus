@@ -126,14 +126,6 @@ jobs:
         cache-from: type=registry,ref=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache
         cache-to: type=registry,ref=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache,mode=max
 
-    - name: Move cache
-      if: matrix.runner == 'self-hosted'
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache      
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
-
   create-multiarch-image:
     runs-on: ubuntu-latest
     needs: build
