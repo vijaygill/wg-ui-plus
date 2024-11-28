@@ -123,8 +123,8 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=registry,src=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache
-        cache-to: type=registry,dest=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache,mode=max
+        cache-from: type=registry,ref=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache
+        cache-to: type=registry,ref=docker-registry.gillsoft.ie/vijaygill/wg-ui-plus:buildcache,mode=max
 
     - name: Move cache
       if: matrix.runner == 'self-hosted'
