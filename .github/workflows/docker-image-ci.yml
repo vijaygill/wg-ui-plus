@@ -125,8 +125,8 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache
-        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
+        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
 
   create-multiarch-image:
     runs-on: ubuntu-latest
