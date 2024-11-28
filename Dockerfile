@@ -11,8 +11,9 @@ ARG GID
 ARG APP_VERSION
 
 RUN apt-get update -y \
-	&& apt-get upgrade -y \
-	&& apt-get install -y \
+	&& apt-get upgrade -y
+
+RUN	apt-get install -y \
 	python3 \
 	python3-pip \
 	python-is-python3 \
@@ -46,7 +47,7 @@ COPY . /wg-ui-plus
 
 RUN chown -R $UNAME:$UNAME /wg-ui-plus
 
-RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --configuration production --prerender=false --deploy-url="/" --base-href="/"
+RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --configuration production --prerender=false --deploy-url="/" --base-href="/" --aot=true
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev-builder
@@ -75,8 +76,9 @@ ARG GID
 ARG APP_VERSION
 
 RUN apk update \
-    && apk upgrade \
-    && apk add --no-cache --update wireguard-tools iptables openresolv net-tools \
+    && apk upgrade
+
+RUN apk add --no-cache --update wireguard-tools iptables openresolv net-tools \
                                 iptraf-ng procps tcpdump sudo conntrack-tools \
                                 tzdata gcc libressl-dev musl-dev libffi-dev \
                                 bind-tools \
