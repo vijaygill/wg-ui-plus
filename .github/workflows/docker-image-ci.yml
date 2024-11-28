@@ -102,12 +102,15 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
+        target: live
         build-args: |
           APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Build and push Docker image (with cache)
       if: matrix.runner == 'self-hosted'
@@ -115,22 +118,15 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
+        target: live
         build-args: |
           APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         provenance: false
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-
-    - name: Move cache
-      if: matrix.runner == 'self-hosted'
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache      
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
+        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
+        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
 
   create-multiarch-image:
     runs-on: ubuntu-latest
