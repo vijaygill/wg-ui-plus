@@ -98,7 +98,7 @@ jobs:
 
     - name: Build and push Docker image (without cache)
       if: matrix.runner == 'ubuntu-latest'
-      id: push_no_cache
+      id: push_cache_gh
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -114,7 +114,7 @@ jobs:
 
     - name: Build and push Docker image (with cache)
       if: matrix.runner == 'self-hosted'
-      id: push_with_cache
+      id: push_cache_local
       uses: docker/build-push-action@v6
       with:
         context: .
