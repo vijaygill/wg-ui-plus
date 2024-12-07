@@ -1,7 +1,7 @@
 #!/bin/bash
 
 APP_FOLDER='/wg-ui-plus/src/clientapp'
-if [[ ! -d "${APP_FOLDER}" ]] ; then
+if [[ ! -d "${APP_FOLDER}/node_modules" ]] ; then
 	echo 'Appears to be the first run. Performing some boot strapping...'
 	mkdir -p "${APP_FOLDER}"
 	cd "${APP_FOLDER}"
