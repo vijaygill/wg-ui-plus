@@ -18,7 +18,7 @@ RUN apt-get update -y \
 #	python-is-python3 \
 	git \
 	npm \
-	sqlite3 wireguard wireguard-tools python3-cryptography \
+	sqlite3 wireguard wireguard-tools \
 	net-tools iproute2 iptables libcap2-bin libcap2 \
 	iptraf-ng procps tcpdump \
 	sudo conntrack tzdata \
@@ -26,7 +26,7 @@ RUN apt-get update -y \
 
 RUN npm install -g @angular/cli
 
-RUN pip install --break-system-packages --upgrade qrcode[pil] colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests
+RUN pip install --break-system-packages --upgrade qrcode[pil] colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests cryptography
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
