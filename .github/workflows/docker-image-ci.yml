@@ -38,12 +38,12 @@ jobs:
   init:
     runs-on: ubuntu-latest
     steps:
-    - name: Show context values
-      run: |
-        echo "github.event_name: ${{ github.event_name }}"
-        echo "github.event_path: ${{ github.event_path }}"
-        echo "github.ref_name  : ${{ github.ref_name }}"
-        echo "github.ref       : ${{ github.ref }}"
+      - name: Show context values
+        run: |
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.event_path: ${{ github.event_path }}"
+          echo "github.ref_name  : ${{ github.ref_name }}"
+          echo "github.ref       : ${{ github.ref }}"
 
   build:
     needs: init
@@ -53,80 +53,96 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions: write-all
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-        
-    - name: Log in to the Container registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=raw,value=${{ env.IMAGE_TAG_AMD64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
-          type=raw,value=${{ env.IMAGE_TAG_ARM64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'self-hosted' }}
-          type=raw,value=${{ env.IMAGE_TAG_AMD64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull/') && matrix.runner == 'ubuntu-latest' }}
-          type=raw,value=${{ env.IMAGE_TAG_ARM64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull') && matrix.runner == 'self-hosted' }}
-          type=raw,value=${{ env.IMAGE_TAG_AMD64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
-          type=raw,value=${{ env.IMAGE_TAG_ARM64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
-        labels: |
-          maintainer=Vijay Gill
-          org.opencontainers.image.title=WireGuard UI Plus
-          org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
-          org.opencontainers.image.vendor=GillSoft Limited
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Generate build-args for docker image - live
-      id: gen_docker_build_args_live
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        echo "APP_VERSION=${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG_AMD64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=${{ env.IMAGE_TAG_ARM64_SHA }},enable=${{ startsWith(github.ref, 'refs/heads/') && matrix.runner == 'self-hosted' }}
+            type=raw,value=${{ env.IMAGE_TAG_AMD64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull/') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=${{ env.IMAGE_TAG_ARM64_PULL }},enable=${{ startsWith(github.ref, 'refs/pull') && matrix.runner == 'self-hosted' }}
+            type=raw,value=${{ env.IMAGE_TAG_AMD64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'ubuntu-latest' }}
+            type=raw,value=${{ env.IMAGE_TAG_ARM64 }},enable=${{ startsWith(github.ref, 'refs/tags/v') && matrix.runner == 'self-hosted' }}
+          labels: |
+            maintainer=Vijay Gill
+            org.opencontainers.image.title=WireGuard UI Plus
+            org.opencontainers.image.description=A Dockerised UI to run and manage a WireGuard VPN in the same container.
+            org.opencontainers.image.vendor=GillSoft Limited
 
-    - name: Generate build-args for docker image - non-live
-      id: gen_docker_build_args_non_live
-      if: startsWith(github.ref, 'refs/heads/')
-      run: |
-        echo "APP_VERSION=${{ env.IMAGE_TAG }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+      - name: Generate build-args for docker image - live
+        id: gen_docker_build_args_release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "APP_VERSION=${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
 
-    - name: Build and push Docker image (without cache)
-      if: matrix.runner == 'ubuntu-latest'
-      id: push_gh_hosted
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        target: live
-        build-args: |
-          APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        provenance: false
-          #        cache-from: type=gha
-          #        cache-to: type=gha,mode=max
+      - name: Generate build-args for docker image - non-live
+        id: gen_docker_build_args_dev
+        if: startsWith(github.ref, 'refs/heads/')
+        run: |
+          echo "APP_VERSION=${{ env.IMAGE_TAG }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
-    - name: Build and push Docker image (with cache)
-      if: matrix.runner == 'self-hosted'
-      id: push_self_hosted
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        target: live
-        build-args: |
-          APP_VERSION=${{ steps.gen_docker_build_args_live.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_non_live.outputs.APP_VERSION }}
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        provenance: false
-          #        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
-          #        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
+      - name: Generate build-args for docker image - amd64
+        id: gen_docker_build_args_amd64
+        if: matrix.runner == 'ubuntu-latest'
+        run: |
+          echo "APP_ARCH=amd64" >> $GITHUB_OUTPUT
+
+      - name: Generate build-args for docker image - arm64
+        id: gen_docker_build_args_arm64
+        if: matrix.runner == 'self-hosted'
+        run: |
+          echo "APP_ARCH=arm64" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image (amd64)
+        if: matrix.runner == 'ubuntu-latest'
+        id: push_gh_hosted
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dev.Dockerfile
+          target: live
+          build-args: |
+            APP_VERSION=${{ steps.gen_docker_build_args_release.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_dev.outputs.APP_VERSION }}
+            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+            #        cache-from: type=gha
+            #        cache-to: type=gha,mode=max
+
+      - name: Build and push Docker image (arm64)
+        if: matrix.runner == 'self-hosted'
+        id: push_self_hosted
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: dev.Dockerfile
+          target: live
+          build-args: |
+            APP_VERSION=${{ steps.gen_docker_build_args_release.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_dev.outputs.APP_VERSION }}
+            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+            #        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
+            #        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
 
   create-multiarch-image:
     runs-on: ubuntu-latest
