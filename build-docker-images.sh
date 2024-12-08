@@ -10,9 +10,13 @@ if [[ "$*" == *"dev-only"* ]]
 then
     BUILD_TYPE="dev"
 fi
-if [[ "$*" == *"live-only"* ]] || [[ "$*" == *"all"* ]]
+if [[ "$*" == *"live-only"* ]]
 then
     BUILD_TYPE="live"
+fi
+if [[ "$*" == *"all"* ]]
+then
+    BUILD_TYPE="all"
 fi
 
 echo "BUILD_TYPE = ${BUILD_TYPE}"
@@ -30,6 +34,6 @@ fi
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 source ${BASE_DIR}/set-script-vars.sh
 
-DOCKER_BUILDKIT=1 docker build --target=${TARGET} --build-arg UNAME="${ARG_UNAME}" --build-arg UID="${ARG_UID}" --build-arg GID="${ARG_GID}" --build-arg ARG_GID_DOCKER="${ARG_GID_DOCKER}" --build-arg APP_VERSION="${APP_VERSION}" --tag "wg-ui-plus-${TARGET}" -f Dockerfile .
+DOCKER_BUILDKIT=1 docker build --target=${TARGET} --build-arg UNAME="${ARG_UNAME}" --build-arg UID="${ARG_UID}" --build-arg GID="${ARG_GID}" --build-arg ARG_GID_DOCKER="${ARG_GID_DOCKER}" --build-arg APP_VERSION="${APP_VERSION}" --tag "wg-ui-plus-${TARGET}" -f dev.Dockerfile .
 
 
