@@ -65,8 +65,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-dev-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
           provenance: false
 
-      - name: Build and push Docker image - base-live - (amd64)
-        if: matrix.runner == 'ubuntu-latest'
+      - name: Build and push Docker image - base-live
         id: push_gh_hosted_base_live
         uses: docker/build-push-action@v6
         with:
