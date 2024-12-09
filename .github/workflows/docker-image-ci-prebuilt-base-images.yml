@@ -18,7 +18,7 @@ jobs:
           echo "github.ref_name  : ${{ github.ref_name }}"
           echo "github.ref       : ${{ github.ref }}"
 
-  build:
+  build-base-dev:
     needs: init
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-          
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -64,6 +64,39 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-dev-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
           provenance: false
+
+  build-base-live:
+    needs: init
+    strategy:
+      matrix:
+        runner: ["ubuntu-latest", "self-hosted"]
+    runs-on: ${{ matrix.runner }}
+    permissions: write-all
+    steps:
+      - name: Generate build-args for docker image - amd64
+        id: gen_docker_build_args_amd64
+        if: matrix.runner == 'ubuntu-latest'
+        run: |
+          echo "APP_ARCH=amd64" >> $GITHUB_OUTPUT
+
+      - name: Generate build-args for docker image - arm64
+        id: gen_docker_build_args_arm64
+        if: matrix.runner == 'self-hosted'
+        run: |
+          echo "APP_ARCH=arm64" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image - base-live
         id: push_gh_hosted_base_live
