@@ -71,18 +71,31 @@ PersistentKeepalive = 25
             x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
         ]
 
+        allowed_ips = []
+
         allowed_ips_everyone = []
         if peer_group_everyone:
             allowed_ips_everyone = [
                 x.ip_address for x in peer_group_everyone[0].targets.all()
             ]
 
-        allowed_ips = [
-            target.ip_address
+        allowed_ips_by_peer_groups = [
+            p.ip_address.split(":")[0]
+            for pg in peer.peer_groups.all()
+            for p in pg.peers.all()
+            if p.ip_address and p.ip_address != peer.ip_address
+        ]
+
+        allowed_ips_by_targets = [
+            target.ip_address.split(":")[0]
             for pg in peer.peer_groups.all()
             for target in pg.targets.all()
+            if target.ip_address
         ]
-        allowed_ips = [t.split(":")[0] for t in (allowed_ips + allowed_ips_everyone)]
+
+        allowed_ips = (
+            allowed_ips_everyone + allowed_ips_by_peer_groups + allowed_ips_by_targets
+        )
 
         # # add upstream DNS server to allowed IP's.
         # if serverConfiguration.upstream_dns_ip_address:
