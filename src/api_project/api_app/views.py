@@ -120,7 +120,10 @@ def wireguard_get_configuration(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
     peers = Peer.objects.all()
-    res = wg.get_wireguard_configuration(serverConfiguration=sc, peers=peers)
+    peer_groups = PeerGroup.objects.all()
+    res = wg.get_wireguard_configuration(
+        serverConfiguration=sc, peer_groups=peer_groups, peers=peers
+    )
     return Response(res)
 
 
