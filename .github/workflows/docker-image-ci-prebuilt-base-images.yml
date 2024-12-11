@@ -2,6 +2,9 @@ name: Docker Image CI - Pre-built base images
 
 on:
   workflow_dispatch:
+  workflow_call:
+  schedule:
+    - cron: "0 6 * * *" # everyday at 6 AM
 
 env:
   REGISTRY: "ghcr.io"
