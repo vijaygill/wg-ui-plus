@@ -36,10 +36,8 @@
     <div *ngIf="!platformInformation.is_small_screen">
       <app-sidepanel></app-sidepanel>
     </div>
-    <div style="width: 100%;">
-      <div>
+    <div style="width: 100%;max-width: 100%; overflow: scroll;">
         <router-outlet />
-      </div>
     </div>
   </div>
   <div class="item item-footer">
