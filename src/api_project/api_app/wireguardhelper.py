@@ -50,7 +50,9 @@ PostDown = {{serverConfiguration.script_path_post_down}}
         return res
 
     @logged
-    def get_wireguard_configurations_for_peer(self, serverConfiguration, peer):
+    def get_wireguard_configurations_for_peer(
+        self, serverConfiguration, peer_groups, peer
+    ):
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
@@ -65,6 +67,47 @@ PersistentKeepalive = 25
         context = Context({"peer": peer})
         peer_config_server_side = self.render_template(template, context)
 
+        peer_group_everyone = [
+            x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
+        ]
+
+        allowed_ips_everyone = []
+        if peer_group_everyone:
+            allowed_ips_everyone = [
+                x.ip_address for x in peer_group_everyone[0].targets.all()
+            ]
+
+        allowed_ips = [
+            target.ip_address
+            for pg in peer.peer_groups.all()
+            for target in pg.targets.all()
+        ]
+        allowed_ips = [t.split(":")[0] for t in (allowed_ips + allowed_ips_everyone)]
+
+        # # add upstream DNS server to allowed IP's.
+        # if serverConfiguration.upstream_dns_ip_address:
+        #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+
+        # # add VPN's own network also.
+        # if serverConfiguration.network_address:
+        #     allowed_ips += [serverConfiguration.network_address]
+
+        # if 0.0.0.0/0 is in the list, no need to have anything else.
+        if IP_ADDRESS_INTERNET in allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        allowed_ips = list(set(allowed_ips))
+
+        # if there is no allowedIPs, default to catch-all
+        if not allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        allowed_ips = [ipaddress.ip_interface(x) for x in allowed_ips]
+        allowed_ips.sort()
+        allowed_ips = [str(x.ip) for x in allowed_ips]
+
+        allowed_ips = ",".join(allowed_ips)
+
         template = """
 # Settings for this client.
 [Interface]
@@ -77,7 +120,7 @@ DNS = {{serverConfiguration.upstream_dns_ip_address}}
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
 Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = {{allowed_ips}}
 """
         peer_port = peer.port if peer.port else serverConfiguration.peer_default_port
         context = Context(
@@ -85,6 +128,7 @@ AllowedIPs = 0.0.0.0/0
                 "serverConfiguration": serverConfiguration,
                 "peer": peer,
                 "peer_port": peer_port,
+                "allowed_ips": allowed_ips,
             }
         )
         peer_config_client_side = self.render_template(template, context)
@@ -93,7 +137,7 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def get_wireguard_configuration(self, serverConfiguration, peers):
+    def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
         server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
 
@@ -102,7 +146,9 @@ AllowedIPs = 0.0.0.0/0
         peer_configs = []
         for peer in peers:
             peer_config_server_side, peer_config_client_side = (
-                self.get_wireguard_configurations_for_peer(serverConfiguration, peer)
+                self.get_wireguard_configurations_for_peer(
+                    serverConfiguration, peer_groups, peer
+                )
             )
             server_config += peer_config_server_side
             peer_configs += [peer_config_client_side]
@@ -401,7 +447,9 @@ AllowedIPs = 0.0.0.0/0
         # first save wg0.conf
         ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
         configs = self.get_wireguard_configuration(
-            serverConfiguration=serverConfiguration, peers=peers
+            serverConfiguration=serverConfiguration,
+            peer_groups=peer_groups,
+            peers=peers,
         )
         with open(serverConfiguration.wireguard_config_path, "w") as f:
             server_config = configs["server_configuration"]
