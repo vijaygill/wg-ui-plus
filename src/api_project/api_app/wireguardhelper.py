@@ -363,6 +363,10 @@ AllowedIPs = {{allowed_ips}}
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                if str(target_ip_address) == str(serverConfiguration.ip_address):
+                    # no need to add rule for peer => server
+                    # as all packets have to go via server anyway
+                    continue
                 if peer_disabled:
                     post_up.append(
                         f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
