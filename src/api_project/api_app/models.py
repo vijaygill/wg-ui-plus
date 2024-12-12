@@ -190,6 +190,7 @@ class ServerConfiguration(models.Model):
     private_key = models.CharField(max_length=255, null=True, blank=True)
     peer_default_port = models.IntegerField()
     allow_check_updates = models.BooleanField(null=True, default=False)
+    strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
     last_changed_datetime = models.DateTimeField(
         auto_now=True,
     )

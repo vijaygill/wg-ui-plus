@@ -47,15 +47,12 @@ PostUp = {{serverConfiguration.script_path_post_up}}
 PostDown = {{serverConfiguration.script_path_post_down}}
 
 """
-        existing_ip_addresses = (
-            [p.ip_address for p in peers if p.ip_address] if peers else []
+        context = Context(
+            {
+                "serverConfiguration": serverConfiguration,
+                "server_ip_address": serverConfiguration.ip_address,
+            }
         )
-        server_ip_address = get_next_free_ip_address(
-            network_address=serverConfiguration.network_address,
-            existing_ip_addresses=existing_ip_addresses,
-        )
-
-        context = Context({"serverConfiguration": serverConfiguration, "server_ip_address": server_ip_address})
         res = self.render_template(template, context)
         return res
 
@@ -81,49 +78,58 @@ PersistentKeepalive = 25
             x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
         ]
 
-        allowed_ips = []
+        allowed_ips = [IP_ADDRESS_INTERNET]
 
-        allowed_ips_everyone = []
-        if peer_group_everyone:
-            allowed_ips_everyone = [
-                x.ip_address for x in peer_group_everyone[0].targets.all()
+        if serverConfiguration.strict_allowed_ips_in_peer_config:
+            allowed_ips = []
+
+            allowed_ips_everyone = []
+            if peer_group_everyone:
+                allowed_ips_everyone = [
+                    x.ip_address for x in peer_group_everyone[0].targets.all()
+                ]
+
+            allowed_ips_by_peer_groups = [
+                p.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for p in pg.peers.all()
+                if p.ip_address and p.ip_address != peer.ip_address
             ]
 
-        allowed_ips_by_peer_groups = [
-            p.ip_address.split(":")[0]
-            for pg in peer.peer_groups.all()
-            for p in pg.peers.all()
-            if p.ip_address and p.ip_address != peer.ip_address
-        ]
+            allowed_ips_by_targets = [
+                target.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for target in pg.targets.all()
+                if target.ip_address
+            ]
 
-        allowed_ips_by_targets = [
-            target.ip_address.split(":")[0]
-            for pg in peer.peer_groups.all()
-            for target in pg.targets.all()
-            if target.ip_address
-        ]
+            allowed_ips = (
+                allowed_ips_everyone
+                + allowed_ips_by_peer_groups
+                + allowed_ips_by_targets
+            )
 
-        allowed_ips = (
-            allowed_ips_everyone + allowed_ips_by_peer_groups + allowed_ips_by_targets
-        )
+            # # add upstream DNS server to allowed IP's.
+            # if serverConfiguration.upstream_dns_ip_address:
+            #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
 
-        # # add upstream DNS server to allowed IP's.
-        # if serverConfiguration.upstream_dns_ip_address:
-        #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+            # # add VPN's own network also.
+            # if serverConfiguration.network_address:
+            #     allowed_ips += [serverConfiguration.network_address]
 
-        # # add VPN's own network also.
-        # if serverConfiguration.network_address:
-        #     allowed_ips += [serverConfiguration.network_address]
-
-        # if 0.0.0.0/0 is in the list, no need to have anything else.
-        if IP_ADDRESS_INTERNET in allowed_ips:
-            allowed_ips = [IP_ADDRESS_INTERNET]
+            # if 0.0.0.0/0 is in the list, no need to have anything else.
+            if IP_ADDRESS_INTERNET in allowed_ips:
+                allowed_ips = [IP_ADDRESS_INTERNET]
 
         allowed_ips = list(set(allowed_ips))
 
         # if there is no allowedIPs, default to catch-all
         if not allowed_ips:
             allowed_ips = [IP_ADDRESS_INTERNET]
+
+        logger.debug(
+            f"serverConfiguration.strict_allowed_ips_in_peer_config: {serverConfiguration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
+        )
 
         allowed_ips = [is_network_address(x) for x in allowed_ips]
         allowed_ips = [x[2] for x in allowed_ips]
@@ -163,7 +169,9 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
-        server_config = self.get_wireguard_configuration_for_server(serverConfiguration, peers)
+        server_config = self.get_wireguard_configuration_for_server(
+            serverConfiguration, peers
+        )
 
         # now generate configs for peers
         # both for the server side and client side

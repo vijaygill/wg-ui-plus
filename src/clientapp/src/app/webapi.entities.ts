@@ -81,6 +81,7 @@ export interface ServerConfiguration {
     peer_default_port: number;
     upstream_dns_ip_address: string;
     allow_check_updates: boolean;
+    strict_allowed_ips_in_peer_config: boolean;
 }
 
 export interface WireguardConfiguration {
