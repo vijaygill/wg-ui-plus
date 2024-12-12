@@ -55,13 +55,15 @@ def at_end_migrate(
 
     ServerConfiguration = apps.get_model("api_app", "ServerConfiguration")
     server_configuration_existing = ServerConfiguration.objects.all()
-    if not server_configuration_existing:
-        public_key, private_key = generate_keys()
-        ip_address = get_next_free_ip_address(
-            network_address=IP_ADDRESS_SERVER_DEFAULT,
-            existing_ip_addresses=[],
-        )
-        server_configuration = ServerConfiguration(
+    public_key, private_key = generate_keys()
+    ip_address = get_next_free_ip_address(
+        network_address=IP_ADDRESS_SERVER_DEFAULT,
+        existing_ip_addresses=[],
+    )
+    server_configuration = (
+        server_configuration_existing[0]
+        if server_configuration_existing
+        else ServerConfiguration(
             host_name_external=SERVER_FQDN_DEFAULT,
             network_address=IP_ADDRESS_SERVER_DEFAULT,
             ip_address=ip_address,
@@ -75,7 +77,14 @@ def at_end_migrate(
             public_key=public_key,
             private_key=private_key,
         )
-        server_configuration.save()
+    )
+    if not server_configuration.ip_address:
+        server_configuration.ip_address = ip_address
+    if not server_configuration.public_key:
+        server_configuration.public_key = public_key
+    if not server_configuration.ip_address:
+        server_configuration.private_key = private_key
+    server_configuration.save()
 
     server_configuration = ServerConfiguration.objects.all()[0]
     Peer = apps.get_model("api_app", "Peer")
