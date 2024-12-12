@@ -21,6 +21,7 @@ from .common import (
 from .util import (
     ensure_folder_exists_for_file,
     get_target_ip_address_parts,
+    is_network_address,
 )
 
 
@@ -115,9 +116,10 @@ PersistentKeepalive = 25
         if not allowed_ips:
             allowed_ips = [IP_ADDRESS_INTERNET]
 
-        allowed_ips = [ipaddress.ip_interface(x) for x in allowed_ips]
+        allowed_ips = [is_network_address(x) for x in allowed_ips]
+        allowed_ips = [x[2] for x in allowed_ips]
         allowed_ips.sort()
-        allowed_ips = [str(x.ip) for x in allowed_ips]
+        allowed_ips = [str(x) for x in allowed_ips]
 
         allowed_ips = ",".join(allowed_ips)
 
