@@ -3,8 +3,6 @@ import ipaddress
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from .common import logger
-
 from .util import (
     generate_keys,
     get_next_free_ip_address,
@@ -169,6 +167,7 @@ class Target(models.Model):
 
 class ServerConfiguration(models.Model):
     network_address = models.CharField(max_length=255, validators=[is_network_address])
+    ip_address = models.CharField(max_length=255, null=True, blank=True)
     host_name_external = models.CharField(max_length=255, null=False, blank=False)
     port_external = models.IntegerField(null=False)
     port_internal = models.IntegerField(null=False)
@@ -184,7 +183,6 @@ class ServerConfiguration(models.Model):
         blank=True,
         validators=[validator_are_network_addresses],
     )
-    ip_address = models.CharField(max_length=255, null=True, blank=True)
     wireguard_config_path = models.CharField(max_length=255)
     script_path_post_down = models.CharField(max_length=255)
     script_path_post_up = models.CharField(max_length=255)
