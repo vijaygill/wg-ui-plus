@@ -17,6 +17,17 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td><label for="serverIPAddress">Server IP Address</label></td>
+                                <td><input pInputText id="serverIPAddress" [(ngModel)]="editItem.ip_address"
+                                        pTooltip="IP address of the VPN server."
+                                         tooltipPosition="top" 
+                                        [readonly]="true" [disabled]="true" />
+                                    <app-validation-errors-display field="network_address"
+                                        [validationResult]="validationResult">
+                                    </app-validation-errors-display>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td><label for="hostNameExternal">Host Name External</label></td>
                                 <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
                                         pTooltip="Peers connect to this VPN from internet using this name."

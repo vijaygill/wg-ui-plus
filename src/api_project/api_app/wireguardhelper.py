@@ -20,6 +20,7 @@ from .common import (
 )
 from .util import (
     ensure_folder_exists_for_file,
+    get_next_free_ip_address,
     get_target_ip_address_parts,
     is_network_address,
 )
@@ -34,11 +35,11 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def get_wireguard_configuration_for_server(self, serverConfiguration):
+    def get_wireguard_configuration_for_server(self, serverConfiguration, peers):
         template = """
 # Settings for Server.
 [Interface]
-Address = {{serverConfiguration.network_address}}
+Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
@@ -46,7 +47,15 @@ PostUp = {{serverConfiguration.script_path_post_up}}
 PostDown = {{serverConfiguration.script_path_post_down}}
 
 """
-        context = Context({"serverConfiguration": serverConfiguration})
+        existing_ip_addresses = (
+            [p.ip_address for p in peers if p.ip_address] if peers else []
+        )
+        server_ip_address = get_next_free_ip_address(
+            network_address=serverConfiguration.network_address,
+            existing_ip_addresses=existing_ip_addresses,
+        )
+
+        context = Context({"serverConfiguration": serverConfiguration, "server_ip_address": server_ip_address})
         res = self.render_template(template, context)
         return res
 
@@ -154,7 +163,7 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
-        server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
+        server_config = self.get_wireguard_configuration_for_server(serverConfiguration, peers)
 
         # now generate configs for peers
         # both for the server side and client side

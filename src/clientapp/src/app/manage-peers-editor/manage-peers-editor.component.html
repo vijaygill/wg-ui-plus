@@ -29,16 +29,16 @@
                             </td>
                         </tr>
                         <tr *ngIf="editItem.ip_address">
-                            <td><label for="peerIPAddress">IPAddress</label></td>
-                            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address" [readonly]="true"
+                            <td><label for="peerIPAddress">IP Address</label></td>
+                            <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address"
                                     pTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
-                                    tooltipPosition="top" [disabled]="true" /></td>
+                                    tooltipPosition="top" [readonly]="true" [disabled]="true" /></td>
                         </tr>
                         <tr>
                             <td><label for="peerEmailAddress">e-Mail Address</label></td>
                             <td><input pInputText id="peerEmailAddress" [(ngModel)]="editItem.email_address"
                                     pTooltip="e-Mail Address for sending VPN/Tunnel configuration."
-                                    tooltipPosition="top"/></td>
+                                    tooltipPosition="top" /></td>
                         </tr>
                         <!-- <tr>
                             <td><label for="portnumber">Port</label></td>
