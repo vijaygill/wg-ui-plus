@@ -5,6 +5,7 @@ from django.db import models
 
 from .util import (
     generate_keys,
+    get_next_free_ip_address,
     get_target_ip_address_parts,
     is_network_address,
     is_single_address,
@@ -129,18 +130,14 @@ class Peer(models.Model):
             self.port = sc.peer_default_port
         if not self.ip_address:
             peers = Peer.objects.all()
-            sc_intf = ipaddress.ip_interface(sc.network_address)
-            ip_address_pool = [x for x in sc_intf.network.hosts()]
-            if peers:
-                ip_addresses_to_exclude = [
-                    ipaddress.ip_interface(p.ip_address).ip
-                    for p in peers
-                    if p.ip_address
-                ]
-                ip_address_pool = [
-                    x for x in ip_address_pool if x not in ip_addresses_to_exclude
-                ]
-            self.ip_address = ip_address_pool[1]
+            existing_ip_addresses = (
+                [p.ip_address for p in peers if p.ip_address] if peers else []
+            )
+            existing_ip_addresses += [sc.ip_address]
+            self.ip_address = get_next_free_ip_address(
+                network_address=sc.network_address,
+                existing_ip_addresses=existing_ip_addresses,
+            )
         super().save(force_insert, force_update)
 
 
@@ -170,6 +167,7 @@ class Target(models.Model):
 
 class ServerConfiguration(models.Model):
     network_address = models.CharField(max_length=255, validators=[is_network_address])
+    ip_address = models.CharField(max_length=255, null=True, blank=True)
     host_name_external = models.CharField(max_length=255, null=False, blank=False)
     port_external = models.IntegerField(null=False)
     port_internal = models.IntegerField(null=False)
@@ -204,4 +202,13 @@ class ServerConfiguration(models.Model):
             public_key, private_key = generate_keys()
             self.public_key = public_key
             self.private_key = private_key
+        if self.network_address and (not self.ip_address):
+            peers = Peer.objects.all()
+            existing_ip_addresses = (
+                [p.ip_address for p in peers if p.ip_address] if peers else []
+            )
+            self.ip_address = get_next_free_ip_address(
+                network_address=self.network_address,
+                existing_ip_addresses=existing_ip_addresses,
+            )
         super().save(force_insert, force_update)

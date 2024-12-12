@@ -20,7 +20,9 @@ from .common import (
 )
 from .util import (
     ensure_folder_exists_for_file,
+    get_next_free_ip_address,
     get_target_ip_address_parts,
+    is_network_address,
 )
 
 
@@ -33,11 +35,11 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def get_wireguard_configuration_for_server(self, serverConfiguration):
+    def get_wireguard_configuration_for_server(self, serverConfiguration, peers):
         template = """
 # Settings for Server.
 [Interface]
-Address = {{serverConfiguration.network_address}}
+Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
@@ -45,7 +47,15 @@ PostUp = {{serverConfiguration.script_path_post_up}}
 PostDown = {{serverConfiguration.script_path_post_down}}
 
 """
-        context = Context({"serverConfiguration": serverConfiguration})
+        existing_ip_addresses = (
+            [p.ip_address for p in peers if p.ip_address] if peers else []
+        )
+        server_ip_address = get_next_free_ip_address(
+            network_address=serverConfiguration.network_address,
+            existing_ip_addresses=existing_ip_addresses,
+        )
+
+        context = Context({"serverConfiguration": serverConfiguration, "server_ip_address": server_ip_address})
         res = self.render_template(template, context)
         return res
 
@@ -71,18 +81,31 @@ PersistentKeepalive = 25
             x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
         ]
 
+        allowed_ips = []
+
         allowed_ips_everyone = []
         if peer_group_everyone:
             allowed_ips_everyone = [
                 x.ip_address for x in peer_group_everyone[0].targets.all()
             ]
 
-        allowed_ips = [
-            target.ip_address
+        allowed_ips_by_peer_groups = [
+            p.ip_address.split(":")[0]
+            for pg in peer.peer_groups.all()
+            for p in pg.peers.all()
+            if p.ip_address and p.ip_address != peer.ip_address
+        ]
+
+        allowed_ips_by_targets = [
+            target.ip_address.split(":")[0]
             for pg in peer.peer_groups.all()
             for target in pg.targets.all()
+            if target.ip_address
         ]
-        allowed_ips = [t.split(":")[0] for t in (allowed_ips + allowed_ips_everyone)]
+
+        allowed_ips = (
+            allowed_ips_everyone + allowed_ips_by_peer_groups + allowed_ips_by_targets
+        )
 
         # # add upstream DNS server to allowed IP's.
         # if serverConfiguration.upstream_dns_ip_address:
@@ -102,9 +125,10 @@ PersistentKeepalive = 25
         if not allowed_ips:
             allowed_ips = [IP_ADDRESS_INTERNET]
 
-        allowed_ips = [ipaddress.ip_interface(x) for x in allowed_ips]
+        allowed_ips = [is_network_address(x) for x in allowed_ips]
+        allowed_ips = [x[2] for x in allowed_ips]
         allowed_ips.sort()
-        allowed_ips = [str(x.ip) for x in allowed_ips]
+        allowed_ips = [str(x) for x in allowed_ips]
 
         allowed_ips = ",".join(allowed_ips)
 
@@ -139,7 +163,7 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
-        server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
+        server_config = self.get_wireguard_configuration_for_server(serverConfiguration, peers)
 
         # now generate configs for peers
         # both for the server side and client side

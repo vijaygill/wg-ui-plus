@@ -68,6 +68,7 @@ export interface Target extends Entity {
 export interface ServerConfiguration {
     id: number;
     network_address: string;
+    ip_address: string;
     host_name_external: string;
     port_internal: number;
     port_external: number;
