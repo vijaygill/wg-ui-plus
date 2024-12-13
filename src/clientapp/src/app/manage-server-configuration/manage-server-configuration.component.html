@@ -9,7 +9,7 @@
                             <tr>
                                 <td><label for="ipAddress">Network Address</label></td>
                                 <td><input pInputText id="networkAddress" [(ngModel)]="editItem.network_address"
-                                        pTooltip="Network address of the VPN." tooltipPosition="top" pAutoFocus
+                                        pTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer." tooltipPosition="top" pAutoFocus
                                         [autofocus]="true" />
                                     <app-validation-errors-display field="network_address"
                                         [validationResult]="validationResult">

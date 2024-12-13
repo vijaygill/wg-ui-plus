@@ -20,7 +20,6 @@ from .common import (
 )
 from .util import (
     ensure_folder_exists_for_file,
-    get_next_free_ip_address,
     get_target_ip_address_parts,
     is_network_address,
 )
@@ -113,13 +112,13 @@ PersistentKeepalive = 25
             # if serverConfiguration.upstream_dns_ip_address:
             #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
 
-            # # add VPN's own network also.
-            # if serverConfiguration.network_address:
-            #     allowed_ips += [serverConfiguration.network_address]
+            # add VPN server's ip address also.
+            if serverConfiguration.network_address:
+                allowed_ips += [serverConfiguration.ip_address]
 
-            # if 0.0.0.0/0 is in the list, no need to have anything else.
-            if IP_ADDRESS_INTERNET in allowed_ips:
-                allowed_ips = [IP_ADDRESS_INTERNET]
+        # if 0.0.0.0/0 is in the list, no need to have anything else.
+        if IP_ADDRESS_INTERNET in allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
 
         allowed_ips = list(set(allowed_ips))
 

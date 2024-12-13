@@ -59,6 +59,7 @@ def at_end_migrate(
     ip_address = get_next_free_ip_address(
         network_address=IP_ADDRESS_SERVER_DEFAULT,
         existing_ip_addresses=[],
+        for_server=True,
     )
     server_configuration = (
         server_configuration_existing[0]
@@ -78,8 +79,7 @@ def at_end_migrate(
             private_key=private_key,
         )
     )
-    if not server_configuration.ip_address:
-        server_configuration.ip_address = ip_address
+    server_configuration.ip_address = ip_address
     if not server_configuration.public_key:
         server_configuration.public_key = public_key
     if not server_configuration.ip_address:
@@ -88,28 +88,30 @@ def at_end_migrate(
 
     server_configuration = ServerConfiguration.objects.all()[0]
     Peer = apps.get_model("api_app", "Peer")
-    for peer_name, description in SAMPLE_PEERS:
-        peer_existing = Peer.objects.filter(name=peer_name)
-        if peer_existing:
-            continue
-        peers = Peer.objects.all()
-        existing_ip_addresses = []
-        if peers:
-            existing_ip_addresses = (
-                [p.ip_address for p in peers if p.ip_address] if peers else []
+    peers_existing = Peer.objects.all()
+    if not peers_existing:
+        for peer_name, description in SAMPLE_PEERS:
+            peer_existing = Peer.objects.filter(name=peer_name)
+            if peer_existing:
+                continue
+            peers = Peer.objects.all()
+            existing_ip_addresses = []
+            if peers:
+                existing_ip_addresses = (
+                    [p.ip_address for p in peers if p.ip_address] if peers else []
+                )
+                existing_ip_addresses += [server_configuration.ip_address]
+            existing_ip_addresses = [ip for ip in existing_ip_addresses if ip]
+            ip_address = get_next_free_ip_address(
+                network_address=server_configuration.network_address,
+                existing_ip_addresses=existing_ip_addresses,
             )
-            existing_ip_addresses += [server_configuration.ip_address]
-        existing_ip_addresses = [ip for ip in existing_ip_addresses if ip]
-        ip_address = get_next_free_ip_address(
-            network_address=server_configuration.network_address,
-            existing_ip_addresses=existing_ip_addresses,
-        )
-        public_key, private_key = generate_keys()
-        peer = Peer(
-            name=peer_name,
-            description=description,
-            public_key=public_key,
-            private_key=private_key,
-            ip_address=ip_address,
-        )
-        peer.save()
+            public_key, private_key = generate_keys()
+            peer = Peer(
+                name=peer_name,
+                description=description,
+                public_key=public_key,
+                private_key=private_key,
+                ip_address=ip_address,
+            )
+            peer.save()

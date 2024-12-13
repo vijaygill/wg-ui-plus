@@ -74,6 +74,7 @@ export class ManageServerConfigurationComponent {
           }
         },
         complete: () => {
+          this.refreshData()
         },
       });
   }
