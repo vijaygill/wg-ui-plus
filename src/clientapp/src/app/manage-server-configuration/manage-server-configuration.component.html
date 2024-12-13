@@ -92,6 +92,16 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td> <label for="strictAllowedIpsInPeerConfig">Strict AllowedIPs in Peer Config</label></td>
+                                <td>
+                                    <p-checkbox id="strictAllowedIpsInPeerConfig" [binary]="true"
+                                        [(ngModel)]="editItem.strict_allowed_ips_in_peer_config" variant="filled"
+                                        pTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
+                                        tooltipPosition="top" />
+                                </td>
+                            </tr>
+                            
+                            <tr>
                                 <td colspan="2">
                                     <div style="width:100%;align-items: center; text-align: center;">
                                         <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
