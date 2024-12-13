@@ -114,4 +114,12 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-live-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
           provenance: false
-    
+
+  clean-untagged-images:
+    needs:
+      - build-base-dev
+      - build-base-live
+    permissions: write-all
+    secrets: inherit
+    uses:
+      ./.github/workflows/clean-ghcr-packages-untagged.yml
