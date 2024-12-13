@@ -2,15 +2,13 @@ ARG UNAME=pi
 ARG UID=1000
 ARG GID=1000
 ARG APP_VERSION="v0.0.0"
-ARG APP_ARCH=arm64
 
 # Stage: base-dev
-FROM ghcr.io/vijaygill/wg-ui-plus:base-dev-${APP_ARCH} AS base-dev
+FROM ghcr.io/vijaygill/wg-ui-plus:base-dev AS base-dev
 ARG UNAME
 ARG UID
 ARG GID
 ARG APP_VERSION
-ARG APP_ARCH
 
 # Stage: builder
 FROM base-dev AS builder
@@ -47,7 +45,7 @@ USER $UNAME
 WORKDIR /wg-ui-plus/src
 
 # Stage: base-live
-FROM ghcr.io/vijaygill/wg-ui-plus:base-live-${APP_ARCH} AS base-live
+FROM ghcr.io/vijaygill/wg-ui-plus:base-live AS base-live
 ARG UNAME
 ARG UID
 ARG GID

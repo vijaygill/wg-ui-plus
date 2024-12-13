@@ -23,26 +23,14 @@ jobs:
 
   build-base-dev:
     needs: init
-    strategy:
-      matrix:
-        runner: ["ubuntu-latest", "self-hosted"]
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - name: Generate build-args for docker image - amd64
-        id: gen_docker_build_args_amd64
-        if: matrix.runner == 'ubuntu-latest'
-        run: |
-          echo "APP_ARCH=amd64" >> $GITHUB_OUTPUT
-
-      - name: Generate build-args for docker image - arm64
-        id: gen_docker_build_args_arm64
-        if: matrix.runner == 'self-hosted'
-        run: |
-          echo "APP_ARCH=arm64" >> $GITHUB_OUTPUT
-
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,36 +46,21 @@ jobs:
         id: push_gh_hosted_base_dev
         uses: docker/build-push-action@v6
         with:
+          push: true
+          platforms: linux/amd64,linux/arm64
+          provenance: false
           context: .
           file: base.Dockerfile
           target: base-dev
           build-args: |
-            APP_VERSION=base-dev-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
-            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-dev-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
-          provenance: false
+            APP_VERSION=base-dev
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-dev
 
   build-base-live:
     needs: init
-    strategy:
-      matrix:
-        runner: ["ubuntu-latest", "self-hosted"]
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - name: Generate build-args for docker image - amd64
-        id: gen_docker_build_args_amd64
-        if: matrix.runner == 'ubuntu-latest'
-        run: |
-          echo "APP_ARCH=amd64" >> $GITHUB_OUTPUT
-
-      - name: Generate build-args for docker image - arm64
-        id: gen_docker_build_args_arm64
-        if: matrix.runner == 'self-hosted'
-        run: |
-          echo "APP_ARCH=arm64" >> $GITHUB_OUTPUT
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -109,10 +82,9 @@ jobs:
           file: base.Dockerfile
           target: base-live
           build-args: |
-            APP_VERSION=base-dev-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
-            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
+            APP_VERSION=base-live
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-live-${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base-live
           provenance: false
 
   clean-untagged-images:

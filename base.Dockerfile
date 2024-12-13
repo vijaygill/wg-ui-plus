@@ -11,11 +11,8 @@ ARG GID
 ARG APP_VERSION
 
 RUN apt-get update -y \
-#	&& apt-get upgrade -y \
+	&& apt-get upgrade -y \
 	&& apt-get install -y \
-#	python3 \
-#	python3-pip \
-#	python-is-python3 \
 	git \
 	npm \
 	sqlite3 wireguard wireguard-tools \
