@@ -1,18 +1,35 @@
+import base64
+from django.conf import settings
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
+from django.core.cache import cache
+from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes)
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION, IS_EMAIL_ENABLED
+
 from .models import Peer, PeerGroup, ServerConfiguration, Target
-from .serializers import (PeerGroupSerializer, PeerSerializer,
-                          PeerWithQrSerializer, ServerConfigurationSerializer,
-                          TargetHeirarchySerializer, TargetSerializer)
+from .serializers import (
+    PeerGroupSerializer,
+    PeerSerializer,
+    PeerWithQrSerializer,
+    ServerConfigurationSerializer,
+    TargetHeirarchySerializer,
+    TargetSerializer,
+)
+
+from .server_helper import get_application_details
 from .wireguardhelper import WireGuardHelper
 
 
@@ -22,7 +39,11 @@ class PeerViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action == "retrieve" or self.action == "update" or self.action == "create":
+        if (
+            self.action == "retrieve"
+            or self.action == "update"
+            or self.action == "create"
+        ):
             return PeerWithQrSerializer
         return super().get_serializer_class()
 
@@ -44,10 +65,15 @@ class TargetViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
 
-class ServerConfigurationViewSet(viewsets.ModelViewSet):
+class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
     queryset = ServerConfiguration.objects.all()
     serializer_class = ServerConfigurationSerializer
     permission_classes = (IsAuthenticated,)
+
+    def perform_update(self, serializer):
+        serializer.save()
+        super().perform_update(serializer)
+        cache.delete(CACHE_KEY_APP_LIVE_VERSION)
 
 
 @api_view(["GET"])
@@ -94,7 +120,10 @@ def wireguard_get_configuration(request):
     wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
     peers = Peer.objects.all()
-    res = wg.get_wireguard_configuration(serverConfiguration=sc, peers=peers)
+    peer_groups = PeerGroup.objects.all()
+    res = wg.get_wireguard_configuration(
+        serverConfiguration=sc, peer_groups=peer_groups, peers=peers
+    )
     return Response(res)
 
 
@@ -207,7 +236,7 @@ def auth_change_password(request):
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
-def wireguard_get_server_status(request):
+def get_server_status(request):
     peers = Peer.objects.all()
     peer_groups = PeerGroup.objects.all()
     targets = Target.objects.all()
@@ -223,4 +252,55 @@ def wireguard_get_server_status(request):
     )
     wg = WireGuardHelper()
     res = wg.get_server_status(last_db_change_datetime=last_changed_datetime)
+    res["application_details"] = get_application_details()
     return Response(res)
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def send_peer_email(request):
+    try:
+        peer_name = request.data["name"]
+        tunnel_qr_file = "tunnel.png"
+        tunnel_conf_file = "tunnel.conf"
+        subject = f"Tunnel configuration sent from wg-ui-plus for {peer_name}"
+        body = f"""
+The attached files are sent from {APP_NAME} for the peer {peer_name}.
+Keep them safe.
+
+Notify the administrator if you think the files have been compromised.
+You will get new files generated and sent to you.
+
+Do not share these files with anyone.
+
+Do not use the files on multiple devices.
+Get separate set of files generated for each device.
+
+How to use {tunnel_qr_file}:
+    This file is useful for the devices which can scan QR code.
+    Install WireGuard client on the desired device.
+    While adding a new tunnel, if the client allows scanning QR code,
+    just point the camera to the attached QR image.
+
+How to use {tunnel_conf_file}:
+    This is used on the devices where the optiuon of scanning QR code is not available.
+    Install WireGuard client on the desired device.
+    While adding a new tunnel, add the tunnel by importing the file '{tunnel_conf_file}'.
+
+"""
+        if not IS_EMAIL_ENABLED:
+            raise Exception(("e-Mail is not enabled on the server."))
+
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [request.data["email_address"]]
+        email = EmailMessage(
+            subject=subject, body=body, from_email=from_email, to=recipient_list
+        )
+        email.attach(tunnel_qr_file, base64.b64decode(request.data["qr"]), "image/png")
+        email.attach(tunnel_conf_file, request.data["configuration"], "text/plain")
+        email.send(fail_silently=False)
+        return Response({"message": "Email sent successfully!"})
+    except Exception as e:
+        message = e.args[0] if e.args else ""
+        return Response({"message": "Sending Email failed." + message}, status=500)

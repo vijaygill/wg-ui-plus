@@ -3,57 +3,26 @@ import os
 import glob
 import datetime
 import ipaddress
-from functools import wraps
-import codecs
-from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
-from cryptography.hazmat.primitives import serialization
 import subprocess
 import re
-import logging
+import socket
+import platform
 
 from django.template import Template, Context
 from django.utils import timezone
 
-from .common import PEER_GROUP_EVERYONE_NAME, IP_ADDRESS_INTERNET
+from .common import (
+    PEER_GROUP_EVERYONE_NAME,
+    IP_ADDRESS_INTERNET,
+    MAX_LAST_HANDSHAKE_SECONDS,
+    logged,
+    logger,
+)
 from .util import (
     ensure_folder_exists_for_file,
     get_target_ip_address_parts,
+    is_network_address,
 )
-
-logger = logging.getLogger(__name__)
-
-MAX_LAST_HANDSHAKE_SECONDS = 120
-
-def logged(func):
-    @wraps(func)
-    def logger_func(*args, **kwargs):
-        func_name = func.__name__
-        try:
-            logger.debug(f"{func_name}: start")
-            res = func(*args, **kwargs)
-            return res
-        finally:
-            logger.debug(f"{func_name}: end")
-
-    return logger_func
-
-
-def generate_keys():
-    # generate private key
-    private_key = X25519PrivateKey.generate()
-    private_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PrivateFormat.Raw,
-        encryption_algorithm=serialization.NoEncryption(),
-    )
-    key_private = codecs.encode(private_bytes, "base64").decode("utf8").strip()
-
-    # derive public key
-    public_bytes = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
-    )
-    key_public = codecs.encode(public_bytes, "base64").decode("utf8").strip()
-    return (key_public, key_private)
 
 
 class WireGuardHelper(object):
@@ -65,11 +34,11 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def get_wireguard_configuration_for_server(self, serverConfiguration):
+    def get_wireguard_configuration_for_server(self, serverConfiguration, peers):
         template = """
 # Settings for Server.
 [Interface]
-Address = {{serverConfiguration.network_address}}
+Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
@@ -77,12 +46,19 @@ PostUp = {{serverConfiguration.script_path_post_up}}
 PostDown = {{serverConfiguration.script_path_post_down}}
 
 """
-        context = Context({"serverConfiguration": serverConfiguration})
+        context = Context(
+            {
+                "serverConfiguration": serverConfiguration,
+                "server_ip_address": serverConfiguration.ip_address,
+            }
+        )
         res = self.render_template(template, context)
         return res
 
     @logged
-    def get_wireguard_configurations_for_peer(self, serverConfiguration, peer):
+    def get_wireguard_configurations_for_peer(
+        self, serverConfiguration, peer_groups, peer
+    ):
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
@@ -97,6 +73,70 @@ PersistentKeepalive = 25
         context = Context({"peer": peer})
         peer_config_server_side = self.render_template(template, context)
 
+        peer_group_everyone = [
+            x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
+        ]
+
+        allowed_ips = [IP_ADDRESS_INTERNET]
+
+        if serverConfiguration.strict_allowed_ips_in_peer_config:
+            allowed_ips = []
+
+            allowed_ips_everyone = []
+            if peer_group_everyone:
+                allowed_ips_everyone = [
+                    x.ip_address for x in peer_group_everyone[0].targets.all()
+                ]
+
+            allowed_ips_by_peer_groups = [
+                p.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for p in pg.peers.all()
+                if p.ip_address and p.ip_address != peer.ip_address
+            ]
+
+            allowed_ips_by_targets = [
+                target.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for target in pg.targets.all()
+                if target.ip_address
+            ]
+
+            allowed_ips = (
+                allowed_ips_everyone
+                + allowed_ips_by_peer_groups
+                + allowed_ips_by_targets
+            )
+
+            # # add upstream DNS server to allowed IP's.
+            # if serverConfiguration.upstream_dns_ip_address:
+            #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+
+            # add VPN server's ip address also.
+            if serverConfiguration.network_address:
+                allowed_ips += [serverConfiguration.ip_address]
+
+        # if 0.0.0.0/0 is in the list, no need to have anything else.
+        if IP_ADDRESS_INTERNET in allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        allowed_ips = list(set(allowed_ips))
+
+        # if there is no allowedIPs, default to catch-all
+        if not allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        logger.debug(
+            f"serverConfiguration.strict_allowed_ips_in_peer_config: {serverConfiguration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
+        )
+
+        allowed_ips = [is_network_address(x) for x in allowed_ips]
+        allowed_ips = [x[2] for x in allowed_ips]
+        allowed_ips.sort()
+        allowed_ips = [str(x) for x in allowed_ips]
+
+        allowed_ips = ",".join(allowed_ips)
+
         template = """
 # Settings for this client.
 [Interface]
@@ -109,7 +149,7 @@ DNS = {{serverConfiguration.upstream_dns_ip_address}}
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
 Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = {{allowed_ips}}
 """
         peer_port = peer.port if peer.port else serverConfiguration.peer_default_port
         context = Context(
@@ -117,6 +157,7 @@ AllowedIPs = 0.0.0.0/0
                 "serverConfiguration": serverConfiguration,
                 "peer": peer,
                 "peer_port": peer_port,
+                "allowed_ips": allowed_ips,
             }
         )
         peer_config_client_side = self.render_template(template, context)
@@ -125,16 +166,20 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def get_wireguard_configuration(self, serverConfiguration, peers):
+    def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
-        server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
+        server_config = self.get_wireguard_configuration_for_server(
+            serverConfiguration, peers
+        )
 
         # now generate configs for peers
         # both for the server side and client side
         peer_configs = []
         for peer in peers:
             peer_config_server_side, peer_config_client_side = (
-                self.get_wireguard_configurations_for_peer(serverConfiguration, peer)
+                self.get_wireguard_configurations_for_peer(
+                    serverConfiguration, peer_groups, peer
+                )
             )
             server_config += peer_config_server_side
             peer_configs += [peer_config_client_side]
@@ -204,14 +249,17 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = sorted([
-                    (
-                        x.name,
-                        x.disabled,
-                        x.ip_address,
-                    )
-                    for x in peer_group.peers.all()
-                ], key=lambda x: x[0])
+                peer_infos = sorted(
+                    [
+                        (
+                            x.name,
+                            x.disabled,
+                            x.ip_address,
+                        )
+                        for x in peer_group.peers.all()
+                    ],
+                    key=lambda x: x[0],
+                )
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -243,14 +291,17 @@ AllowedIPs = 0.0.0.0/0
                     target_mask,
                     errors,
                 ) = get_target_ip_address_parts(target.ip_address)
-                peer_infos = sorted([
-                    (
-                        x.name,
-                        x.disabled,
-                        x.ip_address,
-                    )
-                    for x in peers.all()
-                ], key=lambda x: x[0])
+                peer_infos = sorted(
+                    [
+                        (
+                            x.name,
+                            x.disabled,
+                            x.ip_address,
+                        )
+                        for x in peers.all()
+                    ],
+                    key=lambda x: x[0],
+                )
                 target_infos += [
                     (
                         self.get_chain_name(target),
@@ -267,29 +318,33 @@ AllowedIPs = 0.0.0.0/0
                 ]
 
         # filter out disabled targets/peer-groups/peers
-        target_infos = [(
-            chain_name,
-            target_name,
-            target_disabled,
-            target_is_network_address,
-            target_ip_address,
-            target_network_address,
-            target_port,
-            peer_group_name,
-            peer_group_disabled,
-            peer_infos,
-        ) for (
-            chain_name,
-            target_name,
-            target_disabled,
-            target_is_network_address,
-            target_ip_address,
-            target_network_address,
-            target_port,
-            peer_group_name,
-            peer_group_disabled,
-            peer_infos,
-        ) in target_infos if not target_disabled and not peer_group_disabled]
+        target_infos = [
+            (
+                chain_name,
+                target_name,
+                target_disabled,
+                target_is_network_address,
+                target_ip_address,
+                target_network_address,
+                target_port,
+                peer_group_name,
+                peer_group_disabled,
+                peer_infos,
+            )
+            for (
+                chain_name,
+                target_name,
+                target_disabled,
+                target_is_network_address,
+                target_ip_address,
+                target_network_address,
+                target_port,
+                peer_group_name,
+                peer_group_disabled,
+                peer_infos,
+            ) in target_infos
+            if not target_disabled and not peer_group_disabled
+        ]
 
         # sort items
         target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
@@ -315,6 +370,10 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                if str(target_ip_address) == str(serverConfiguration.ip_address):
+                    # no need to add rule for peer => server
+                    # as all packets have to go via server anyway
+                    continue
                 if peer_disabled:
                     post_up.append(
                         f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
@@ -395,7 +454,9 @@ AllowedIPs = 0.0.0.0/0
                     f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
-        post_up.append('iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"')
+        post_up.append(
+            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"'
+        )
 
         post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
 
@@ -421,7 +482,9 @@ AllowedIPs = 0.0.0.0/0
         # first save wg0.conf
         ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
         configs = self.get_wireguard_configuration(
-            serverConfiguration=serverConfiguration, peers=peers
+            serverConfiguration=serverConfiguration,
+            peer_groups=peer_groups,
+            peers=peers,
         )
         with open(serverConfiguration.wireguard_config_path, "w") as f:
             server_config = configs["server_configuration"]
@@ -514,25 +577,45 @@ AllowedIPs = 0.0.0.0/0
             ]
             peer = peers_filtered[0] if peers_filtered else None
             if peer:
+                is_inactive = False
                 is_connected = False
                 last_handshake = None
                 is_disabled = peer.disabled
                 peer_item["peer_name"] = peer.name
-                peer_item["status"] = 'Disabled' if is_disabled else peer_item["status"]
+                peer_item["status"] = "Disabled" if is_disabled else peer_item["status"]
                 if not is_disabled:
-                    is_connected = True if 'end_point_ip' in peer_data.keys() and peer_data["end_point_ip"] else False
+                    is_connected = (
+                        True
+                        if "end_point_ip" in peer_data.keys()
+                        and peer_data["end_point_ip"]
+                        else False
+                    )
                     if is_connected and ("latest_handshake" in peer_data.keys()):
-                        last_handshake = datetime.datetime.fromtimestamp(int(peer_data["latest_handshake"])).astimezone(tz=dt.tzinfo)
+                        last_handshake = datetime.datetime.fromtimestamp(
+                            int(peer_data["latest_handshake"])
+                        ).astimezone(tz=dt.tzinfo)
                         timediff = dt - last_handshake
-                        is_connected = timediff.total_seconds() <= MAX_LAST_HANDSHAKE_SECONDS
-                    peer_item["status"] = 'Connected' if is_connected else peer_item["status"]
+                        is_inactive = (
+                            timediff.total_seconds() >= MAX_LAST_HANDSHAKE_SECONDS
+                        )
                     if is_connected:
-                        peer_item["latest_handshake"] = last_handshake.strftime("%Y-%m-%d %H:%M:%S") if last_handshake else None
+                        peer_item["latest_handshake"] = (
+                            last_handshake.strftime("%Y-%m-%d %H:%M:%S")
+                            if last_handshake
+                            else None
+                        )
                         peer_item["end_point_ip"] = peer_data["end_point_ip"]
-                        if 'transfer_rx' in peer_data.keys():
+                        if "transfer_rx" in peer_data.keys():
                             peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
-                        if 'transfer_tx' in peer_data.keys():
+                        if "transfer_tx" in peer_data.keys():
                             peer_item["transfer_tx"] = int(peer_data["transfer_tx"])
+                    peer_item["status"] = (
+                        "Inactive"
+                        if is_inactive
+                        else "Connected" if is_connected else peer_item["status"]
+                    )
+                peer_item["is_connected"] = is_connected
+                peer_item["is_inactive"] = is_inactive
             res["items"] += [peer_item]
         return res
 
@@ -551,6 +634,12 @@ AllowedIPs = 0.0.0.0/0
     def get_server_status(self, last_db_change_datetime):
         res = {}
         res["status"] = "ok"
+        res["hostname"] = socket.gethostname()
+        res["platform"] = platform.platform()
+        res["platform_version"] = platform.version()
+        res["platform_system"] = platform.system()
+        res["platform_processor"] = platform.processor()
+        res["platform_architecture"] = platform.machine()
         res["need_regenerate_files"] = False
         files = glob.glob("/config/wireguard/**/*", recursive=True)
         last_file_change_timestamps = [os.path.getmtime(x) for x in files]

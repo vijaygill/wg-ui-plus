@@ -2,13 +2,36 @@ import ipaddress
 import os
 import re
 import traceback
+import codecs
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+
+from .common import logger
 
 
 def ensure_folder_exists_for_file(filepath):
     dir = os.path.dirname(filepath)
     if not os.path.exists(dir):
         os.makedirs(dir)
-        # logger.warning(f"Directory was missing. Created: {dir}")
+        logger.debug(f"Directory was missing. Created: {dir}")
+
+
+def generate_keys():
+    # generate private key
+    private_key = X25519PrivateKey.generate()
+    private_bytes = private_key.private_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PrivateFormat.Raw,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    key_private = codecs.encode(private_bytes, "base64").decode("utf8").strip()
+
+    # derive public key
+    public_bytes = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
+    key_public = codecs.encode(public_bytes, "base64").decode("utf8").strip()
+    return (key_public, key_private)
 
 
 def is_single_address(value):
@@ -18,7 +41,7 @@ def is_single_address(value):
         if isinstance(value, (ipaddress.IPv4Interface)):
             ip = value
         res = ip.network.prefixlen == 32
-    except:
+    except Exception:
         res = False
     return res
 
@@ -33,7 +56,7 @@ def is_network_address(addr):
             int(ip.ip) == int(ip.network.network_address) and ip.network.prefixlen < 32
         )
         res = (res, ip.ip, ip.network)
-    except:
+    except Exception:
         pass
     return res
 
@@ -72,7 +95,7 @@ def get_target_ip_address_parts(value):
                             target_is_network_address,
                             target_ip_address,
                             target_network_address,
-                        ) = is_network_address(f'{ip}/{mask}')
+                        ) = is_network_address(f"{ip}/{mask}")
                         res = (
                             mask_ok,
                             target_is_network_address,
@@ -81,7 +104,7 @@ def get_target_ip_address_parts(value):
                             None,
                             mask,
                         )
-                except:
+                except Exception:
                     errors.append(f"Invalid mask {mask}")
             elif port:
                 ports = []
@@ -94,7 +117,7 @@ def get_target_ip_address_parts(value):
                             ports_ok = False
                         else:
                             ports.append(pp)
-                    except:
+                    except Exception:
                         errors.append(f"Invalid port: {p}")
                         ports_ok = False
                 if ports_ok and ports:
@@ -121,10 +144,30 @@ def get_target_ip_address_parts(value):
                         None,
                     )
             break
-    except:
+    except Exception:
         print(traceback.format_exc())
         pass
     r1, r2, r3, r4, r5, r6 = res
     errors = ", ".join(errors)
     res = (r1, r2, r3, r4, r5, r6, errors)
+    return res
+
+
+def get_next_free_ip_address(network_address, existing_ip_addresses, for_server=False):
+    sc_intf = ipaddress.ip_interface(network_address)
+    ip_address_pool = [x for x in sc_intf.network.hosts()]
+    ip_address_pool.sort()
+    ip_address_pool = [str(x) for x in ip_address_pool]
+    if existing_ip_addresses:
+        ip_addresses_to_exclude = [
+            str(ipaddress.ip_interface(p).ip) for p in existing_ip_addresses
+        ]
+        ip_address_pool = [
+            x for x in ip_address_pool if x not in ip_addresses_to_exclude
+        ]
+    res = ip_address_pool[0] if for_server else ip_address_pool[1]
+    logger.debug(f"ip_address_pool         : {ip_address_pool}")
+    logger.debug(f"existing_ip_addresses   : {existing_ip_addresses}")
+    logger.debug(f"for_server              : {for_server}")
+    logger.debug(f"get_next_free_ip_address: {res}")
     return res

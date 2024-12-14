@@ -150,6 +150,19 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", None)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", None)
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
+EMAIL_PORT = os.environ.get("EMAIL_PORT", None)
+EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", None)
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", None)
+
+
+LOGGING_DEFAULT_LEVEL = "WARN"
+LOGGING_DEFAULT_LEVEL_SERVER = "WARN"
+LOGGING_DEFAULT_LEVEL_DB = "WARN"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -169,19 +182,19 @@ LOGGING = {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL),
         },
         "django.server": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL_SERVER),
         },
         "django.db.backends": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL_DB),
         },
     },
     "formatters": {

@@ -13,6 +13,7 @@ export class WebapiService {
     private urlGetLicense = '/api/v1/license';
     private urlPeerGroup = '/api/v1/data/peer_group/';
     private urlPeer = '/api/v1/data/peer/';
+    private urlPeerSendEmail = '/api/v1/data/peer/send_peer_email';
     private urlTarget = '/api/v1/data/target/';
     private urlServerConfiguration = '/api/v1/data/server_configuration/';
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
@@ -88,6 +89,14 @@ export class WebapiService {
 
     deletePeer(item: Peer): Observable<Peer> {
         var res = this.http.delete<Peer>(this.urlPeer + item.id + '/');
+        res = res.pipe(tap(() => {
+            this.checkServerStatus();
+        }));
+        return res;
+    }
+
+    sendConfigurationByEmail(item: Peer): Observable<Peer> {
+        var res = this.http.post<Peer>(this.urlPeerSendEmail, item);
         res = res.pipe(tap(() => {
             this.checkServerStatus();
         }));

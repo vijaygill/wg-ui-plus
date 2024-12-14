@@ -4,8 +4,7 @@
             <td><label for="peerGroupName">Name</label></td>
             <td>
                 <input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
-                    [disabled]="!editItem.allow_modify_self"
-                    pTooltip="Name of the Peer-Group." tooltipPosition="top"
+                    [disabled]="!editItem.allow_modify_self" pTooltip="Name of the Peer-Group." tooltipPosition="top"
                     pAutoFocus [autofocus]="true" />
                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                 </app-validation-errors-display>
@@ -14,8 +13,7 @@
         <tr>
             <td> <label for="peerGroupDescription">Description</label></td>
             <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
-                    [disabled]="!editItem.allow_modify_self"
-                    pTooltip="Some helpful description."
+                    [disabled]="!editItem.allow_modify_self" pTooltip="Some helpful description."
                     tooltipPosition="top" />
                 <app-validation-errors-display field="description"
                     [validationResult]="validationResult"></app-validation-errors-display>
@@ -40,7 +38,7 @@
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="1400px" [disabled]="!editItem.allow_modify_self" 
+                    breakpoint="900px" [disabled]="!editItem.allow_modify_self"
                     pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
                     <ng-template let-peerGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
@@ -67,7 +65,7 @@
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="1400px" *ngIf="editItem.allow_modify_targets"
+                    breakpoint="900px" *ngIf="editItem.allow_modify_targets"
                     pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
                     <ng-template let-targetGroupLink pTemplate="item">
                         <div class="flex flex-wrap p-2 align-items-center gap-3">
@@ -99,7 +97,8 @@
                         &nbsp;
                     </span>
                     <span *ngIf="editItem.id && editItem.allow_modify_self">
-                        <p-button icon="pi pi-times" label="Delete" severity="danger" (onClick)="delete($event)"></p-button>
+                        <p-button icon="pi pi-times" label="Delete" severity="danger"
+                            (onClick)="delete($event)"></p-button>
                     </span>
                 </div>
             </td>

@@ -6,26 +6,44 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard). So far, I like this combo and though this is WIP, I have already replaced my lscr.io/linuxserver/wireguard based setup with this project.
+I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
 
-This is going to grow more in coming times. So keep an eye on this project. Use it and raise issues and/or PR's to make it better.
+Use it and raise issues and/or PR's to make it better.
 
 ## Features
 * Easy management of clients (a.k.a Peers).
   * Clients (Peers) are managed in groups for easy granting/revoking of access.
 * Allows access to various resources (a.k.a Targets - a target can be a host or a network)
   * Allows scenarios like
-    * Some users can access internet but nothing else.
+    * Some users can access internet (via the VPN) but nothing else.
     * Some users can access only SSH on a host and nothing else.
     * Some users can access only samba shares on NAS.
     * Some users can access internet and every machine in the LAN.
-    * Some users can access only the LAN.
+    * Some users can access only the hosts in the LAN.
 * Hides complexity of managing IPTables rules.
 * Uses WireGuard (tm).
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
-* Distributed as docker image. So updates are very easy to perform. 
+* Distributed as docker image. So updates are very easy to perform.
+* Can send tunnel information (both QR code image and .conf file) via email if email is snabled (see below).
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
+
+Functionality implemented so far
+- [x] Manage targets - Add/Edit/Disable.
+  - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
+- [x] Manage Peers - Add/Edit/Disable.
+  - [x] Add/Remove Peers from Peer-Groups, thus allowing/denying access to the targets a Peer-Group is associated with.
+- [x] Manage Peer-Groups - Add/Edit/Disable
+  - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
+- [x] Live Dashboard
+  - [x] Show current status of Peers.
+  - [x] Show IPTables rules along with the counters for various chains.
+- [x] Authentication
+- [x] Configuration of Client Peer
+  - [x] Display QR-code for scanning using camera on the client device.
+  - [x] Download and share ".conf" file with the client device.
+  - [x] Ability to send configuration files for peers by email by single click.
+
 
 ## Requirements
 You need to have docker setup and running on your machine where the VPN needs to be run.
@@ -39,7 +57,7 @@ You can set up your own VPN in a few minutes by following the following steps:
 2. Using the port forwarding feature of your router, forward the port 1196 to the port 51820 and use internal IP address as the target machine.
 3. Now start the WireGuard UI Plus using the following command
    ```
-   mkdir -p ./config ./data && chmod og+w config data && docker run -it --rm  --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus:dev
+   mkdir -p ./config ./data && chmod og+w config data && docker run -it --rm  --cap-add NET_ADMIN --cap-add SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --sysctl net.ipv4.ip_forward=1 -v "${PWD}/data":/data -v "${PWD}/config":/config -v /lib/modules:/lib/modules:ro -v /tmp:/tmp -p "1196:51820/udp" -p "8000:8000" ghcr.io/vijaygill/wg-ui-plus
    ```
 4. Point your browser to the address "http://internal_ip_address:8000".
 5. In the server configuration page
@@ -109,23 +127,22 @@ Now let's take an example of your NAS which has Samba server running (port 139 a
 7. Now you can add tunnel on your desired device by going to Peer page again and clicking on "Edit" button to show the QR code (or download .conf file).
 8. That's it. Your client should be able to access the samba shares on NAS.
 
+## Sending tunnel information using email
+The ".conf" file and the QR code can be sent to the peers via email. If the email address is entered in the Peer information, user can send the files by just click of a button.
+But for this, a few more parameters need to be passed as environment variables to the docker container.
+I tested it with GMail account (I created the password using App Passwords feature in GMail).
+ * EMAIL_HOST
+ * EMAIL_HOST_USER
+ * EMAIL_HOST_PASSWORD
+ * EMAIL_PORT
+ * EMAIL_USE_SSL or EMAIL_USE_TLS
 
-## Features
-Functionality implemented/yet to be implemented so far (getting ready for first release)
-- [x] Manage targets - Add/Edit/Disable.
-  - [x] Add/Remove Peer-Groups to/from Target thus allowing/denying access.
-- [x] Manage Peers - Add/Edit/Disable.
-  - [x] Add/Remove Peers from Peer-Groups, thus allowing/denying access to the targets a Peer-Group is associated with.
-- [x] Manage Peer-Groups - Add/Edit/Disable
-  - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
-- [x] Live Dashboard
-  - [x] Show current status of Peers.
-  - [x] Show IPTables rules along with the counters for various chains.
-- [x] Authentication
-- [x] Configuration of Client Peer
-  - [x] Display QR-code for scanning using camera on the client device.
-  - [x] Download and share ".conf" file with the client device.
-  - [ ] Ability to send configuration files for peers by email by single click.
+In my case
+ * EMAIL_HOST=smtp.gmail.com
+ * EMAIL_HOST_USER=my_gmail_address
+ * EMAIL_HOST_PASSWORD=my_password_genrated_in_gmail_app_passwords
+ * EMAIL_PORT=587
+ * EMAIL_USE_TLS=True
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers

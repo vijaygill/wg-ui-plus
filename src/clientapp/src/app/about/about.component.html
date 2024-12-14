@@ -1,18 +1,17 @@
-<h2>WireGuard UI Plus!</h2>
-<p>
-    This app allows you to have better control over WireGuard &trade; and IP Tables.
-</p>
-<div style="max-height: 480px; overflow-y: scroll; overflow-x: auto;">
-    <pre style="white-space:pre-wrap;">
-        {{license.license}}
-        </pre>
-</div>
-<p-divider />
-<h4>
-    Acknowledments
-</h4>
-<ul>
-    <li>"WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld.
-        <a href=" https://www.wireguard.com/" target="_blank">Link</a>
-    </li>
-</ul>
+<p-card header="WireGuard UI Plus!">
+    <p-tabView>
+        <p-tabPanel header="License">
+            <pre style="white-space:pre-wrap;">
+                {{license.license}}
+                </pre>
+        </p-tabPanel>
+        <p-tabPanel header="Acknowledments">
+            <ul>
+                <li>"WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld.
+                    <a href=" https://www.wireguard.com/" target="_blank">Link</a>
+                </li>
+            </ul>
+        </p-tabPanel>
+    </p-tabView>
+
+</p-card>

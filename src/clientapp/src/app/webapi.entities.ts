@@ -21,6 +21,7 @@ export interface Entity {
 export interface Peer extends Entity {
     name: string;
     description: string;
+    email_address: string;
     ip_address: string;
     port: number;
     disabled: boolean;
@@ -67,6 +68,7 @@ export interface Target extends Entity {
 export interface ServerConfiguration {
     id: number;
     network_address: string;
+    ip_address: string;
     host_name_external: string;
     port_internal: number;
     port_external: number;
@@ -78,6 +80,8 @@ export interface ServerConfiguration {
     private_key: string;
     peer_default_port: number;
     upstream_dns_ip_address: string;
+    allow_check_updates: boolean;
+    strict_allowed_ips_in_peer_config: boolean;
 }
 
 export interface WireguardConfiguration {
@@ -125,6 +129,14 @@ export interface LicenseInfo {
     license: string;
 }
 
+export interface ApplicationDetails {
+    current_time: Date;
+    latest_live_version: string;
+    current_version: string;
+    allow_allow_check_updates: boolean;
+    is_email_enabled: boolean;
+}
+
 export interface IpTablesLog {
     status: string;
     datetime: string;
@@ -134,9 +146,16 @@ export interface IpTablesLog {
 export interface ServerStatus {
     status: string;
     message: string;
+    hostname: string;
+    platform: string;
+    platform_version: string;
+    platform_system: string;
+    platform_processor: string;
+    platform_architecture: string;
     need_regenerate_files: boolean;
     last_db_change_datetime: Date;
     last_file_change_datetime: Date;
+    application_details: ApplicationDetails;
 }
 
 export interface PlatformInformation {

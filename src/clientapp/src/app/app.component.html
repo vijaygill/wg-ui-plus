@@ -1,14 +1,20 @@
+<p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <div style="display: flex;flex-direction: row;justify-content:flex-end;">
-      <div style="flex-grow: 1;">
-        <h3>WireGuard UI Plus!</h3>
-        <h5>Run and manage your WireGuard &trade; VPN in one UI.</h5>
-      </div>
-      <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
-        <app-sidepanel [popup]="true"></app-sidepanel>
-      </div>
-    </div>
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+          <div style="flex-grow: 1;">
+            <h4>WireGuard UI Plus!</h4>
+            <h6>Run &amp; manage your WireGuard &trade; VPN in one UI.</h6>
+          </div>
+          <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
+            <app-sidepanel [popup]="true"></app-sidepanel>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
     <div>
       <div *ngIf="serverStatus.need_regenerate_files && userSessionInfo.is_logged_in">
         <p-messages severity="warn">
@@ -24,21 +30,34 @@
           </ng-template>
         </p-messages>
       </div>
-      <p-messages />
     </div>
   </div>
   <div class="item item-main" style="display: flex;flex-direction: row;">
     <div *ngIf="!platformInformation.is_small_screen">
       <app-sidepanel></app-sidepanel>
     </div>
-    <div style="width: 100%;">
-      <div>
+    <div style="width: 100%;max-width: 100%; overflow: scroll;">
         <router-outlet />
-      </div>
     </div>
   </div>
   <div class="item item-footer">
-    <span>
-      (c) WireGuard UI Plus 2024.</span>
+    <small>
+      <span>
+        (c) <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
+      </span>
+      <br />
+      <span *ngIf="serverStatus.hostname">Host: {{serverStatus.hostname}}</span>
+      &nbsp;
+      <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
+      &nbsp;
+      <span *ngIf="serverStatus.application_details">Running Version:
+        {{serverStatus.application_details.current_version}}</span>
+      <span
+        *ngIf="serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)">
+        &nbsp;
+        Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
+          {{serverStatus.application_details.latest_live_version}}</a>
+      </span>
+    </small>
   </div>
 </div>

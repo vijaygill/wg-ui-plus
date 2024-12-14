@@ -7,7 +7,7 @@ import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { MessageService, PrimeNGConfig } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
-import { Subscription, interval } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { WebapiService } from './webapi.service';
 import { LoginService } from './login-service';
 import { PlatformInformationService } from './platform-information.service';
@@ -24,7 +24,10 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 export class AppComponent implements OnInit {
   title = 'WireGuard UI Plus';
 
-  serverStatus: ServerStatus = { need_regenerate_files: false, } as ServerStatus;
+  serverStatus: ServerStatus = {
+    need_regenerate_files: false,
+    application_details: { current_version: '', latest_live_version: '', },
+  } as ServerStatus;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
 
   timerSubscription !: Subscription;
@@ -58,6 +61,7 @@ export class AppComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.webapiService.checkServerStatus();
     });
+
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
       this.messageService.clear();
@@ -73,6 +77,7 @@ export class AppComponent implements OnInit {
         });
       }
     });
+
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
     });

@@ -1,12 +1,23 @@
 #!/bin/bash
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
+DOCKER_ENV_FILE="${BASE_DIR}/docker-env.txt"
+DOCKER_ENV_DEV_FILE="${BASE_DIR}/docker-env-dev.txt"
+
 ARG_UNAME=$(whoami)
 ARG_UID=$(id -u)
 ARG_GID=$(id -g)
+APP_VERSION="dev-$(git rev-parse HEAD)"
 
 DOCKER_RUN_CMD=""
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD}docker run -it --rm "
+if test -f "${DOCKER_ENV_DEV_FILE}"
+then
+    DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --env-file \"${DOCKER_ENV_DEV_FILE}\""
+else
+    DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --env-file \"${DOCKER_ENV_FILE}\""
+fi
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -e APP_VERSION=${APP_VERSION}"
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add CAP_NET_ADMIN "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add NET_ADMIN "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --cap-add SYS_MODULE "
