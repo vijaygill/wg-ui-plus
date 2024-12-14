@@ -1,10 +1,13 @@
+import datetime
 import ipaddress
 
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from .util import (
+    logger,
     generate_keys,
+    get_next_free_ip_address,
     get_target_ip_address_parts,
     is_network_address,
     is_single_address,
@@ -129,18 +132,14 @@ class Peer(models.Model):
             self.port = sc.peer_default_port
         if not self.ip_address:
             peers = Peer.objects.all()
-            sc_intf = ipaddress.ip_interface(sc.network_address)
-            ip_address_pool = [x for x in sc_intf.network.hosts()]
-            if peers:
-                ip_addresses_to_exclude = [
-                    ipaddress.ip_interface(p.ip_address).ip
-                    for p in peers
-                    if p.ip_address
-                ]
-                ip_address_pool = [
-                    x for x in ip_address_pool if x not in ip_addresses_to_exclude
-                ]
-            self.ip_address = ip_address_pool[1]
+            existing_ip_addresses = (
+                [p.ip_address for p in peers if p.ip_address] if peers else []
+            )
+            existing_ip_addresses += [sc.ip_address]
+            self.ip_address = get_next_free_ip_address(
+                network_address=sc.network_address,
+                existing_ip_addresses=existing_ip_addresses,
+            )
         super().save(force_insert, force_update)
 
 
@@ -170,6 +169,7 @@ class Target(models.Model):
 
 class ServerConfiguration(models.Model):
     network_address = models.CharField(max_length=255, validators=[is_network_address])
+    ip_address = models.CharField(max_length=255, null=True, blank=True)
     host_name_external = models.CharField(max_length=255, null=False, blank=False)
     port_external = models.IntegerField(null=False)
     port_internal = models.IntegerField(null=False)
@@ -192,9 +192,24 @@ class ServerConfiguration(models.Model):
     private_key = models.CharField(max_length=255, null=True, blank=True)
     peer_default_port = models.IntegerField()
     allow_check_updates = models.BooleanField(null=True, default=False)
-    last_changed_datetime = models.DateTimeField(
-        auto_now=True,
-    )
+    strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
+    last_changed_datetime = models.DateTimeField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        saved_state_fields = [
+            "host_name_external",
+            "port_external",
+            "port_internal",
+            "upstream_dns_ip_address",
+            "network_address",
+            "ip_address",
+            "strict_allowed_ips_in_peer_config",
+        ]
+        saved_state = {}
+        for saved_state_field in saved_state_fields:
+            saved_state[saved_state_field] = getattr(self, saved_state_field)
+        self.__saved_state = saved_state
 
     def __str__(self):
         return f"{self.host_name_external} - {self.port_external}"
@@ -204,4 +219,42 @@ class ServerConfiguration(models.Model):
             public_key, private_key = generate_keys()
             self.public_key = public_key
             self.private_key = private_key
+
+        saved_state = self.__saved_state
+        fields_changed = []
+        fields_changed_all = "*all*"
+        if saved_state:
+            for saved_state_field in saved_state.keys():
+                if saved_state[saved_state_field] != getattr(self, saved_state_field):
+                    fields_changed += [saved_state_field]
+        else:
+            fields_changed = [fields_changed_all]
+
+        logger.debug(f"ServerConfiguration: fields_changed: {fields_changed}")
+
+        if (
+            ("network_address" in fields_changed)
+            or (fields_changed_all in fields_changed)
+            and self.network_address
+        ):
+            peers = Peer.objects.all()
+            existing_ip_addresses = (
+                [p.ip_address for p in peers if p.ip_address] if peers else []
+            )
+            self.ip_address = get_next_free_ip_address(
+                network_address=self.network_address,
+                existing_ip_addresses=existing_ip_addresses,
+                for_server=True,
+            )
+
+        if (not self.last_changed_datetime) or fields_changed:
+            self.last_changed_datetime = datetime.datetime.now(datetime.timezone.utc)
+
         super().save(force_insert, force_update)
+        if ("network_address" in fields_changed) or (
+            fields_changed_all in fields_changed
+        ):
+            peers = Peer.objects.all()
+            for peer in peers:
+                peer.ip_address = None  # this will force updating of IP address again
+                peer.save()

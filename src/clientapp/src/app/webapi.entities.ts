@@ -68,6 +68,7 @@ export interface Target extends Entity {
 export interface ServerConfiguration {
     id: number;
     network_address: string;
+    ip_address: string;
     host_name_external: string;
     port_internal: number;
     port_external: number;
@@ -80,6 +81,7 @@ export interface ServerConfiguration {
     peer_default_port: number;
     upstream_dns_ip_address: string;
     allow_check_updates: boolean;
+    strict_allowed_ips_in_peer_config: boolean;
 }
 
 export interface WireguardConfiguration {

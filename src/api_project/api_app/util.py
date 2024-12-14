@@ -151,3 +151,23 @@ def get_target_ip_address_parts(value):
     errors = ", ".join(errors)
     res = (r1, r2, r3, r4, r5, r6, errors)
     return res
+
+
+def get_next_free_ip_address(network_address, existing_ip_addresses, for_server=False):
+    sc_intf = ipaddress.ip_interface(network_address)
+    ip_address_pool = [x for x in sc_intf.network.hosts()]
+    ip_address_pool.sort()
+    ip_address_pool = [str(x) for x in ip_address_pool]
+    if existing_ip_addresses:
+        ip_addresses_to_exclude = [
+            str(ipaddress.ip_interface(p).ip) for p in existing_ip_addresses
+        ]
+        ip_address_pool = [
+            x for x in ip_address_pool if x not in ip_addresses_to_exclude
+        ]
+    res = ip_address_pool[0] if for_server else ip_address_pool[1]
+    logger.debug(f"ip_address_pool         : {ip_address_pool}")
+    logger.debug(f"existing_ip_addresses   : {existing_ip_addresses}")
+    logger.debug(f"for_server              : {for_server}")
+    logger.debug(f"get_next_free_ip_address: {res}")
+    return res

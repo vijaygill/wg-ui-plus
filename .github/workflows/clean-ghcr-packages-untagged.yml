@@ -1,0 +1,27 @@
+name: Clean GHCR packages (untagged)
+
+on:
+  - workflow_dispatch
+  - workflow_call
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  REGEX_PATTERN: "^(self-hosted|ubuntu-latest|develop|master|dev|merge|feature)-.*"
+
+jobs:
+  delete-containers-untagged:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Set ENV variables
+        id: get_repo_name
+        run: |
+          echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_OUTPUT
+      - name: Delete untagged packages
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ steps.get_repo_name.outputs.REPO_NAME }}
+          package-type: 'container'
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: true
+

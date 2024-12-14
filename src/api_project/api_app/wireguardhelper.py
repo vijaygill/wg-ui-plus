@@ -21,6 +21,7 @@ from .common import (
 from .util import (
     ensure_folder_exists_for_file,
     get_target_ip_address_parts,
+    is_network_address,
 )
 
 
@@ -33,11 +34,11 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def get_wireguard_configuration_for_server(self, serverConfiguration):
+    def get_wireguard_configuration_for_server(self, serverConfiguration, peers):
         template = """
 # Settings for Server.
 [Interface]
-Address = {{serverConfiguration.network_address}}
+Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
@@ -45,12 +46,19 @@ PostUp = {{serverConfiguration.script_path_post_up}}
 PostDown = {{serverConfiguration.script_path_post_down}}
 
 """
-        context = Context({"serverConfiguration": serverConfiguration})
+        context = Context(
+            {
+                "serverConfiguration": serverConfiguration,
+                "server_ip_address": serverConfiguration.ip_address,
+            }
+        )
         res = self.render_template(template, context)
         return res
 
     @logged
-    def get_wireguard_configurations_for_peer(self, serverConfiguration, peer):
+    def get_wireguard_configurations_for_peer(
+        self, serverConfiguration, peer_groups, peer
+    ):
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
@@ -65,6 +73,70 @@ PersistentKeepalive = 25
         context = Context({"peer": peer})
         peer_config_server_side = self.render_template(template, context)
 
+        peer_group_everyone = [
+            x for x in peer_groups if x.name == PEER_GROUP_EVERYONE_NAME
+        ]
+
+        allowed_ips = [IP_ADDRESS_INTERNET]
+
+        if serverConfiguration.strict_allowed_ips_in_peer_config:
+            allowed_ips = []
+
+            allowed_ips_everyone = []
+            if peer_group_everyone:
+                allowed_ips_everyone = [
+                    x.ip_address for x in peer_group_everyone[0].targets.all()
+                ]
+
+            allowed_ips_by_peer_groups = [
+                p.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for p in pg.peers.all()
+                if p.ip_address and p.ip_address != peer.ip_address
+            ]
+
+            allowed_ips_by_targets = [
+                target.ip_address.split(":")[0]
+                for pg in peer.peer_groups.all()
+                for target in pg.targets.all()
+                if target.ip_address
+            ]
+
+            allowed_ips = (
+                allowed_ips_everyone
+                + allowed_ips_by_peer_groups
+                + allowed_ips_by_targets
+            )
+
+            # # add upstream DNS server to allowed IP's.
+            # if serverConfiguration.upstream_dns_ip_address:
+            #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+
+            # add VPN server's ip address also.
+            if serverConfiguration.network_address:
+                allowed_ips += [serverConfiguration.ip_address]
+
+        # if 0.0.0.0/0 is in the list, no need to have anything else.
+        if IP_ADDRESS_INTERNET in allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        allowed_ips = list(set(allowed_ips))
+
+        # if there is no allowedIPs, default to catch-all
+        if not allowed_ips:
+            allowed_ips = [IP_ADDRESS_INTERNET]
+
+        logger.debug(
+            f"serverConfiguration.strict_allowed_ips_in_peer_config: {serverConfiguration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
+        )
+
+        allowed_ips = [is_network_address(x) for x in allowed_ips]
+        allowed_ips = [x[2] for x in allowed_ips]
+        allowed_ips.sort()
+        allowed_ips = [str(x) for x in allowed_ips]
+
+        allowed_ips = ",".join(allowed_ips)
+
         template = """
 # Settings for this client.
 [Interface]
@@ -77,7 +149,7 @@ DNS = {{serverConfiguration.upstream_dns_ip_address}}
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
 Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = {{allowed_ips}}
 """
         peer_port = peer.port if peer.port else serverConfiguration.peer_default_port
         context = Context(
@@ -85,6 +157,7 @@ AllowedIPs = 0.0.0.0/0
                 "serverConfiguration": serverConfiguration,
                 "peer": peer,
                 "peer_port": peer_port,
+                "allowed_ips": allowed_ips,
             }
         )
         peer_config_client_side = self.render_template(template, context)
@@ -93,16 +166,20 @@ AllowedIPs = 0.0.0.0/0
         return res
 
     @logged
-    def get_wireguard_configuration(self, serverConfiguration, peers):
+    def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
 
-        server_config = self.get_wireguard_configuration_for_server(serverConfiguration)
+        server_config = self.get_wireguard_configuration_for_server(
+            serverConfiguration, peers
+        )
 
         # now generate configs for peers
         # both for the server side and client side
         peer_configs = []
         for peer in peers:
             peer_config_server_side, peer_config_client_side = (
-                self.get_wireguard_configurations_for_peer(serverConfiguration, peer)
+                self.get_wireguard_configurations_for_peer(
+                    serverConfiguration, peer_groups, peer
+                )
             )
             server_config += peer_config_server_side
             peer_configs += [peer_config_client_side]
@@ -293,6 +370,10 @@ AllowedIPs = 0.0.0.0/0
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
+                if str(target_ip_address) == str(serverConfiguration.ip_address):
+                    # no need to add rule for peer => server
+                    # as all packets have to go via server anyway
+                    continue
                 if peer_disabled:
                     post_up.append(
                         f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
@@ -401,7 +482,9 @@ AllowedIPs = 0.0.0.0/0
         # first save wg0.conf
         ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
         configs = self.get_wireguard_configuration(
-            serverConfiguration=serverConfiguration, peers=peers
+            serverConfiguration=serverConfiguration,
+            peer_groups=peer_groups,
+            peers=peers,
         )
         with open(serverConfiguration.wireguard_config_path, "w") as f:
             server_config = configs["server_configuration"]

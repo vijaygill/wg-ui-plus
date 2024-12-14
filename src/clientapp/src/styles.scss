@@ -60,7 +60,7 @@ body {
 
 .item-main {
     grid-area: main;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .item-sidebar {

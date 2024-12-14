@@ -1,3 +1,4 @@
+<p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
     <mat-card appearance="outlined">
@@ -29,17 +30,14 @@
           </ng-template>
         </p-messages>
       </div>
-      <p-messages />
     </div>
   </div>
   <div class="item item-main" style="display: flex;flex-direction: row;">
     <div *ngIf="!platformInformation.is_small_screen">
       <app-sidepanel></app-sidepanel>
     </div>
-    <div style="width: 100%;">
-      <div>
+    <div style="width: 100%;max-width: 100%; overflow: scroll;">
         <router-outlet />
-      </div>
     </div>
   </div>
   <div class="item item-footer">

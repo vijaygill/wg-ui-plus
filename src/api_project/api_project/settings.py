@@ -150,6 +150,10 @@ EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", None)
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", None)
 
 
+LOGGING_DEFAULT_LEVEL = "WARN"
+LOGGING_DEFAULT_LEVEL_SERVER = "WARN"
+LOGGING_DEFAULT_LEVEL_DB = "WARN"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -169,19 +173,19 @@ LOGGING = {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL),
         },
         "django.server": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL_SERVER),
         },
         "django.db.backends": {
             "handlers": [
                 "console",
             ],
-            "level": os.environ.get("DJANGO_LOG_LEVEL", "WARN"),
+            "level": os.environ.get("DJANGO_LOG_LEVEL", LOGGING_DEFAULT_LEVEL_DB),
         },
     },
     "formatters": {
