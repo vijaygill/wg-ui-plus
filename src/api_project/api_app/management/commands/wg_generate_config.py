@@ -20,5 +20,5 @@ class Command(BaseCommand):
             )
             self.stdout.write(f'{res["status"]}')
             self.stdout.write(self.style.SUCCESS('Generated WireGuard Configuration Files.'))
-        except:
-            raise CommandError('Error:' + traceback.format_exc())
+        except Exception as e:
+            raise CommandError('Error:' + traceback.format_exception(e))
