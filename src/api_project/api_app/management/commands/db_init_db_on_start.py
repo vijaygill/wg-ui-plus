@@ -79,8 +79,8 @@ class Command(BaseCommand):
                     )
                     peer.save()
             self.stdout.write(self.style.SUCCESS("DB-seed initialised successfully."))
-        except:
-            raise CommandError("Error:" + traceback.format_exc())
+        except Exception as e:
+            raise CommandError("Error:" + traceback.format_exception(e))
 
     def init_admin_user(self, *args, **options):
         try:
@@ -97,8 +97,8 @@ class Command(BaseCommand):
                 )
             else:
                 self.stdout.write(self.style.SUCCESS("Admin user exists already."))
-        except:
-            raise CommandError("Error:" + traceback.format_exc())
+        except Exception as e:
+            raise CommandError("Error:" + traceback.format_exception(e))
 
     def init_server_config(self):
         try:
@@ -169,8 +169,8 @@ class Command(BaseCommand):
                     self.stdout.write(
                         self.style.SUCCESS("Updated Server Configuration")
                     )
-        except:
-            raise CommandError("Error:" + traceback.format_exc())
+        except Exception as e:
+            raise CommandError("Error:" + traceback.format_exception(e))
 
     def init_peer_groups(self):
         peer_group_everyone_existing = PeerGroup.objects.filter(

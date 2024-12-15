@@ -144,8 +144,8 @@ def get_target_ip_address_parts(value):
                         None,
                     )
             break
-    except Exception:
-        print(traceback.format_exc())
+    except Exception as e:
+        print(traceback.format_exception(e))
         pass
     r1, r2, r3, r4, r5, r6 = res
     errors = ", ".join(errors)

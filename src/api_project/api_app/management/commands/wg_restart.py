@@ -14,5 +14,5 @@ class Command(BaseCommand):
             res = wg.restart(serverConfiguration=sc)
             self.stdout.write(f'{res["status"]}')
             self.stdout.write(self.style.SUCCESS('WireGuard VPN restarted.'))
-        except:
-            raise CommandError('Error:' + traceback.format_exc())
+        except Exception as e:
+            raise CommandError('Error:' + traceback.format_exception(e))
