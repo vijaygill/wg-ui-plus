@@ -15,6 +15,11 @@ MAX_LAST_HANDSHAKE_SECONDS = 120
 
 CACHE_KEY_APP_LIVE_VERSION = "CACHE_KEY_APP_LIVE_VERSION"
 
+WIREGUARD_CONFIG_PATH = "/config/wireguard/wg0.conf"
+SCRIPT_PATH_POST_UP = "/config/wireguard/scripts/post-up.sh"
+SCRIPT_PATH_POST_DOWN = "/config/wireguard/scripts/post-down.sh"
+
+
 IS_EMAIL_ENABLED = True if os.environ.get("EMAIL_HOST", None) else False
 
 logger = logging.getLogger(APP_NAME)

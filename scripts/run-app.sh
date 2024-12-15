@@ -5,7 +5,7 @@ cd /app/api_project
 ./manage.py makemigrations
 ./manage.py migrate
 ./manage.py db_init_admin_user
-./manage.py db_init_on_start
+./manage.py db_init_db_on_start
 ./manage.py wg_generate_config
 
 if test -f "${WG_CONF_FILE}"

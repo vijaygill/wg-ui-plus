@@ -229,6 +229,9 @@ class ServerConfiguration(models.Model):
                     fields_changed += [saved_state_field]
         else:
             fields_changed = [fields_changed_all]
+        
+        if not self.ip_address:
+            fields_changed = ["network_address"]
 
         logger.debug(f"ServerConfiguration: fields_changed: {fields_changed}")
 
@@ -247,7 +250,7 @@ class ServerConfiguration(models.Model):
                 for_server=True,
             )
 
-        if (not self.last_changed_datetime) or fields_changed:
+        if force_update or force_insert or (not self.last_changed_datetime) or fields_changed:
             self.last_changed_datetime = datetime.datetime.now(datetime.timezone.utc)
 
         super().save(force_insert, force_update)
