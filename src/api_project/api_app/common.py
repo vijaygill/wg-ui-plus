@@ -19,6 +19,9 @@ WIREGUARD_CONFIG_PATH = "/config/wireguard/wg0.conf"
 SCRIPT_PATH_POST_UP = "/config/wireguard/scripts/post-up.sh"
 SCRIPT_PATH_POST_DOWN = "/config/wireguard/scripts/post-down.sh"
 
+DEFAULT_ADMIN_USER_NAME = 'admin'
+DEFAULT_ADMIN_USER_PASSWORD = 'admin'
+
 
 IS_EMAIL_ENABLED = True if os.environ.get("EMAIL_HOST", None) else False
 
