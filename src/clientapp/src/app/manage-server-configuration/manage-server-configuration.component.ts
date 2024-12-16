@@ -29,6 +29,7 @@ export class ManageServerConfigurationComponent {
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
+  serverStatusSubscription !: Subscription;
 
 
   constructor(private messageService: MessageService,
@@ -44,12 +45,18 @@ export class ManageServerConfigurationComponent {
       }
     });
     this.loginService.checkIsUserAuthenticated();
+    this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
+      this.refreshData();
+    });
     this.refreshData();
   }
 
   ngOnDestroy() {
     if (this.loginServiceSubscription) {
       this.loginServiceSubscription.unsubscribe();
+    }
+    if (this.serverStatusSubscription) {
+      this.serverStatusSubscription.unsubscribe();
     }
   }
 
