@@ -143,7 +143,7 @@ export class ManagePeersEditorComponent {
 
           this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
             next: data => {
-              this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'e-Mail sent successully.' });
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'e-Mail sent successully.' });
             },
             error: error => {
               let response = error as HttpErrorResponse;

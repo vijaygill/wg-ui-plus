@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ChangeUserPasswordInfo, ServerConfiguration, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -27,6 +27,8 @@ export class ManageServerConfigurationComponent {
 
   changeUserPasswordInfo: ChangeUserPasswordInfo = {} as ChangeUserPasswordInfo;
 
+  serverStatus !: ServerStatus;
+
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
@@ -46,7 +48,10 @@ export class ManageServerConfigurationComponent {
     });
     this.loginService.checkIsUserAuthenticated();
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
-      this.refreshData();
+      if (!this.serverStatus || (this.serverStatus && data && this.serverStatus.last_db_change_datetime < data.last_db_change_datetime)) {
+        this.refreshData();
+        this.serverStatus = data;
+      }
     });
     this.refreshData();
   }
@@ -89,20 +94,20 @@ export class ManageServerConfigurationComponent {
 
   cancel() {
     this.refreshData();
-    this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
+    this.messageService.add({ severity: 'warn', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
   }
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;
 
   generateWireguardConfig(event: Event): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.' });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Configuration files generated on server.' });
     });
   }
 
   restartWireguard(event: Event): void {
     this.webapiService.wireguardRestart().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.' });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
     });
   }
 

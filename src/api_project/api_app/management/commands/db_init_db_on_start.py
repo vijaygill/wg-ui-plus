@@ -165,8 +165,7 @@ class Command(BaseCommand):
                     sc.port_internal = port_internal
                     is_dirty = True
                     self.stdout.write(self.style.SUCCESS("Updated port_internal"))
-                strict_allowed_ips_in_peer_config = os.environ.get("WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG", None) in TRUE_VALUES
-                print(f'*********strict_allowed_ips_in_peer_config: {strict_allowed_ips_in_peer_config}')
+                strict_allowed_ips_in_peer_config = os.environ.get("WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG", '').lower() in TRUE_VALUES
                 if sc.strict_allowed_ips_in_peer_config != strict_allowed_ips_in_peer_config:
                     sc.strict_allowed_ips_in_peer_config = strict_allowed_ips_in_peer_config
                     is_dirty = True

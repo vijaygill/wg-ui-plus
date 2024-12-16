@@ -193,7 +193,10 @@ class ServerConfiguration(models.Model):
     peer_default_port = models.IntegerField()
     allow_check_updates = models.BooleanField(null=True, default=False)
     strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
-    last_changed_datetime = models.DateTimeField()
+    last_changed_datetime = models.DateTimeField(auto_now=True,)
+    wireguard_config_change_datetime = models.DateTimeField(
+        null=True,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -204,7 +207,6 @@ class ServerConfiguration(models.Model):
             "upstream_dns_ip_address",
             "network_address",
             "ip_address",
-            "strict_allowed_ips_in_peer_config",
         ]
         saved_state = {}
         for saved_state_field in saved_state_fields:
@@ -229,7 +231,7 @@ class ServerConfiguration(models.Model):
                     fields_changed += [saved_state_field]
         else:
             fields_changed = [fields_changed_all]
-        
+
         if not self.ip_address:
             fields_changed = ["network_address"]
 
@@ -250,8 +252,13 @@ class ServerConfiguration(models.Model):
                 for_server=True,
             )
 
-        if force_update or force_insert or (not self.last_changed_datetime) or fields_changed:
-            self.last_changed_datetime = datetime.datetime.now(datetime.timezone.utc)
+        if (
+            force_update
+            or force_insert
+            or (not self.last_changed_datetime)
+            or fields_changed
+        ):
+            self.wireguard_config_change_datetime = datetime.datetime.now(datetime.timezone.utc)
 
         super().save(force_insert, force_update)
         if ("network_address" in fields_changed) or (

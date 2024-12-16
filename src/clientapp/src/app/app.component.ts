@@ -103,10 +103,10 @@ export class AppComponent implements OnInit {
 
   applyconfiguration(event: Event): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.' });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Configuration files generated on server.' });
       this.webapiService.wireguardRestart().subscribe(() => {
         this.webapiService.checkServerStatus();
-        this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.' });
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
       });
     });
   }

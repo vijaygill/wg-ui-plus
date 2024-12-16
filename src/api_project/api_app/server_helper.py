@@ -4,9 +4,41 @@ import requests
 
 from django.core.cache import cache
 
-from .models import ServerConfiguration
+from api_app.wireguardhelper import WireGuardHelper
+
+from .models import Peer, PeerGroup, ServerConfiguration, Target
 
 from .common import CACHE_KEY_APP_LIVE_VERSION, APP_URL, IS_EMAIL_ENABLED
+
+
+def get_server_status():
+    peers = Peer.objects.all()
+    peer_groups = PeerGroup.objects.all()
+    targets = Target.objects.all()
+    server_configurations = ServerConfiguration.objects.all()
+    last_changed_datetimes = (
+        [x.last_changed_datetime for x in peers]
+        + [x.last_changed_datetime for x in peer_groups]
+        + [x.last_changed_datetime for x in targets]
+        + [x.last_changed_datetime for x in server_configurations]
+    )
+    last_changed_datetime = (
+        max(last_changed_datetimes) if last_changed_datetimes else None
+    )
+
+    wireguard_config_change_datetime = [
+        x.wireguard_config_change_datetime for x in server_configurations
+    ]
+    wireguard_config_change_datetime = (
+        max(wireguard_config_change_datetime) if wireguard_config_change_datetime else None
+    )
+
+    wg = WireGuardHelper()
+    res = wg.get_server_status(
+        last_db_change_datetime=last_changed_datetime,
+        wireguard_config_change_datetime=wireguard_config_change_datetime,
+    )
+    return res
 
 
 def get_application_details():
@@ -41,5 +73,20 @@ def get_application_details():
 
     res["latest_live_version"] = latest_live_version
     res["allow_allow_check_updates"] = allow_check_updates
-    res['is_email_enabled'] = IS_EMAIL_ENABLED
+    res["is_email_enabled"] = IS_EMAIL_ENABLED
+    return res
+
+
+def generate_configuration_files():
+    dt = datetime.datetime.now(datetime.timezone.utc)
+    wg = WireGuardHelper()
+    sc = ServerConfiguration.objects.all()[0]
+    peer_groups = PeerGroup.objects.all()
+    peers = Peer.objects.all()
+    targets = Target.objects.all()
+    res = wg.generate_configuration_files(
+        serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
+    )
+    sc.wireguard_config_change_datetime = dt
+    sc.save()
     return res
