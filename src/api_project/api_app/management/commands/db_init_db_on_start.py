@@ -44,41 +44,8 @@ class Command(BaseCommand):
             self.init_server_config()
             self.init_peer_groups()
             self.init_targets()
+            self.init_peers()
 
-            server_configuration = ServerConfiguration.objects.all()[0]
-            peers_existing = Peer.objects.all()
-            if peers_existing:
-                self.stdout.write(
-                    self.style.SUCCESS("Peers exist. No need to create sample peers.")
-                )
-            else:
-                for peer_name, description in SAMPLE_PEERS:
-                    peer_existing = Peer.objects.filter(name=peer_name)
-                    if peer_existing:
-                        continue
-                    peers = Peer.objects.all()
-                    existing_ip_addresses = []
-                    if peers:
-                        existing_ip_addresses = (
-                            [p.ip_address for p in peers if p.ip_address]
-                            if peers
-                            else []
-                        )
-                        existing_ip_addresses += [server_configuration.ip_address]
-                    existing_ip_addresses = [ip for ip in existing_ip_addresses if ip]
-                    ip_address = get_next_free_ip_address(
-                        network_address=server_configuration.network_address,
-                        existing_ip_addresses=existing_ip_addresses,
-                    )
-                    public_key, private_key = generate_keys()
-                    peer = Peer(
-                        name=peer_name,
-                        description=description,
-                        public_key=public_key,
-                        private_key=private_key,
-                        ip_address=ip_address,
-                    )
-                    peer.save()
             self.stdout.write(self.style.SUCCESS("DB-seed initialised successfully."))
         except Exception as e:
             raise CommandError("Error:" + traceback.format_exception(e))
@@ -232,3 +199,39 @@ class Command(BaseCommand):
                     f"Target {TARGET_INTERNET_NAME} created."
                 )
             )
+
+    def init_peers(self):
+        server_configuration = ServerConfiguration.objects.all()[0]
+        peers_existing = Peer.objects.all()
+        if peers_existing:
+            self.stdout.write(
+                self.style.SUCCESS("Peers exist. No need to create sample peers.")
+            )
+        else:
+            for peer_name, description in SAMPLE_PEERS:
+                peer_existing = Peer.objects.filter(name=peer_name)
+                if peer_existing:
+                    continue
+                peers = Peer.objects.all()
+                existing_ip_addresses = []
+                if peers:
+                    existing_ip_addresses = (
+                        [p.ip_address for p in peers if p.ip_address]
+                        if peers
+                        else []
+                    )
+                    existing_ip_addresses += [server_configuration.ip_address]
+                existing_ip_addresses = [ip for ip in existing_ip_addresses if ip]
+                ip_address = get_next_free_ip_address(
+                    network_address=server_configuration.network_address,
+                    existing_ip_addresses=existing_ip_addresses,
+                )
+                public_key, private_key = generate_keys()
+                peer = Peer(
+                    name=peer_name,
+                    description=description,
+                    public_key=public_key,
+                    private_key=private_key,
+                    ip_address=ip_address,
+                )
+                peer.save()
