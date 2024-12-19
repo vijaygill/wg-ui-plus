@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmDialog, ConfirmDialogModule } from 'primeng/confirmdialog';
 //import { ConfirmPopupModule } from 'primeng/confirmpopup';
 //import { ContextMenuModule } from 'primeng/contextmenu';
 import { DataViewModule } from 'primeng/dataview';
@@ -58,18 +58,12 @@ import { TooltipModule } from 'primeng/tooltip';
 //import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { ValidationErrorsDisplayComponent } from './validation-errors-display/validation-errors-display.component';
 import { AutoFocusModule } from 'primeng/autofocus';
-
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatTableModule } from '@angular/material/table';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 let modules = [
     AutoFocusModule,
     ButtonModule, CardModule, CheckboxModule,
-    ConfirmDialogModule,
+    ConfirmDialog, ConfirmDialogModule,
     DataViewModule, DialogModule, DividerModule,
     DragDropModule,
     DropdownModule,
@@ -85,14 +79,12 @@ let modules = [
     TableModule, TabViewModule, ToastModule,
     TooltipModule,
     ValidationErrorsDisplayComponent,
-
-    MatButtonModule, MatCardModule, MatDialogModule, MatDividerModule, MatExpansionModule, MatTableModule,
 ];
 
 @NgModule({
     imports: modules,
     exports: modules,
-    providers: []
+    providers: [ConfirmationService, MessageService]
 })
 export class AppSharedModule {
 }
