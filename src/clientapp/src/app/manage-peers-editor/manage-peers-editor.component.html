@@ -13,7 +13,7 @@
                             <td><label for="peerName">Name</label></td>
                             <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
                                     pTooltip="Name of the device/computer you wish to connect with VPN."
-                                    tooltipPosition="top" pAutoFocus [autofocus]="true" />
+                                    tooltipPosition="top" [autofocus]="true" />
                                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                                 </app-validation-errors-display>
                             </td>

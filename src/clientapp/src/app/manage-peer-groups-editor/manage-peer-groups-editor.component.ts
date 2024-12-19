@@ -10,12 +10,12 @@ import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-peer-groups-editor',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
-  templateUrl: './manage-peer-groups-editor.component.html',
-  styleUrl: './manage-peer-groups-editor.component.scss'
+    standalone: true,
+    selector: 'app-manage-peer-groups-editor',
+    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    providers: [MessageService, ConfirmationDialogService],
+    templateUrl: './manage-peer-groups-editor.component.html',
+    styleUrl: './manage-peer-groups-editor.component.scss'
 })
 export class ManagePeerGroupsEditorComponent {
   @Input()

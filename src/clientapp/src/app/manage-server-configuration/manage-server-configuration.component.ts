@@ -13,12 +13,12 @@ import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-server-configuration',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
-  providers: [MessageService],
-  templateUrl: './manage-server-configuration.component.html',
-  styleUrl: './manage-server-configuration.component.scss'
+    standalone: true,
+    selector: 'app-manage-server-configuration',
+    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
+    providers: [MessageService],
+    templateUrl: './manage-server-configuration.component.html',
+    styleUrl: './manage-server-configuration.component.scss'
 })
 export class ManageServerConfigurationComponent {
 

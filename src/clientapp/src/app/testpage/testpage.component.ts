@@ -6,8 +6,8 @@ import { AppSharedModule } from '../app-shared.module';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-    selector: 'app-testpage',
     standalone: true,
+    selector: 'app-testpage',
     imports: [CommonModule, FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './testpage.component.html',

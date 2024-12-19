@@ -11,12 +11,12 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../confirmation-dialog-service';
 
 @Component({
-  selector: 'app-manage-peers-editor',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
-  templateUrl: './manage-peers-editor.component.html',
-  styleUrl: './manage-peers-editor.component.scss'
+    standalone: true,
+    selector: 'app-manage-peers-editor',
+    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    providers: [MessageService, ConfirmationDialogService],
+    templateUrl: './manage-peers-editor.component.html',
+    styleUrl: './manage-peers-editor.component.scss'
 })
 export class ManagePeersEditorComponent {
   @Input()

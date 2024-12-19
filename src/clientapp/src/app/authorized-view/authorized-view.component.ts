@@ -7,11 +7,11 @@ import { UserSessionInfo } from '../webapi.entities';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-authorized-view',
-  standalone: true,
-  imports: [CommonModule, AppSharedModule],
-  templateUrl: './authorized-view.component.html',
-  styleUrl: './authorized-view.component.scss'
+    standalone: true,
+    selector: 'app-authorized-view',
+    imports: [CommonModule, AppSharedModule],
+    templateUrl: './authorized-view.component.html',
+    styleUrl: './authorized-view.component.scss'
 })
 export class AuthorizedViewComponent implements OnInit{
   userSessionInfo!: UserSessionInfo;

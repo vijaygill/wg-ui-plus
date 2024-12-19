@@ -1,21 +1,18 @@
-import { ChangeDetectorRef, Component, Injectable, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { WebapiService } from '../webapi.service';
 import { Router } from '@angular/router';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { UserCrendentials, UserSessionInfo } from '../webapi.entities';
 import { LoginService } from '../login-service';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+    standalone: true,
+    selector: 'app-login',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
   credentials: UserCrendentials = { username: '', password: '' } as UserCrendentials;

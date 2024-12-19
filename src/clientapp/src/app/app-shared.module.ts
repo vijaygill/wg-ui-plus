@@ -17,7 +17,6 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ImageModule } from 'primeng/image';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
 //import { KnobModule } from 'primeng/knob';
 import { ListboxModule } from 'primeng/listbox';
 //import { MegaMenuModule } from 'primeng/megamenu';
@@ -75,7 +74,7 @@ let modules = [
     DragDropModule,
     DropdownModule,
     ImageModule,
-    InputNumberModule, InputTextModule, InputTextareaModule,
+    InputNumberModule, InputTextModule,
     ListboxModule,
     MenuModule,
     MessagesModule,

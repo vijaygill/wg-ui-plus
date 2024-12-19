@@ -6,11 +6,11 @@ import { AuthorizedViewComponent } from '../authorized-view/authorized-view.comp
 import { LoginService } from '../login-service';
 
 @Component({
-  selector: 'app-crud-container',
-  standalone: true,
-  imports: [CommonModule, AppSharedModule, AuthorizedViewComponent],
-  templateUrl: './crud-container.component.html',
-  styleUrl: './crud-container.component.scss'
+    standalone: true,
+    selector: 'app-crud-container',
+    imports: [CommonModule, AppSharedModule, AuthorizedViewComponent],
+    templateUrl: './crud-container.component.html',
+    styleUrl: './crud-container.component.scss'
 })
 export class CrudContainerComponent<T> {
   @Input() header!: string;
