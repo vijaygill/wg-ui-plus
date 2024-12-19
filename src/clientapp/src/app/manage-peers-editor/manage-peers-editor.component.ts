@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,14 +9,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../confirmation-dialog-service';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 
 @Component({
-    standalone: true,
-    selector: 'app-manage-peers-editor',
-    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-    providers: [MessageService, ConfirmationDialogService],
-    templateUrl: './manage-peers-editor.component.html',
-    styleUrl: './manage-peers-editor.component.scss'
+  standalone: true,
+  selector: 'app-manage-peers-editor',
+  imports: [CommonModule, ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+  providers: [MessageService, ConfirmationDialogService, ConfirmationService],
+  templateUrl: './manage-peers-editor.component.html',
+  styleUrl: './manage-peers-editor.component.scss'
 })
 export class ManagePeersEditorComponent {
   @Input()
@@ -42,8 +43,7 @@ export class ManagePeersEditorComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService,
-    private sanitizer: DomSanitizer) {
+    private confirmationDialogService: ConfirmationDialogService) {
 
   }
 

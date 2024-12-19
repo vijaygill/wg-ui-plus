@@ -12,7 +12,7 @@ import { LoginService } from '../login-service';
 @Component({
     standalone: true,
     selector: 'app-sidepanel',
-    imports: [CommonModule, FormsModule, RouterModule, RouterOutlet, AppSharedModule, MenuModule],
+    imports: [CommonModule, FormsModule, RouterModule, AppSharedModule, MenuModule],
     templateUrl: './sidepanel.component.html',
     styleUrl: './sidepanel.component.scss'
 })
