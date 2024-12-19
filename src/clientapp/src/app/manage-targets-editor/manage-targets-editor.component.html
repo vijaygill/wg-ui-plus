@@ -53,6 +53,7 @@
             <td><label for="target">Peer-Groups</label></td>
             <td>
                 <p-pickList id="target" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
+                    [metaKeySelection]="true"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"

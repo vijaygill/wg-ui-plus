@@ -34,8 +34,10 @@
         <tr *ngIf="editItem.allow_modify_peers">
             <td><label for="peers">Peers</label></td>
             <td>
-                <p-pickList id="peers" [source]="editItem.peers_lookup" [target]="editItem.peers"
+                <p-pickList id="peers" 
+                    [source]="editItem.peers_lookup" [target]="editItem.peers"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+                    [metaKeySelection]="true"
                     (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                     breakpoint="900px" [disabled]="!editItem.allow_modify_self"
@@ -62,6 +64,7 @@
             <td><label for="target">Targets</label></td>
             <td>
                 <p-pickList id="target" [source]="editItem.targets_lookup" [target]="editItem.targets"
+                    [metaKeySelection]="true"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
                     (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
