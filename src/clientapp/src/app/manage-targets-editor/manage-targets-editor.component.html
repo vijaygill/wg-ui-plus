@@ -5,7 +5,7 @@
                 <label for="targetName">Name</label>
             </td>
             <td><input pInputText id="targetName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self"
-                    pTooltip="Network or a host allowed to be accessed via VPN." tooltipPosition="top" pAutoFocus
+                    pTooltip="Network or a host allowed to be accessed via VPN." tooltipPosition="top"
                     [autofocus]="true" />
                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                 </app-validation-errors-display>

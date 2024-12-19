@@ -9,8 +9,8 @@
                             <tr>
                                 <td><label for="ipAddress">Network Address</label></td>
                                 <td><input pInputText id="networkAddress" [(ngModel)]="editItem.network_address"
-                                        pTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer." tooltipPosition="top" pAutoFocus
-                                        [autofocus]="true" />
+                                        pTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer."
+                                        tooltipPosition="top" [autofocus]="true" />
                                     <app-validation-errors-display field="network_address"
                                         [validationResult]="validationResult">
                                     </app-validation-errors-display>
@@ -19,9 +19,8 @@
                             <tr>
                                 <td><label for="serverIPAddress">Server IP Address</label></td>
                                 <td><input pInputText id="serverIPAddress" [(ngModel)]="editItem.ip_address"
-                                        pTooltip="IP address of the VPN server."
-                                         tooltipPosition="top" 
-                                        [readonly]="true" [disabled]="true" />
+                                        pTooltip="IP address of the VPN server." tooltipPosition="top" [readonly]="true"
+                                        [disabled]="true" />
                                     <app-validation-errors-display field="network_address"
                                         [validationResult]="validationResult">
                                     </app-validation-errors-display>
@@ -92,7 +91,8 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td> <label for="strictAllowedIpsInPeerConfig">Strict AllowedIPs in Peer Config</label></td>
+                                <td> <label for="strictAllowedIpsInPeerConfig">Strict AllowedIPs in Peer Config</label>
+                                </td>
                                 <td>
                                     <p-checkbox id="strictAllowedIpsInPeerConfig" [binary]="true"
                                         [(ngModel)]="editItem.strict_allowed_ips_in_peer_config" variant="filled"
@@ -100,7 +100,7 @@
                                         tooltipPosition="top" />
                                 </td>
                             </tr>
-                            
+
                             <tr>
                                 <td colspan="2">
                                     <div style="width:100%;align-items: center; text-align: center;">

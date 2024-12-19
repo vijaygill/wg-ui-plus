@@ -8,12 +8,12 @@ import { ManagePeersListComponent } from '../manage-peers-list/manage-peers-list
 import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-editor.component';
 
 @Component({
-  selector: 'app-manage-peers',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
-  providers: [MessageService],
-  templateUrl: './manage-peers.component.html',
-  styleUrl: './manage-peers.component.scss'
+    standalone: true,
+    selector: 'app-manage-peers',
+    imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
+    providers: [MessageService],
+    templateUrl: './manage-peers.component.html',
+    styleUrl: './manage-peers.component.scss'
 })
 export class ManagePeersComponent {
 

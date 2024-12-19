@@ -8,13 +8,13 @@ import { ManageTargetsEditorComponent } from '../manage-targets-editor/manage-ta
 import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-manage-targets',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent,
-    ManageTargetsListComponent, ManageTargetsEditorComponent],
-  providers: [MessageService],
-  templateUrl: './manage-targets.component.html',
-  styleUrl: './manage-targets.component.scss'
+    standalone: true,
+    selector: 'app-manage-targets',
+    imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent,
+        ManageTargetsListComponent, ManageTargetsEditorComponent],
+    providers: [MessageService],
+    templateUrl: './manage-targets.component.html',
+    styleUrl: './manage-targets.component.scss'
 })
 export class ManageTargetsComponent {
 

@@ -7,12 +7,12 @@ import { Peer, PeerGroup } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-peers-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './manage-peers-list.component.html',
-  styleUrl: './manage-peers-list.component.scss'
+    standalone: true,
+    selector: 'app-manage-peers-list',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './manage-peers-list.component.html',
+    styleUrl: './manage-peers-list.component.scss'
 })
 export class ManagePeersListComponent {
   peers: Peer[] = [];

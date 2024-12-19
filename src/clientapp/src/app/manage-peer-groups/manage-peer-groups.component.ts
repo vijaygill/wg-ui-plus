@@ -8,14 +8,14 @@ import { CrudContainerComponent } from '../crud-container/crud-container.compone
 import { MessageService } from 'primeng/api';
 
 @Component({
-  selector: 'app-manage-peer-groups',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule,
-    CrudContainerComponent,
-    ManagePeerGroupsListComponent, ManagePeerGroupsEditorComponent],
-  providers: [MessageService],
-  templateUrl: './manage-peer-groups.component.html',
-  styleUrl: './manage-peer-groups.component.scss'
+    standalone: true,
+    selector: 'app-manage-peer-groups',
+    imports: [CommonModule, FormsModule, AppSharedModule,
+        CrudContainerComponent,
+        ManagePeerGroupsListComponent, ManagePeerGroupsEditorComponent],
+    providers: [MessageService],
+    templateUrl: './manage-peer-groups.component.html',
+    styleUrl: './manage-peer-groups.component.scss'
 })
 export class ManagePeerGroupsComponent {
 }

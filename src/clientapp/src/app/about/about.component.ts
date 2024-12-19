@@ -7,11 +7,11 @@ import { LicenseInfo } from '../webapi.entities';
 
 
 @Component({
-  selector: 'app-about',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  templateUrl: './about.component.html',
-  styleUrl: './about.component.scss'
+    standalone: true,
+    selector: 'app-about',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    templateUrl: './about.component.html',
+    styleUrl: './about.component.scss'
 })
 export class AboutComponent implements OnInit {
   license: LicenseInfo = { license: '' } as LicenseInfo;
