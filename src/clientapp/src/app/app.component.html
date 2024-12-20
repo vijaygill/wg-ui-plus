@@ -1,8 +1,8 @@
 <p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <div class="card flex"  >
-      <p-panel>
+    <div class="card flex">
+      <p-panel [showHeader]="false">
         <div style="display: flex; flex-direction: row;">
           <div>
             <h1>WireGuard UI Plus!</h1>
@@ -10,7 +10,7 @@
           </div>
           <app-sidepanel [popup]="true" *ngIf="platformInformation.is_small_screen"></app-sidepanel>
         </div>
-    </p-panel>
+      </p-panel>
     </div>
 
     <div>
