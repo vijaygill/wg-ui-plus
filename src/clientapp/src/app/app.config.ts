@@ -9,9 +9,6 @@ import { routes } from './app.routes';
 
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
-import Lara from '@primeng/themes/lara';
-import Meterial from '@primeng/themes/material';
-import Nora from '@primeng/themes/nora';
 
 export const appConfig: ApplicationConfig = {
   providers: [

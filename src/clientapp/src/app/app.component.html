@@ -1,14 +1,16 @@
 <p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <div style="display: flex;flex-direction: row;justify-content:flex-end;">
-      <div style="flex-grow: 1;">
-        <h4>WireGuard UI Plus!</h4>
-        <h6>Run &amp; manage your WireGuard &trade; VPN in one UI.</h6>
-      </div>
-      <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
-        <app-sidepanel [popup]="true"></app-sidepanel>
-      </div>
+    <div class="card flex"  >
+      <p-panel>
+        <div style="display: flex; flex-direction: row;">
+          <div>
+            <h1>WireGuard UI Plus!</h1>
+            <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
+          </div>
+          <app-sidepanel [popup]="true" *ngIf="platformInformation.is_small_screen"></app-sidepanel>
+        </div>
+    </p-panel>
     </div>
 
     <div>
@@ -34,7 +36,7 @@
     </div>
     <div style="width: 100%;max-width: 100%; overflow: scroll;">
       <router-outlet />
-      <p-confirmdialog/>
+      <p-confirmdialog />
     </div>
   </div>
   <div class="item item-footer">
