@@ -1,4 +1,5 @@
 <p-toast></p-toast>
+<p-confirmdialog />
 <table style="width: 100%;">
     <colgroup>
         <col style="width:100%;" />
@@ -13,7 +14,7 @@
                             <td><label for="peerName">Name</label></td>
                             <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
                                     pTooltip="Name of the device/computer you wish to connect with VPN."
-                                    tooltipPosition="top" pAutoFocus [autofocus]="true" />
+                                    tooltipPosition="top" [autofocus]="true" />
                                 <app-validation-errors-display field="name" [validationResult]="validationResult">
                                 </app-validation-errors-display>
                             </td>
@@ -55,6 +56,7 @@
                             <td><label for="peerGroups">Peer-Groups</label></td>
                             <td>
                                 <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup"
+                                    [metaKeySelection]="true"
                                     [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
                                     [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
                                     [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"

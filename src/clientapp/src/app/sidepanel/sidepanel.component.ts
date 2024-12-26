@@ -10,11 +10,11 @@ import { Subscription } from 'rxjs';
 import { LoginService } from '../login-service';
 
 @Component({
-  selector: 'app-sidepanel',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RouterOutlet, AppSharedModule, MenuModule],
-  templateUrl: './sidepanel.component.html',
-  styleUrl: './sidepanel.component.scss'
+    standalone: true,
+    selector: 'app-sidepanel',
+    imports: [CommonModule, FormsModule, RouterModule, AppSharedModule, MenuModule],
+    templateUrl: './sidepanel.component.html',
+    styleUrl: './sidepanel.component.scss'
 })
 export class SidepanelComponent implements OnInit {
   items: MenuItem[] = [] as MenuItem[];

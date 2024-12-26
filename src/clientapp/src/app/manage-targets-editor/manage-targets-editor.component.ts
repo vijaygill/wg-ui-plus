@@ -10,12 +10,12 @@ import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-targets-editor',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
-  templateUrl: './manage-targets-editor.component.html',
-  styleUrl: './manage-targets-editor.component.scss'
+    standalone: true,
+    selector: 'app-manage-targets-editor',
+    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    providers: [MessageService, ConfirmationDialogService],
+    templateUrl: './manage-targets-editor.component.html',
+    styleUrl: './manage-targets-editor.component.scss'
 })
 export class ManageTargetsEditorComponent {
   @Input()

@@ -9,12 +9,12 @@ import { MessageService } from 'primeng/api';
 import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
-  selector: 'app-server-monitor-iptables',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './server-monitor-iptables.component.html',
-  styleUrl: './server-monitor-iptables.component.scss'
+    standalone: true,
+    selector: 'app-server-monitor-iptables',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './server-monitor-iptables.component.html',
+    styleUrl: './server-monitor-iptables.component.scss'
 })
 export class ServerMonitorIptablesComponent implements OnInit {
   private timerSubscription !: Subscription;

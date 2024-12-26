@@ -7,12 +7,12 @@ import { PeerGroup, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-targets-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './manage-targets-list.component.html',
-  styleUrl: './manage-targets-list.component.scss'
+    standalone: true,
+    selector: 'app-manage-targets-list',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './manage-targets-list.component.html',
+    styleUrl: './manage-targets-list.component.scss'
 })
 export class ManageTargetsListComponent {
   targets: Target[] = [];

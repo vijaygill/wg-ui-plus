@@ -5,7 +5,7 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './sidepanel/sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
-import { MessageService, PrimeNGConfig } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription } from 'rxjs';
 import { WebapiService } from './webapi.service';
@@ -14,12 +14,12 @@ import { PlatformInformationService } from './platform-information.service';
 import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+    standalone: true,
+    selector: 'app-root',
+    imports: [CommonModule, RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
   title = 'WireGuard UI Plus';
@@ -37,8 +37,7 @@ export class AppComponent implements OnInit {
 
   platformInformation: PlatformInformation = {} as PlatformInformation;
 
-  constructor(private primengConfig: PrimeNGConfig,
-    private messageService: MessageService,
+  constructor(private messageService: MessageService,
     private webapiService: WebapiService,
     private loginService: LoginService,
     private platformInformationService: PlatformInformationService,

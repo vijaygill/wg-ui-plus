@@ -1,22 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { Message } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { ServerValidationError } from '../webapi.entities';
+import { ToastMessageOptions } from 'primeng/api';
 
 @Component({
-  selector: 'app-validation-errors-display',
-  standalone: true,
-  imports: [CommonModule, MessagesModule],
-  templateUrl: './validation-errors-display.component.html',
-  styleUrl: './validation-errors-display.component.scss'
+    standalone: true,
+    selector: 'app-validation-errors-display',
+    imports: [CommonModule, MessagesModule],
+    templateUrl: './validation-errors-display.component.html',
+    styleUrl: './validation-errors-display.component.scss'
 })
 export class ValidationErrorsDisplayComponent {
   @Input() field!: string;
   @Input() validationResult!: ServerValidationError;
 
-  errorList(): Message[] {
-    let res: Message[] = [];
+  errorList(): ToastMessageOptions[] {
+    let res: ToastMessageOptions [] = [];
     if (this.validationResult && this.validationResult.errors) {
       this.validationResult.errors.forEach(validationResultItem => {
         let createMessage = !this.field || this.field == validationResultItem.attr;
@@ -30,7 +30,7 @@ export class ValidationErrorsDisplayComponent {
         //   : 'warning' == validationResultItem.type ? 'warn'
         //     : 'info';
         let severity = 'error';
-        let message = { severity: severity, detail: validationResultItem.detail } as Message;
+        let message = { severity: severity, detail: validationResultItem.detail } as ToastMessageOptions ;
         res.push(message);
       }
       );

@@ -8,12 +8,12 @@ import { AppSharedModule } from '../app-shared.module';
 import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
-  selector: 'app-server-vpn-layout',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './server-vpn-layout.component.html',
-  styleUrl: './server-vpn-layout.component.scss'
+    standalone: true,
+    selector: 'app-server-vpn-layout',
+    imports: [CommonModule, FormsModule, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './server-vpn-layout.component.html',
+    styleUrl: './server-vpn-layout.component.scss'
 })
 export class ServerVpnLayoutComponent implements OnInit {
   private timerSubscription !: Subscription;
