@@ -152,4 +152,6 @@ In my case
 * Monitor IPTables
   ![image](./images/wg-ui-plus-monitor-iptables.png)
 
+## Star History
 
+[![Star History Chart](https://api.star-history.com/svg?repos=vijaygill/wg-ui-plus&type=Date)](https://star-history.com/#vijaygill/wg-ui-plus&Date)
