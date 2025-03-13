@@ -10,6 +10,12 @@ I was just exploring the combination of Django REST Framework + Angular. So I th
 
 Use it and raise issues and/or PR's to make it better.
 
+## Warning for existing users before performing upgrade
+Take a backup of your data before you perform upgrade (by downloading a new docker image).
+The application performs in-place migration of database to newer version (if needed).
+Though I take utmost care in testing of upgrades, there is always a chance of things not going well.
+The database is just a SQLite file, so taking a backup is as easy as copying a file.
+
 ## Features
 * Easy management of clients (a.k.a Peers).
   * Clients (Peers) are managed in groups for easy granting/revoking of access.
