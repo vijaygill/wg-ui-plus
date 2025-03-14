@@ -23,7 +23,7 @@
                 {{ peerGroup.name }}
             </td>
             <td>{{ peerGroup.description }}</td>
-            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peerGroup.disabled" /></td>
+            <td><i class="pi pi-times" style="color: red" *ngIf="peerGroup.disabled"></i></td>
             <td>{{ peerGroup.target_names }}</td>
             <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peerGroup);"></p-button>
             </td>
