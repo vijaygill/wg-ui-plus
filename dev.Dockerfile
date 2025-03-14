@@ -73,6 +73,9 @@ RUN chown -R $UID:$GID /app /data /config
 VOLUME /data /config
 WORKDIR /app
 
+ENV APP_VERSION=${APP_VERSION}
+ENV IMAGE_STAGE=live
+
 USER $UNAME
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]
 
