@@ -8,7 +8,7 @@ from api_app.wireguardhelper import WireGuardHelper
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 
-from .common import CACHE_KEY_APP_LIVE_VERSION, APP_URL, IS_EMAIL_ENABLED
+from .common import CACHE_KEY_APP_LIVE_VERSION, CACHE_TTL, APP_URL, IS_EMAIL_ENABLED
 
 
 def get_server_status():
@@ -58,7 +58,7 @@ def get_application_details():
             if allow_check_updates:
                 response = requests.get(APP_URL)
                 latest_live_version = response.url.split("/").pop()
-                cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, 60 * 60)
+                cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, CACHE_TTL)
     except Exception:
         latest_live_version = "**Error**"
         pass
