@@ -21,31 +21,39 @@ export class SidepanelComponent implements OnInit {
     label: 'Monitor Peers',
     route: '/server-monitor-peers',
     icon: 'pi pi-eye',
+    tooltip: 'See the status of all the peers in one page.',
+    tooltipPosition: 'top',
   } as MenuItem;
   private menuItemMonitorIPTables = {
     label: 'Monitor IP-Tables',
     route: '/server-monitor-iptables',
     icon: 'pi pi-eye',
+    tooltip: 'See the chains defined in IPTables.',
   } as MenuItem;
   private menuItemVPNLayout = {
     label: 'VPN Layout',
     route: '/server-vpn-layout',
     icon: 'pi pi-th-large',
+    tooltip: 'See the how all peers/peer-groups/targets tie together.',
   } as MenuItem;
   private menuItemServerConfiguration = {
     label: 'Configuration',
     route: '/server-configuration',
     icon: 'pi pi-wrench',
+    tooltip: 'Configure the VPN on the server side.',
   } as MenuItem;
   private menuItemAbout = {
     label: 'About',
     route: '/about',
     icon: 'pi pi-question',
+    tooltip: 'Some information about the application itself.',
   } as MenuItem;
   private menuItemLogIn = {
     label: 'Log in',
     route: '/login',
     icon: 'pi pi-sign-in',
+    tooltip: 'Log in to manage the data (peers/peer-groups/targets).',
+    replaceUrl: true,
   } as MenuItem;
   private menuItemLogOut = {
     label: 'Log out',
@@ -53,22 +61,27 @@ export class SidepanelComponent implements OnInit {
       this.loginService.logout();
     },
     icon: 'pi pi-sign-out',
+    tooltip: 'Log out (before you step away from your machine).',
+    replaceUrl: true,
   } as MenuItem;
 
   private menuItemPeerGroups = {
     label: 'Peer-Groups',
     route: '/manage-peer-groups',
     icon: 'pi pi-sitemap',
+    tooltip: 'Add/Edit/Remove Peer-Groups. Link/Unlink Peer-Groups with Targets.',
   } as MenuItem;
   private menuItemPeers = {
     label: 'Peers',
     route: '/manage-peers',
     icon: 'pi pi-desktop',
+    tooltip: 'Add/Edit/Remove Peers. Add/Remove Peers to Peer-Groups.',
   } as MenuItem;
   private menuItemTargets = {
     label: 'Targets',
     route: '/manage-targets',
     icon: 'pi pi-bullseye',
+    tooltip: 'Add/Edit/Remove Targets. Link/Unlink Targets with Peer-Groups.',
   } as MenuItem;
 
 
