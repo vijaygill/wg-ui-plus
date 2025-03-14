@@ -630,7 +630,7 @@ AllowedIPs = {{allowed_ips}}
         return res
 
     @logged
-    def get_server_status(self, last_db_change_datetime, wireguard_config_change_datetime):
+    def get_server_status(self, last_db_change_datetime):
         res = {}
         res["status"] = "ok"
         res["hostname"] = socket.gethostname()
@@ -646,16 +646,16 @@ AllowedIPs = {{allowed_ips}}
             max(last_file_change_timestamps) if last_file_change_timestamps else 0
         )
 
-        wireguard_config_file_datetime = datetime.datetime.fromtimestamp(
+        wireguard_config_change_datetime = datetime.datetime.fromtimestamp(
             last_file_change_timestamp, timezone.get_current_timezone()
         )
 
         res["last_db_change_datetime"] = last_db_change_datetime
-        res["wireguard_config_file_datetime"] = wireguard_config_file_datetime
         res["wireguard_config_change_datetime"] = wireguard_config_change_datetime
 
-        if (wireguard_config_change_datetime is None) or (
-            wireguard_config_change_datetime > wireguard_config_file_datetime
+        if (
+            (last_db_change_datetime is None)
+            or (last_db_change_datetime > wireguard_config_change_datetime)
         ):
             res["need_regenerate_files"] = True
             res["message"] = "Configuration files need to be regenerated."

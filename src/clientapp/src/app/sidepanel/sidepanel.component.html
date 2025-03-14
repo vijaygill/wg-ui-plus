@@ -1,23 +1,20 @@
 <div class="card flex justify-content-center">
-    <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v"
-    severity="secondary" [raised]="true"
-    [rounded]="true"
-     *ngIf="popup"/>
+    <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v" severity="secondary" [raised]="true"
+        [rounded]="true" *ngIf="popup" />
     <p-menu #menu [model]="items" [popup]="popup">
         <ng-template #item let-item>
             <ng-container *ngIf="item.route; else elseBlock">
-                <a [routerLink]="item.route" class="p-menu-item-link">
+                <a [routerLink]="item.route" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
                     <span [class]="item.icon"></span>
                     <span>{{ item.label }}</span>
                 </a>
             </ng-container>
             <ng-template #elseBlock>
-                <a [href]="item.url" class="p-menu-item-link">
+                <a [href]="item.url" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
                     <span [class]="item.icon"></span>
-                    <span >{{ item.label }}</span>
+                    <span>{{ item.label }}</span>
                 </a>
             </ng-template>
         </ng-template>
     </p-menu>
 </div>
-

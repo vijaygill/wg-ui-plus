@@ -22,7 +22,7 @@
             <td>{{ peer.name }}</td>
             <td>{{ peer.description }}</td>
             <td>{{ peer.ip_address }}</td>
-            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="peer.disabled" /></td>
+            <td><i class="pi pi-ban" style="color: red" *ngIf="peer.disabled"></i></td>
             <td>{{ peer.target_names }}
             </td>
             <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peer);"></p-button></td>

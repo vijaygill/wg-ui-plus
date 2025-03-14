@@ -58,7 +58,7 @@
                                 <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup"
                                     [metaKeySelection]="true"
                                     [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
-                                    [dragdrop]="true" [responsive]="true" (trackBy)="peerGroupsPickListTrackBy"
+                                    [dragdrop]="true" [responsive]="true"
                                     [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
                                     [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                                     breakpoint="900px"
@@ -91,12 +91,12 @@
                                         &nbsp;
                                     </span>
                                     <span>
-                                        <p-button icon="pi pi-times" label="Cancel" severity="danger"
+                                        <p-button icon="pi pi-times" label="Cancel" severity="warn"
                                             (onClick)="cancel()"></p-button>
                                         &nbsp;
                                     </span>
                                     <span *ngIf="editItem.id">
-                                        <p-button icon="pi pi-times" label="Delete" severity="danger"
+                                        <p-button icon="pi pi-ban" label="Delete" severity="danger"
                                             (onClick)="delete($event)"></p-button>
                                         &nbsp;
                                     </span>

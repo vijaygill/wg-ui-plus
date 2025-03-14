@@ -96,7 +96,7 @@
                                 <td>
                                     <p-checkbox id="strictAllowedIpsInPeerConfig" [binary]="true"
                                         [(ngModel)]="editItem.strict_allowed_ips_in_peer_config" variant="filled"
-                                        pTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
+                                        pTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes to links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
                                         tooltipPosition="top" />
                                 </td>
                             </tr>
@@ -106,9 +106,12 @@
                                     <div style="width:100%;align-items: center; text-align: center;">
                                         <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
                                         &nbsp;
-                                        <p-button icon="pi pi-times" label="Cancel" severity="danger"
+                                        <p-button icon="pi pi-times" label="Cancel" severity="warn"
                                             (onClick)="cancel()"></p-button>
-                                    </div>
+                                            &nbsp;
+                                            <p-button icon="pi pi-refresh" label="Restart" severity="danger"
+                                                (onClick)="applyconfiguration()"></p-button>
+                                        </div>
                                 </td>
                             </tr>
                         </tbody>

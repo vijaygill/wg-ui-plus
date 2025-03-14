@@ -10,35 +10,91 @@ import { Subscription } from 'rxjs';
 import { LoginService } from '../login-service';
 
 @Component({
-    standalone: true,
-    selector: 'app-sidepanel',
-    imports: [CommonModule, FormsModule, RouterModule, AppSharedModule, MenuModule],
-    templateUrl: './sidepanel.component.html',
-    styleUrl: './sidepanel.component.scss'
+  standalone: true,
+  selector: 'app-sidepanel',
+  imports: [CommonModule, FormsModule, RouterModule, AppSharedModule, MenuModule],
+  templateUrl: './sidepanel.component.html',
+  styleUrl: './sidepanel.component.scss'
 })
 export class SidepanelComponent implements OnInit {
+  private menuItemMonitorPeers = {
+    label: 'Monitor Peers',
+    route: '/server-monitor-peers',
+    icon: 'pi pi-eye',
+    tooltip: 'See the status of all the peers in one page.',
+    tooltipPosition: 'top',
+  } as MenuItem;
+  private menuItemMonitorIPTables = {
+    label: 'Monitor IP-Tables',
+    route: '/server-monitor-iptables',
+    icon: 'pi pi-eye',
+    tooltip: 'See the chains defined in IPTables.',
+  } as MenuItem;
+  private menuItemVPNLayout = {
+    label: 'VPN Layout',
+    route: '/server-vpn-layout',
+    icon: 'pi pi-th-large',
+    tooltip: 'See the how all peers/peer-groups/targets tie together.',
+  } as MenuItem;
+  private menuItemServerConfiguration = {
+    label: 'Configuration',
+    route: '/server-configuration',
+    icon: 'pi pi-wrench',
+    tooltip: 'Configure the VPN on the server side.',
+  } as MenuItem;
+  private menuItemAbout = {
+    label: 'About',
+    route: '/about',
+    icon: 'pi pi-question',
+    tooltip: 'Some information about the application itself.',
+  } as MenuItem;
+  private menuItemLogIn = {
+    label: 'Log in',
+    route: '/login',
+    icon: 'pi pi-sign-in',
+    tooltip: 'Log in to manage the data (peers/peer-groups/targets).',
+    replaceUrl: true,
+  } as MenuItem;
+  private menuItemLogOut = {
+    label: 'Log out',
+    command: () => {
+      this.loginService.logout();
+    },
+    icon: 'pi pi-sign-out',
+    tooltip: 'Log out (before you step away from your machine).',
+    replaceUrl: true,
+  } as MenuItem;
+
+  private menuItemPeerGroups = {
+    label: 'Peer-Groups',
+    route: '/manage-peer-groups',
+    icon: 'pi pi-sitemap',
+    tooltip: 'Add/Edit/Remove Peer-Groups. Link/Unlink Peer-Groups with Targets.',
+  } as MenuItem;
+  private menuItemPeers = {
+    label: 'Peers',
+    route: '/manage-peers',
+    icon: 'pi pi-desktop',
+    tooltip: 'Add/Edit/Remove Peers. Add/Remove Peers to Peer-Groups.',
+  } as MenuItem;
+  private menuItemTargets = {
+    label: 'Targets',
+    route: '/manage-targets',
+    icon: 'pi pi-bullseye',
+    tooltip: 'Add/Edit/Remove Targets. Link/Unlink Targets with Peer-Groups.',
+  } as MenuItem;
+
+
   items: MenuItem[] = [] as MenuItem[];
   itemsAuthorised: MenuItem[] = [
     {
       label: 'Server',
       expanded: true,
       items: [
-        {
-          label: 'Monitor Peers',
-          route: '/server-monitor-peers',
-        },
-        {
-          label: 'Monitor IP-Tables',
-          route: '/server-monitor-iptables',
-        },
-        {
-          label: 'VPN Layout',
-          route: '/server-vpn-layout',
-        },
-        {
-          label: 'Configuration',
-          route: '/server-configuration',
-        },
+        this.menuItemMonitorPeers,
+        this.menuItemMonitorIPTables,
+        this.menuItemVPNLayout,
+        this.menuItemServerConfiguration,
       ]
     },
     {
@@ -47,18 +103,9 @@ export class SidepanelComponent implements OnInit {
     {
       label: 'Manage Data',
       items: [
-        {
-          label: 'Peer-Groups',
-          route: '/manage-peer-groups',
-        },
-        {
-          label: 'Peers',
-          route: '/manage-peers',
-        },
-        {
-          label: 'Targets',
-          route: '/manage-targets',
-        },
+        this.menuItemPeerGroups,
+        this.menuItemPeers,
+        this.menuItemTargets,
       ]
     },
     {
@@ -66,16 +113,8 @@ export class SidepanelComponent implements OnInit {
     },
     {
       items: [
-        {
-          label: 'About',
-          route: '/about',
-        },
-        {
-          label: 'Log out',
-          command: () => {
-            this.loginService.logout();
-          },
-        }
+        this.menuItemAbout,
+        this.menuItemLogOut,
       ]
     }
   ];
@@ -85,18 +124,9 @@ export class SidepanelComponent implements OnInit {
       label: 'Server',
       expanded: true,
       items: [
-        {
-          label: 'Monitor Peers',
-          route: '/server-monitor-peers',
-        },
-        {
-          label: 'Monitor IP-Tables',
-          route: '/server-monitor-iptables',
-        },
-        {
-          label: 'VPN Layout',
-          route: '/server-vpn-layout',
-        },
+        this.menuItemMonitorPeers,
+        this.menuItemMonitorIPTables,
+        this.menuItemVPNLayout,
       ]
     },
     {
@@ -104,19 +134,13 @@ export class SidepanelComponent implements OnInit {
     },
     {
       items: [
-        {
-          label: 'About',
-          route: '/about',
-        },
-        {
-          label: 'Log in',
-          route: '/login',
-        }
+        this.menuItemAbout,
+        this.menuItemLogIn,
       ]
     }
   ];
 
-  @Input() popup:boolean = false;
+  @Input() popup: boolean = false;
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;

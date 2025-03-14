@@ -105,14 +105,4 @@ export class ManagePeerGroupsEditorComponent {
   cancel() {
     this.onFinish.emit(false);
   }
-
-  peersPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
-
-  targetsPickListTrackBy(index: number, item: any) {
-    let x = item as Target;
-    return x.id;
-  }
 }

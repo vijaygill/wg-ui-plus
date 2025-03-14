@@ -19,7 +19,7 @@
         <tr>
             <td>{{ targetGroup.name }}</td>
             <td>{{ targetGroup.ip_address }}</td>
-            <td><p-checkbox [binary]="true" readonly="true" [(ngModel)]="targetGroup.disabled" /></td>
+            <td><i class="pi pi-ban" style="color: red" *ngIf="targetGroup.disabled"></i></td>
             <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(targetGroup);"></p-button></td>
         </tr>
     </ng-template>
