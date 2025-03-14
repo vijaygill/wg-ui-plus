@@ -57,7 +57,7 @@
                 <p-pickList id="target" [source]="editItem.peer_groups_lookup" [target]="editItem.peer_groups"
                     [metaKeySelection]="true"
                     sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                    (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
+                    [showSourceControls]="false" [showTargetControls]="false"
                     [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
                     breakpoint="900px" [disabled]="!editItem.allow_modify_peer_groups"
                     pTooltip="Selected Peer-Groups will have access to this Target." tooltipPosition="top">
@@ -85,11 +85,11 @@
                         &nbsp;
                     </span>
                     <span>
-                        <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
+                        <p-button icon="pi pi-times" label="Cancel" severity="warn" (onClick)="cancel()"></p-button>
                         &nbsp;
                     </span>
                     <span *ngIf="editItem.id && editItem.allow_modify_self">
-                        <p-button icon="pi pi-times" label="Delete" severity="danger"
+                        <p-button icon="pi pi-ban" label="Delete" severity="danger"
                             (onClick)="delete($event)"></p-button>
                     </span>
                 </div>

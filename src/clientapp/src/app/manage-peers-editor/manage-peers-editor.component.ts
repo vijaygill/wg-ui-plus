@@ -114,11 +114,6 @@ export class ManagePeersEditorComponent {
 
   }
 
-  peerGroupsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
-
   fileUrl: any;
 
   downloadConfigFile(event: Event): void {

@@ -3,7 +3,8 @@
         <ng-template let-node pTemplate="target">
             <div class="p-2 text-center">
                 <div>
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"
+                        pTooltip="Target disabled. Access to this Target is disabled for everyone."></i>
                     {{ node.label }}
                 </div>
                 <div>
@@ -16,15 +17,17 @@
         <ng-template let-node pTemplate="peerGroup">
             <div class="p-2 text-center">
                 <div>
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"
+                        pTooltip="Peer-Group disabled. All Peers in this Peer-Group won't have access to the linked Target."></i>
                     {{ node.label }}
                 </div>
             </div>
         </ng-template>
         <ng-template let-node pTemplate="peer">
             <div class="p-2 text-center">
-                <div class="p-2">
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                <div>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"
+                        pTooltip="Peer disabled. This Peer won't have access to the Target to the linked Peer-Group."></i>
                     {{ node.label }}
                 </div>
                 <div>
@@ -38,7 +41,8 @@
     <div>
         <ul>
             <li>A Peer is a device which connects with VPN</li>
-            <li>A Target can be a host (a specific IP Address with or without port/ports) or a network (IP Address with a mask)</li>
+            <li>A Target can be a host (a specific IP Address with or without port/ports) or a network (IP Address with
+                a mask)</li>
             <li>
                 A Peer-Group is a group of Peers that can be given access to a Target.
                 <ul>

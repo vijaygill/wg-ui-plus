@@ -100,8 +100,4 @@ export class ManageTargetsEditorComponent {
     this.onFinish.emit(false);
   }
 
-  targetsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
 }
