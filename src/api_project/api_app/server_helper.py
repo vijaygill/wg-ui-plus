@@ -16,27 +16,19 @@ def get_server_status():
     peer_groups = PeerGroup.objects.all()
     targets = Target.objects.all()
     server_configurations = ServerConfiguration.objects.all()
-    last_changed_datetimes = (
+    last_db_change_datetimes = (
         [x.last_changed_datetime for x in peers]
         + [x.last_changed_datetime for x in peer_groups]
         + [x.last_changed_datetime for x in targets]
         + [x.last_changed_datetime for x in server_configurations]
     )
-    last_changed_datetime = (
-        max(last_changed_datetimes) if last_changed_datetimes else None
-    )
-
-    wireguard_config_change_datetime = [
-        x.wireguard_config_change_datetime for x in server_configurations
-    ]
-    wireguard_config_change_datetime = (
-        max(wireguard_config_change_datetime) if wireguard_config_change_datetime else None
+    last_db_change_datetime = (
+        max(last_db_change_datetimes) if last_db_change_datetimes else None
     )
 
     wg = WireGuardHelper()
     res = wg.get_server_status(
-        last_db_change_datetime=last_changed_datetime,
-        wireguard_config_change_datetime=wireguard_config_change_datetime,
+        last_db_change_datetime=last_db_change_datetime
     )
     return res
 
