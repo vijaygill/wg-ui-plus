@@ -3,7 +3,7 @@
         <ng-template let-node pTemplate="target">
             <div class="p-2 text-center">
                 <div>
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"></i>
                     {{ node.label }}
                 </div>
                 <div>
@@ -16,7 +16,7 @@
         <ng-template let-node pTemplate="peerGroup">
             <div class="p-2 text-center">
                 <div>
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"></i>
                     {{ node.label }}
                 </div>
             </div>
@@ -24,7 +24,7 @@
         <ng-template let-node pTemplate="peer">
             <div class="p-2 text-center">
                 <div class="p-2">
-                    <i *ngIf="node.data.disabled" class="pi pi-times" style="color: red"></i>
+                    <i *ngIf="node.data.disabled" class="pi pi-ban" style="color: red"></i>
                     {{ node.label }}
                 </div>
                 <div>
