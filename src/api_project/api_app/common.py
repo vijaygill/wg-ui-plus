@@ -6,6 +6,7 @@ APP_NAME = "wg-ui-plus"
 APP_OWNER = "vijaygill"
 APP_REPO = "wg-ui-plus"
 APP_URL = f"https://github.com/{APP_OWNER}/{APP_REPO}/releases/latest"
+RUNTIME_ENV_LIVE = "live"
 
 IP_ADDRESS_INTERNET = "0.0.0.0/0"
 TARGET_INTERNET_NAME = "Internet"
@@ -14,7 +15,7 @@ PEER_GROUP_EVERYONE_NAME = "EveryOne"
 MAX_LAST_HANDSHAKE_SECONDS = 120
 
 CACHE_KEY_APP_LIVE_VERSION = "CACHE_KEY_APP_LIVE_VERSION"
-CACHE_TTL=60 * 60
+CACHE_TTL = 60 * 60
 
 WIREGUARD_CONFIG_PATH = "/config/wireguard/wg0.conf"
 SCRIPT_PATH_POST_UP = "/config/wireguard/scripts/post-up.sh"

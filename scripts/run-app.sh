@@ -2,6 +2,7 @@
 
 WG_CONF_FILE="/config/wireguard/wg0.conf"
 cd /app/api_project
+./manage.py backup_db_before_upgrade
 ./manage.py makemigrations
 ./manage.py migrate
 ./manage.py db_init_db_on_start
