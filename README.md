@@ -6,7 +6,10 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
+I had a WireGuard (tm) VPN running at home to allow me access various machines/network connexted devices while I am away from home.
+Sometimes I even let my friends access my machine-learning rig but I don't want them to snoop around in my home network.
+I was tired of managing IPTables rules to give fine-grained access to clients.
+So I thought I might develop something for myself to replace my current WireGuard (tm) based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
 
 Use it and raise issues and/or PR's to make it better.
 
