@@ -1,0 +1,54 @@
+services:
+  wireguard:
+      image: ghcr.io/vijaygill/wg-ui-plus:latest
+      container_name: wg-ui-plus
+      hostname: wg-ui-plus
+      restart: unless-stopped
+      deploy:
+          resources:
+              limits:
+                  memory: "1024M"
+      cap_add:
+        - NET_ADMIN
+        - SYS_MODULE
+      networks:
+          - net-wireguard
+      ports:
+          - "1195:51820/udp"
+          - "8880:8000/tcp"
+      environment:
+          - PUID=1000
+          - PGID=1000
+          - TZ=Europe/Dublin # change this to suit your setup
+          - tz=Europe/Dublin # change this to suit your setup
+          - DJANGO_LOG_LEVEL=WARN
+          - WG_HOST_NAME_EXTERNAL=<change_here> # change this to suit your setup
+          - WG_LOCAL_NETWORKS=192.168.0.0/24 # change this to suit your setup
+          - WG_UPSTREAM_DNS_SERVER=192.168.0.5 # change this to suit your setup
+          - SECURE_REFERRER_POLICY=strict-origin
+          - CORS_ALLOW_ALL_ORIGINS=true
+            #- EMAIL_HOST=
+            #- EMAIL_HOST_USER=
+            #- EMAIL_HOST_PASSWORD=
+            #- EMAIL_PORT=587
+            #- EMAIL_USE_TLS=True
+            #- EMAIL_USE_SSL=False
+      volumes:
+          - /etc/localtime:/etc/localtime:ro
+          - /etc/timezone:/etc/timezone:ro
+          - /var/log:/var/log
+          - /mnt/docker-containers/wg-ui-plus/config:/config # change this to suit your setup
+          - /mnt/docker-containers/wg-ui-plus/data:/data # change this to suit your setup
+          - /lib/modules:/lib/modules:ro
+          - /etc/resolv.conf:/etc/resolv.conf:ro
+      tmpfs:
+          - /tmp
+      sysctls:
+          - net.ipv4.conf.all.src_valid_mark=1
+          - net.ipv4.ip_forward=1
+
+networks:
+    net-wireguard:
+        name: net-wireguard
+        driver: bridge
+
