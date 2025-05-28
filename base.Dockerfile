@@ -11,7 +11,7 @@ ARG GID
 ARG APP_VERSION
 
 RUN apt-get update -y \
-#	&& apt-get upgrade -y \
+	&& apt-get upgrade -y \
 	&& apt-get install -y \
 #	python3 \
 #	python3-pip \
