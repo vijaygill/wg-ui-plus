@@ -4,7 +4,7 @@ ARG GID=1000
 ARG APP_VERSION="v0.0.0"
 
 # Stage: base-dev
-FROM python:latest AS base-dev
+FROM node:latest AS base-dev
 ARG UNAME
 ARG UID
 ARG GID
@@ -13,16 +13,17 @@ ARG APP_VERSION
 RUN apt-get update -y \
 	&& apt-get upgrade -y \
 	&& apt-get install -y \
-#	python3 \
-#	python3-pip \
-#	python-is-python3 \
+	python3 \
+	python3-pip \
+	python-is-python3 \
 	git \
-	npm \
 	sqlite3 wireguard wireguard-tools \
 	net-tools iproute2 iptables libcap2-bin libcap2 \
 	iptraf-ng procps tcpdump \
 	sudo conntrack tzdata \
     && apt-get clean
+
+RUN npm update -g npm
 
 RUN npm install -g @angular/cli
 
@@ -32,7 +33,7 @@ ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
 
 RUN groupadd -g $GID -o $UNAME && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME && echo "$UNAME:$UNAME" | chpasswd
-RUN usermod -aG sudo $UNAME && echo "$UNAME  ALL=(ALL) NOPASSWD:ALL">>/etc/sudoers
+RUN usermod -aG sudo $UNAME && for a in $UNAME node; do echo "$a  ALL=(ALL) NOPASSWD: ALL">>/etc/sudoers; done
 
 # Stage: base-live
 FROM python:alpine AS base-live
