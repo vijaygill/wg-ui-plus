@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -9,7 +9,7 @@ import { WebapiService } from '../webapi.service';
 @Component({
     standalone: true,
     selector: 'app-manage-targets-list',
-    imports: [CommonModule, FormsModule, AppSharedModule],
+    imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './manage-targets-list.component.html',
     styleUrl: './manage-targets-list.component.scss'

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from '../webapi.service';
 import { IpTablesLog } from '../webapi.entities';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
@@ -11,7 +11,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 @Component({
     standalone: true,
     selector: 'app-server-monitor-iptables',
-    imports: [CommonModule, FormsModule, AppSharedModule],
+    imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './server-monitor-iptables.component.html',
     styleUrl: './server-monitor-iptables.component.scss'

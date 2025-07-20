@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, RouterOutlet } from '@angular/router';
@@ -12,7 +12,7 @@ import { LoginService } from '../login-service';
 @Component({
   standalone: true,
   selector: 'app-sidepanel',
-  imports: [CommonModule, FormsModule, RouterModule, AppSharedModule, MenuModule],
+  imports: [FormsModule, RouterModule, AppSharedModule, MenuModule],
   templateUrl: './sidepanel.component.html',
   styleUrl: './sidepanel.component.scss'
 })

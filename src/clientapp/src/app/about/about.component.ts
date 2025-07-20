@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { WebapiService } from '../webapi.service';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { LicenseInfo } from '../webapi.entities';
@@ -9,7 +9,7 @@ import { LicenseInfo } from '../webapi.entities';
 @Component({
     standalone: true,
     selector: 'app-about',
-    imports: [CommonModule, FormsModule, AppSharedModule],
+    imports: [FormsModule, AppSharedModule],
     templateUrl: './about.component.html',
     styleUrl: './about.component.scss'
 })

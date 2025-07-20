@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
@@ -15,7 +15,7 @@ import { WebapiService } from '../webapi.service';
 @Component({
   standalone: true,
   selector: 'app-manage-server-configuration',
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
+  imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'

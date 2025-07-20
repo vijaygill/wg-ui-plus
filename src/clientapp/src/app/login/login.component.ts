@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { LoginService } from '../login-service';
 @Component({
     standalone: true,
     selector: 'app-login',
-    imports: [CommonModule, FormsModule, AppSharedModule],
+    imports: [FormsModule, AppSharedModule],
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss'
 })
