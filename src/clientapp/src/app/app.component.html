@@ -9,7 +9,7 @@
             <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
           </div>
           @if (platformInformation.is_small_screen) {
-            <app-sidepanel [popup]="true"></app-sidepanel>
+          <app-sidepanel [popup]="true"></app-sidepanel>
           }
         </div>
       </p-panel>
@@ -17,28 +17,22 @@
 
     <div>
       @if (serverStatus.need_regenerate_files && userSessionInfo.is_logged_in) {
-        <div>
-          <p-message severity="warn">
-            <ng-template pTemplate>
-              <div>
-                <div>
-                  <span>Apply changes. This will regenerate Server Configuration files and restart WireGuard.</span>
-                </div>
-                <div>
-                  <p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
-                </div>
-              </div>
-            </ng-template>
-          </p-message>
-        </div>
+      <div>
+        <p-message severity="warn">
+          <div>
+            <span><p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
+              This will regenerate Server Configuration files and restart WireGuard.</span>
+          </div>
+        </p-message>
+      </div>
       }
     </div>
   </div>
   <div class="item item-main" style="display: flex;flex-direction: row;">
     @if (!platformInformation.is_small_screen) {
-      <div>
-        <app-sidepanel></app-sidepanel>
-      </div>
+    <div>
+      <app-sidepanel></app-sidepanel>
+    </div>
     }
     <div style="width: 100%;max-width: 100%; overflow: scroll;">
       <router-outlet />
@@ -52,25 +46,25 @@
       </span>
       <br />
       @if (serverStatus.hostname) {
-        <span>Host: {{serverStatus.hostname}}</span>
+      <span>Host: {{serverStatus.hostname}}</span>
       }
       &nbsp;
       @if (serverStatus.platform) {
-        <span>Platform: {{serverStatus.platform}}</span>
+      <span>Platform: {{serverStatus.platform}}</span>
       }
       &nbsp;
       @if (serverStatus.application_details) {
-        <span>Running Version:
+      <span>Running Version:
         {{serverStatus.application_details.current_version}}</span>
       }
-      @if (serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)) {
-        <span
-          >
-          &nbsp;
-          Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
-        {{serverStatus.application_details.latest_live_version}}</a>
+      @if (serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates &&
+      (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)) {
+      <span>
+        &nbsp;
+        Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
+          {{serverStatus.application_details.latest_live_version}}</a>
       </span>
-    }
-  </small>
-</div>
+      }
+    </small>
+  </div>
 </div>

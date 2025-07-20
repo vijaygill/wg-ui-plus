@@ -1,19 +1,22 @@
 <p-card header="WireGuard UI Plus!">
-    <p-tabs>
+    <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0">License</p-tab>
+            <p-tab value="1">Acknowledments</p-tab>
+        </p-tablist>
         <p-tabpanels>
-        <p-tabpanel header="License">
-            <pre style="white-space:pre-wrap;">
+            <p-tabpanel value="0">
+                <pre style="white-space:pre-wrap;">
                 {{license.license}}
                 </pre>
-        </p-tabpanel>
-        <p-tabpanel header="Acknowledments">
-            <ul>
-                <li>"WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld.
-                    <a href=" https://www.wireguard.com/" target="_blank">Link</a>
-                </li>
-            </ul>
-        </p-tabpanel>
+            </p-tabpanel>
+            <p-tabpanel value="1">
+                <ul>
+                    <li>"WireGuard" and the "WireGuard" logo are registered trademarks of Jason A. Donenfeld.
+                        <a href=" https://www.wireguard.com/" target="_blank">Link</a>
+                    </li>
+                </ul>
+            </p-tabpanel>
         </p-tabpanels>
     </p-tabs>
-
 </p-card>

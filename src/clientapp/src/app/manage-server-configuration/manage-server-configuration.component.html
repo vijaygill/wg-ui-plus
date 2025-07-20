@@ -1,163 +1,156 @@
 <p-toast></p-toast>
 <app-authorized-view>
   <ng-template #childControl>
-    <p-tabs>
+    <p-tabs value="0">
+      <p-tablist>
+        <p-tab value="0">Server Configuration</p-tab>
+        <p-tab value="1">Change Password</p-tab>
+      </p-tablist>
       <p-tabpanels>
-      <p-tabpanel header="Server Configuration">
-        <p-card>
-          <table class="editor-table">
-            <tbody>
-              <tr>
-                <td><label for="ipAddress">Network Address</label></td>
-                <td><input pInputText id="networkAddress" [(ngModel)]="editItem.network_address"
-                  pTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer."
-                  tooltipPosition="top" [autofocus]="true" />
-                <app-validation-errors-display field="network_address"
-                  [validationResult]="validationResult">
-                </app-validation-errors-display>
+        <p-tabpanel value="0">
+          <p-card>
+            <table class="editor-table">
+              <tbody>
+                <tr>
+                  <td><label for="ipAddress">Network Address</label></td>
+                  <td><input pInputText id="networkAddress" [(ngModel)]="editItem.network_address"
+                      pTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer."
+                      tooltipPosition="top" [autofocus]="true" />
+                    <app-validation-errors-display field="network_address" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="serverIPAddress">Server IP Address</label></td>
+                  <td><input pInputText id="serverIPAddress" [(ngModel)]="editItem.ip_address"
+                      pTooltip="IP address of the VPN server." tooltipPosition="top" [readonly]="true"
+                      [disabled]="true" />
+                    <app-validation-errors-display field="network_address" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="hostNameExternal">Host Name External</label></td>
+                  <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
+                      pTooltip="Peers connect to this VPN from internet using this name." tooltipPosition="top" />
+                    <app-validation-errors-display field="host_name_external" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="portExternal">Port External</label></td>
+                  <td>
+                    <p-inputNumber id="portExternal" inputId="integeronly" [min]="1024" [max]="65535"
+                      [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.port_external"
+                      pTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
+                      tooltipPosition="top" />
+                    <app-validation-errors-display field="port_external" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="portInternal">Port Internal</label></td>
+                  <td>
+                    <p-inputNumber id="portInternal" inputId="integeronly" [min]="1024" [max]="65535"
+                      [allowEmpty]="false" [required]="true" [format]="false" [(ngModel)]="editItem.port_internal"
+                      pTooltip="Port on the host where the VPN is running." tooltipPosition="top" />
+                    <app-validation-errors-display field="port_internal" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="localNetworks">Local Networks</label></td>
+                  <td><input pInputText id="localNetworks" [(ngModel)]="editItem.local_networks"
+                      pTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considerd as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
+                      tooltipPosition="top" />
+                    <app-validation-errors-display field="local_networks" [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td><label for="upstreamDnsServer">Upstream DNS Server</label></td>
+                  <td><input pInputText id="upstreamDnsServer" [(ngModel)]="editItem.upstream_dns_ip_address"
+                      pTooltip="Upstream DNS server for the peers." tooltipPosition="top" />
+                    <app-validation-errors-display field="upstream_dns_ip_address"
+                      [validationResult]="validationResult">
+                    </app-validation-errors-display>
+                  </td>
+                </tr>
+                <tr>
+                  <td> <label for="allowCheckUpdates">Allow Check Updates</label></td>
+                  <td>
+                    <p-checkbox id="allowCheckUpdates" [binary]="true" [(ngModel)]="editItem.allow_check_updates"
+                      variant="filled"
+                      pTooltip="Allow checking updates by contacting GitHub releases page. No data is sent to the server."
+                      tooltipPosition="top" />
+                  </td>
+                </tr>
+                <tr>
+                  <td> <label for="strictAllowedIpsInPeerConfig">Strict AllowedIPs in Peer Config</label>
+                  </td>
+                  <td>
+                    <p-checkbox id="strictAllowedIpsInPeerConfig" [binary]="true"
+                      [(ngModel)]="editItem.strict_allowed_ips_in_peer_config" variant="filled"
+                      pTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes to links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
+                      tooltipPosition="top" />
+                  </td>
+                </tr>
+
+                <tr>
+                  <td colspan="2">
+                    <div style="width:100%;align-items: center; text-align: center;">
+                      <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+                      &nbsp;
+                      <p-button icon="pi pi-times" label="Cancel" severity="warn" (onClick)="cancel()"></p-button>
+                      &nbsp;
+                      <p-button icon="pi pi-refresh" label="Restart" severity="danger"
+                        (onClick)="applyconfiguration()"></p-button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </p-card>
+        </p-tabpanel>
+        <p-tabpanel value="1">
+          <table>
+            <tr>
+              <td>Current Password</td>
+              <td>
+                <p-password [(ngModel)]="changeUserPasswordInfo.current_password" [feedback]="false" />
               </td>
             </tr>
             <tr>
-              <td><label for="serverIPAddress">Server IP Address</label></td>
-              <td><input pInputText id="serverIPAddress" [(ngModel)]="editItem.ip_address"
-                pTooltip="IP address of the VPN server." tooltipPosition="top" [readonly]="true"
-                [disabled]="true" />
-              <app-validation-errors-display field="network_address"
-                [validationResult]="validationResult">
-              </app-validation-errors-display>
-            </td>
-          </tr>
-          <tr>
-            <td><label for="hostNameExternal">Host Name External</label></td>
-            <td><input pInputText id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
-              pTooltip="Peers connect to this VPN from internet using this name."
-              tooltipPosition="top" />
-            <app-validation-errors-display field="host_name_external"
-              [validationResult]="validationResult">
-            </app-validation-errors-display>
-          </td>
-        </tr>
-        <tr>
-          <td><label for="portExternal">Port External</label></td>
-          <td>
-            <p-inputNumber id="portExternal" inputId="integeronly" [min]="1024" [max]="65535"
-              [allowEmpty]="false" [required]="true" [format]="false"
-              [(ngModel)]="editItem.port_external"
-              pTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
-              tooltipPosition="top" />
-            <app-validation-errors-display field="port_external"
-              [validationResult]="validationResult">
-            </app-validation-errors-display>
-          </td>
-        </tr>
-        <tr>
-          <td><label for="portInternal">Port Internal</label></td>
-          <td>
-            <p-inputNumber id="portInternal" inputId="integeronly" [min]="1024" [max]="65535"
-              [allowEmpty]="false" [required]="true" [format]="false"
-              [(ngModel)]="editItem.port_internal"
-              pTooltip="Port on the host where the VPN is running." tooltipPosition="top" />
-            <app-validation-errors-display field="port_internal"
-              [validationResult]="validationResult">
-            </app-validation-errors-display>
-          </td>
-        </tr>
-        <tr>
-          <td><label for="localNetworks">Local Networks</label></td>
-          <td><input pInputText id="localNetworks" [(ngModel)]="editItem.local_networks"
-            pTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considerd as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
-            tooltipPosition="top" />
-          <app-validation-errors-display field="local_networks"
-            [validationResult]="validationResult">
-          </app-validation-errors-display>
-        </td>
-      </tr>
-      <tr>
-        <td><label for="upstreamDnsServer">Upstream DNS Server</label></td>
-        <td><input pInputText id="upstreamDnsServer"
-          [(ngModel)]="editItem.upstream_dns_ip_address"
-          pTooltip="Upstream DNS server for the peers." tooltipPosition="top" />
-        <app-validation-errors-display field="upstream_dns_ip_address"
-          [validationResult]="validationResult">
-        </app-validation-errors-display>
-      </td>
-    </tr>
-    <tr>
-      <td> <label for="allowCheckUpdates">Allow Check Updates</label></td>
-      <td>
-        <p-checkbox id="allowCheckUpdates" [binary]="true"
-          [(ngModel)]="editItem.allow_check_updates" variant="filled"
-          pTooltip="Allow checking updates by contacting GitHub releases page. No data is sent to the server."
-          tooltipPosition="top" />
-      </td>
-    </tr>
-    <tr>
-      <td> <label for="strictAllowedIpsInPeerConfig">Strict AllowedIPs in Peer Config</label>
-    </td>
-    <td>
-      <p-checkbox id="strictAllowedIpsInPeerConfig" [binary]="true"
-        [(ngModel)]="editItem.strict_allowed_ips_in_peer_config" variant="filled"
-        pTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes to links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
-        tooltipPosition="top" />
-    </td>
-  </tr>
-
-  <tr>
-    <td colspan="2">
-      <div style="width:100%;align-items: center; text-align: center;">
-        <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-        &nbsp;
-        <p-button icon="pi pi-times" label="Cancel" severity="warn"
-        (onClick)="cancel()"></p-button>
-        &nbsp;
-        <p-button icon="pi pi-refresh" label="Restart" severity="danger"
-        (onClick)="applyconfiguration()"></p-button>
-      </div>
-    </td>
-  </tr>
-</tbody>
-</table>
-</p-card>
-</p-tabpanel>
-<p-tabpanel header="Change Password">
-  <table>
-    <tr>
-      <td>Current Password</td>
-      <td>
-        <p-password [(ngModel)]="changeUserPasswordInfo.current_password" [feedback]="false" />
-      </td>
-    </tr>
-    <tr>
-      <td>New Password</td>
-      <td>
-        <p-password [(ngModel)]="changeUserPasswordInfo.new_password" [feedback]="false" />
-      </td>
-    </tr>
-    <tr>
-      <td>New Password (verify)</td>
-      <td>
-        <p-password [(ngModel)]="changeUserPasswordInfo.new_password_copy" [feedback]="false" />
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <div style="width:100%;align-items: center; text-align: center;">
-          <p-button label="Change Password" (onClick)="changePassword($event)"></p-button>
-        </div>
-      </td>
-    </tr>
-    @if (userSessionInfo && userSessionInfo.message) {
-      <tr>
-        <td colspan="2">
-          <div style="width:100%;align-items: center; text-align: center;">
-            {{userSessionInfo.message}}
-          </div>
-        </td>
-      </tr>
-    }
-  </table>
-</p-tabpanel>
-</p-tabpanels>
-</p-tabs>
-</ng-template>
+              <td>New Password</td>
+              <td>
+                <p-password [(ngModel)]="changeUserPasswordInfo.new_password" [feedback]="false" />
+              </td>
+            </tr>
+            <tr>
+              <td>New Password (verify)</td>
+              <td>
+                <p-password [(ngModel)]="changeUserPasswordInfo.new_password_copy" [feedback]="false" />
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                  <p-button label="Change Password" (onClick)="changePassword($event)"></p-button>
+                </div>
+              </td>
+            </tr>
+            @if (userSessionInfo && userSessionInfo.message) {
+            <tr>
+              <td colspan="2">
+                <div style="width:100%;align-items: center; text-align: center;">
+                  {{userSessionInfo.message}}
+                </div>
+              </td>
+            </tr>
+            }
+          </table>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </ng-template>
 </app-authorized-view>
