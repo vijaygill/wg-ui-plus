@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
@@ -16,7 +16,7 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 @Component({
     standalone: true,
     selector: 'app-root',
-    imports: [CommonModule, RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
+    imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
     providers: [MessageService],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'

@@ -1,31 +1,33 @@
 <p-table [value]="peers" sortField="name" styleClass="p-datatable-striped p-datatable-gridlines p-datatable-sm">
-    <ng-template pTemplate="header">
-        <tr>
-            <th colspan="5">
-                <span>
-                    Add/Edit/Delete Peers here...
-                </span>
-            </th>
-            <th><p-button icon="pi pi-plus-circle" label="New" (onClick)="newItem();"></p-button></th>
-        </tr>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>IP Address</th>
-            <th>Disabled</th>
-            <th>Can Access</th>
-            <th>Action</th>
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-peer>
-        <tr>
-            <td>{{ peer.name }}</td>
-            <td>{{ peer.description }}</td>
-            <td>{{ peer.ip_address }}</td>
-            <td><i class="pi pi-ban" style="color: red" *ngIf="peer.disabled"></i></td>
-            <td>{{ peer.target_names }}
-            </td>
-            <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peer);"></p-button></td>
-        </tr>
-    </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th colspan="5">
+        <span>
+          Add/Edit/Delete Peers here...
+        </span>
+      </th>
+      <th><p-button icon="pi pi-plus-circle" label="New" (onClick)="newItem();"></p-button></th>
+    </tr>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>IP Address</th>
+      <th>Disabled</th>
+      <th>Can Access</th>
+      <th>Action</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-peer>
+    <tr>
+      <td>{{ peer.name }}</td>
+      <td>{{ peer.description }}</td>
+      <td>{{ peer.ip_address }}</td>
+      <td>@if (peer.disabled) {
+        <i class="pi pi-ban" style="color: red"></i>
+      }</td>
+      <td>{{ peer.target_names }}
+      </td>
+      <td><p-button size="small" label="Edit" icon="pi pi-file-edit" (onClick)="editItem(peer);"></p-button></td>
+    </tr>
+  </ng-template>
 </p-table>

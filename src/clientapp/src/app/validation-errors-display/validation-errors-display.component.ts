@@ -1,13 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input } from '@angular/core';
-import { MessagesModule } from 'primeng/messages';
 import { ServerValidationError } from '../webapi.entities';
 import { ToastMessageOptions } from 'primeng/api';
+import { MessageModule } from 'primeng/message';
 
 @Component({
     standalone: true,
     selector: 'app-validation-errors-display',
-    imports: [CommonModule, MessagesModule],
+    imports: [MessageModule],
     templateUrl: './validation-errors-display.component.html',
     styleUrl: './validation-errors-display.component.scss'
 })

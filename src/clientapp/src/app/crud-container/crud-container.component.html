@@ -1,26 +1,25 @@
 <app-authorized-view>
-    <ng-template #childControl>
-        <p-card [header]="header" [subheader]="subheader">
-            <ng-container *ngIf="useDialogForEditor">
-                <ng-container>
-                    <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
-                </ng-container>
-                <p-dialog [(visible)]="isEditing"
-                          [modal]="true"
-                          [style]="{ width: '90vw' }">
-                    <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
-                </p-dialog>
-            </ng-container>
+  <ng-template #childControl>
+    <p-card [header]="header" [subheader]="subheader">
+      @if (useDialogForEditor) {
+        <ng-container>
+          <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
+        </ng-container>
+        <p-dialog [(visible)]="isEditing"
+          [modal]="true"
+          [style]="{ width: '90vw' }">
+          <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
+        </p-dialog>
+      }
 
-            <ng-container *ngIf="!useDialogForEditor">
-                <ng-container *ngIf="!isEditing">
-                    <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
-                </ng-container>
-
-                <ng-container *ngIf="isEditing">
-                    <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
-                </ng-container>
-            </ng-container>
+      @if (!useDialogForEditor) {
+        @if (!isEditing) {
+          <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
+        }
+        @if (isEditing) {
+          <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
+        }
+      }
     </p-card>
-    </ng-template>
+  </ng-template>
 </app-authorized-view>

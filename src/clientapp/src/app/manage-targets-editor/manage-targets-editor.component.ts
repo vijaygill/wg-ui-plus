@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -12,7 +12,7 @@ import { WebapiService } from '../webapi.service';
 @Component({
     standalone: true,
     selector: 'app-manage-targets-editor',
-    imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
     providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-targets-editor.component.html',
     styleUrl: './manage-targets-editor.component.scss'

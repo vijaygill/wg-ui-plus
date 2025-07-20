@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -10,8 +10,7 @@ import { MessageService } from 'primeng/api';
 @Component({
     standalone: true,
     selector: 'app-manage-targets',
-    imports: [CommonModule, FormsModule, AppSharedModule, CrudContainerComponent,
-        ManageTargetsListComponent, ManageTargetsEditorComponent],
+    imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManageTargetsListComponent, ManageTargetsEditorComponent],
     providers: [MessageService],
     templateUrl: './manage-targets.component.html',
     styleUrl: './manage-targets.component.scss'
