@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { UserCrendentials, UserSessionInfo } from '../webapi.entities';
 import { LoginService } from '../login-service';
+import { JsonPipe } from '@angular/common';
 
 @Component({
     standalone: true,
@@ -40,7 +41,8 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  login(event: Event): void {
+  onSubmit()
+  {
     this.userSessionInfo.message = 'Logging in. Please wait...';
     this.loginService.login(this.credentials);
   }

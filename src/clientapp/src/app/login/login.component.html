@@ -1,25 +1,26 @@
 <p-card header="Login">
-  <table>
-    <tr>
-      <td>User name</td>
-      <td>
-        <input pInputText id="peerGroupName" [(ngModel)]="credentials.username" [autofocus]="true" />
-      </td>
-    </tr>
-    <tr>
-      <td>Password</td>
-      <td>
-        <p-password [(ngModel)]="credentials.password" [feedback]="false" />
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <div style="width:100%;align-items: center; text-align: center;">
-          <p-button label="Login" (onClick)="login($event)"></p-button>
-        </div>
-      </td>
-    </tr>
-    @if (userSessionInfo && userSessionInfo.message) {
+  <form #userLogin="ngForm" novalidate (ngSubmit)="onSubmit()">
+    <table>
+      <tr>
+        <td>User name</td>
+        <td>
+          <input pInputText id="username" name="username" [(ngModel)]="credentials.username" [autofocus]="true" #id="ngModel"/>
+        </td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <td>
+          <p-password id="password" name="password" [(ngModel)]="credentials.password" [feedback]="false" />
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div style="width:100%;align-items: center; text-align: center;">
+            <button type="submit" pButton>Login</button>
+          </div>
+        </td>
+      </tr>
+      @if (userSessionInfo && userSessionInfo.message) {
       <tr>
         <td colspan="2">
           <div style="width:100%;align-items: center; text-align: center;">
@@ -27,6 +28,7 @@
           </div>
         </td>
       </tr>
-    }
-  </table>
+      }
+    </table>
+  </form>
 </p-card>
