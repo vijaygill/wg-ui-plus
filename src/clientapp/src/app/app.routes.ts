@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { AboutComponent } from './about/about.component';
+import { AboutComponent } from './app-about/app-about.component';
 import { HomeComponent } from './home/home.component';
 import { TestpageComponent } from './testpage/testpage.component';
 import { ManagePeersComponent } from './manage-peers/manage-peers.component';

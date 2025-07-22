@@ -13,8 +13,8 @@ import { LoginService } from '../login-service';
   standalone: true,
   selector: 'app-sidepanel',
   imports: [FormsModule, RouterModule, AppSharedModule, MenuModule],
-  templateUrl: './sidepanel.component.html',
-  styleUrl: './sidepanel.component.scss'
+  templateUrl: './app-sidepanel.component.html',
+  styleUrl: './app-sidepanel.component.scss'
 })
 export class SidepanelComponent implements OnInit {
   private menuItemMonitorPeers = {

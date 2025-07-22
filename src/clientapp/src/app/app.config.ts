@@ -9,7 +9,6 @@ import { routes } from './app.routes';
 
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
-import { $dt } from '@primeuix/themes';
 
 
 export const appConfig: ApplicationConfig = {

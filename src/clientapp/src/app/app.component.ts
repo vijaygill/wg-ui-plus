@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SidepanelComponent } from './sidepanel/sidepanel.component';
+import { SidepanelComponent } from './app-sidepanel/app-sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
 import { MessageService } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
