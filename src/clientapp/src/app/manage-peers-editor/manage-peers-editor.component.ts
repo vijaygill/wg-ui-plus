@@ -1,20 +1,21 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../confirmation-dialog-service';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 
 @Component({
-  selector: 'app-manage-peers-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
+  selector: 'app-manage-peers-editor',
+  imports: [ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+  providers: [MessageService, ConfirmationDialogService, ConfirmationService],
   templateUrl: './manage-peers-editor.component.html',
   styleUrl: './manage-peers-editor.component.scss'
 })
@@ -42,8 +43,7 @@ export class ManagePeersEditorComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService,
-    private sanitizer: DomSanitizer) {
+    private confirmationDialogService: ConfirmationDialogService) {
 
   }
 
@@ -114,11 +114,6 @@ export class ManagePeersEditorComponent {
 
   }
 
-  peerGroupsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
-
   fileUrl: any;
 
   downloadConfigFile(event: Event): void {
@@ -143,7 +138,7 @@ export class ManagePeersEditorComponent {
 
           this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
             next: data => {
-              this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'e-Mail sent successully.' });
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'e-Mail sent successully.' });
             },
             error: error => {
               let response = error as HttpErrorResponse;

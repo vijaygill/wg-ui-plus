@@ -1,18 +1,18 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Peer, PeerGroup, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-peer-groups-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  providers: [MessageService],
-  templateUrl: './manage-peer-groups-list.component.html',
-  styleUrl: './manage-peer-groups-list.component.scss'
+    standalone: true,
+    selector: 'app-manage-peer-groups-list',
+    imports: [FormsModule, AppSharedModule],
+    providers: [MessageService],
+    templateUrl: './manage-peer-groups-list.component.html',
+    styleUrl: './manage-peer-groups-list.component.scss'
 })
 export class ManagePeerGroupsListComponent {
   peerGroups: PeerGroup[] = [];

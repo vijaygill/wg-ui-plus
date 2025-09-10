@@ -25,7 +25,8 @@ COPY . /wg-ui-plus
 
 RUN chown -R $UNAME:$UNAME /wg-ui-plus
 
-RUN cd /wg-ui-plus/src/clientapp && npm install --force && ng build --configuration production --prerender=false --deploy-url="/" --base-href="/" --aot=true
+RUN cd /wg-ui-plus/src/clientapp && npm install --force \
+    && ng build --configuration production --prerender=false --deploy-url="/" --base-href="/" --aot=true
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev-builder
@@ -72,6 +73,9 @@ RUN chown -R $UID:$GID /app /data /config
 
 VOLUME /data /config
 WORKDIR /app
+
+ENV APP_VERSION=${APP_VERSION}
+ENV IMAGE_STAGE=live
 
 USER $UNAME
 ENTRYPOINT [ "/app/scripts/run-app.sh" ]

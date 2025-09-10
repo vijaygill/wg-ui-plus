@@ -1,115 +1,128 @@
+<p-toast></p-toast>
+<p-confirmdialog />
 <table class="editor-table">
-    <tbody>
-        <tr>
-            <td><label for="peerGroupName">Name</label></td>
-            <td>
-                <input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
-                    [disabled]="!editItem.allow_modify_self" pTooltip="Name of the Peer-Group." tooltipPosition="top"
-                    pAutoFocus [autofocus]="true" />
-                <app-validation-errors-display field="name" [validationResult]="validationResult">
-                </app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td> <label for="peerGroupDescription">Description</label></td>
-            <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
-                    [disabled]="!editItem.allow_modify_self" pTooltip="Some helpful description."
-                    tooltipPosition="top" />
-                <app-validation-errors-display field="description"
-                    [validationResult]="validationResult"></app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="peerGroupDisabled">Disabled</label></td>
-            <td>
-                <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"
-                    variant="filled" pTooltip="Disabled Peer-Groups are denied access to VPN." tooltipPosition="top" />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <span *ngIf="!editItem.allow_modify_self">Only changing access to targets is allowed.</span>
-            </td>
-        </tr>
-        <tr *ngIf="editItem.allow_modify_peers">
-            <td><label for="peers">Peers</label></td>
-            <td>
-                <p-pickList id="peers" [source]="editItem.peers_lookup" [target]="editItem.peers"
-                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                    (trackBy)="peersPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="900px" [disabled]="!editItem.allow_modify_self"
-                    pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
-                    <ng-template let-peerGroupLink pTemplate="item">
-                        <div class="flex flex-wrap p-2 align-items-center gap-3">
-                            <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ peerGroupLink.name }}</span>
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-tag text-sm"></i>
-                                    <small>
-                                        {{ peerGroupLink.description }} ({{ peerGroupLink.ip_address }})
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-pickList>
-                <app-validation-errors-display field="peers"
-                    [validationResult]="validationResult"></app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="target">Targets</label></td>
-            <td>
-                <p-pickList id="target" [source]="editItem.targets_lookup" [target]="editItem.targets"
-                    sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
-                    (trackBy)="targetsPickListTrackBy" [showSourceControls]="false" [showTargetControls]="false"
-                    [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-                    breakpoint="900px" *ngIf="editItem.allow_modify_targets"
-                    pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
-                    <ng-template let-targetGroupLink pTemplate="item">
-                        <div class="flex flex-wrap p-2 align-items-center gap-3">
-                            <div class="flex-1 flex flex-column gap-2">
-                                <span class="font-bold">{{ targetGroupLink.name }}</span>
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-tag text-sm"></i>
-                                    <small>
-                                        {{ targetGroupLink.description }} ({{ targetGroupLink.ip_address }})
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-pickList>
-                <app-validation-errors-display field="targets"
-                    [validationResult]="validationResult"></app-validation-errors-display>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div style="width:100%;align-items: center; text-align: center;">
-                    <span>
-                        <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-                        &nbsp;
-                    </span>
-                    <span>
-                        <p-button icon="pi pi-times" label="Cancel" severity="danger" (onClick)="cancel()"></p-button>
-                        &nbsp;
-                    </span>
-                    <span *ngIf="editItem.id && editItem.allow_modify_self">
-                        <p-button icon="pi pi-times" label="Delete" severity="danger"
-                            (onClick)="delete($event)"></p-button>
-                    </span>
+  <tbody>
+    <tr>
+      <td><label for="peerGroupName">Name</label></td>
+      <td>
+        <input pInputText id="peerGroupName" [(ngModel)]="editItem.name"
+          [disabled]="!editItem.allow_modify_self" pTooltip="Name of the Peer-Group." tooltipPosition="top"
+          [autofocus]="true" />
+        <app-validation-errors-display field="name" [validationResult]="validationResult">
+        </app-validation-errors-display>
+      </td>
+    </tr>
+    <tr>
+      <td> <label for="peerGroupDescription">Description</label></td>
+      <td><input pInputText id="peerGroupDescription" [(ngModel)]="editItem.description"
+        [disabled]="!editItem.allow_modify_self" pTooltip="Some helpful description."
+        tooltipPosition="top" />
+      <app-validation-errors-display field="description"
+      [validationResult]="validationResult"></app-validation-errors-display>
+    </td>
+  </tr>
+  <tr>
+    <td><label for="peerGroupDisabled">Disabled</label></td>
+    <td>
+      <p-checkbox [binary]="true" [(ngModel)]="editItem.disabled" [disabled]="!editItem.allow_modify_self"
+        variant="filled" pTooltip="Disabled Peer-Groups are denied access to VPN." tooltipPosition="top" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      @if (!editItem.allow_modify_self) {
+        <span>Only changing access to targets is allowed.</span>
+      }
+    </td>
+  </tr>
+  @if (editItem.allow_modify_peers) {
+    <tr>
+      <td><label for="peers">Peers</label></td>
+      <td>
+        <p-pickList id="peers"
+          [source]="editItem.peers_lookup" [target]="editItem.peers"
+          sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+          [metaKeySelection]="true"
+          [showSourceControls]="false" [showTargetControls]="false"
+          [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+          breakpoint="900px" [disabled]="!editItem.allow_modify_self"
+          pTooltip="Selected Peers in this group will have access to selected Targets." tooltipPosition="top">
+          <ng-template let-peerGroupLink pTemplate="item">
+            <div class="flex flex-wrap p-2 align-items-center gap-3">
+              <div class="flex-1 flex flex-column gap-2">
+                <span class="font-bold">{{ peerGroupLink.name }}</span>
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-tag text-sm"></i>
+                  <small>
+                    {{ peerGroupLink.description }} ({{ peerGroupLink.ip_address }})
+                  </small>
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div style="width:100%;align-items: center; text-align: center;">
-                    <app-validation-errors-display
-                        [validationResult]="validationResult"></app-validation-errors-display>
+              </div>
+            </div>
+          </ng-template>
+        </p-pickList>
+        <app-validation-errors-display field="peers"
+        [validationResult]="validationResult"></app-validation-errors-display>
+      </td>
+    </tr>
+  }
+  <tr>
+    <td><label for="target">Targets</label></td>
+    <td>
+      @if (editItem.allow_modify_targets) {
+        <p-pickList id="target" [source]="editItem.targets_lookup" [target]="editItem.targets"
+          [metaKeySelection]="true"
+          sourceHeader="Available" targetHeader="Selected" [dragdrop]="true" [responsive]="true"
+          [showSourceControls]="false" [showTargetControls]="false"
+          [stripedRows]="true" [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
+          breakpoint="900px"
+          pTooltip="Peers in this Peer-Group will have access to the selected Targets." tooltipPosition="top">
+          <ng-template let-targetGroupLink pTemplate="item">
+            <div class="flex flex-wrap p-2 align-items-center gap-3">
+              <div class="flex-1 flex flex-column gap-2">
+                <span class="font-bold">{{ targetGroupLink.name }}</span>
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-tag text-sm"></i>
+                  <small>
+                    {{ targetGroupLink.description }} ({{ targetGroupLink.ip_address }})
+                  </small>
                 </div>
-            </td>
-        </tr>
-    </tbody>
+              </div>
+            </div>
+          </ng-template>
+        </p-pickList>
+      }
+      <app-validation-errors-display field="targets"
+      [validationResult]="validationResult"></app-validation-errors-display>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <div style="width:100%;align-items: center; text-align: center;">
+        <span>
+          <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
+          &nbsp;
+        </span>
+        <span>
+          <p-button icon="pi pi-times" label="Cancel" severity="warn" (onClick)="cancel()"></p-button>
+          &nbsp;
+        </span>
+        @if (editItem.id && editItem.allow_modify_self) {
+          <span>
+            <p-button icon="pi pi-ban" label="Delete" severity="danger"
+            (onClick)="delete($event)"></p-button>
+          </span>
+        }
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <div style="width:100%;align-items: center; text-align: center;">
+        <app-validation-errors-display
+        [validationResult]="validationResult"></app-validation-errors-display>
+      </div>
+    </td>
+  </tr>
+</tbody>
 </table>

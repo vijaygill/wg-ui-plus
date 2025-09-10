@@ -31,6 +31,7 @@ from .serializers import (
 
 from .server_helper import get_application_details
 from .wireguardhelper import WireGuardHelper
+from api_app import server_helper
 
 
 class PeerViewSet(viewsets.ModelViewSet):
@@ -92,14 +93,7 @@ def get_license(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def wireguard_generate_configuration_files(request):
-    wg = WireGuardHelper()
-    sc = ServerConfiguration.objects.all()[0]
-    peer_groups = PeerGroup.objects.all()
-    peers = Peer.objects.all()
-    targets = Target.objects.all()
-    res = wg.generate_configuration_files(
-        serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
-    )
+    res = server_helper.generate_configuration_files()
     return Response(res)
 
 
@@ -237,21 +231,7 @@ def auth_change_password(request):
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
 def get_server_status(request):
-    peers = Peer.objects.all()
-    peer_groups = PeerGroup.objects.all()
-    targets = Target.objects.all()
-    server_configurations = ServerConfiguration.objects.all()
-    last_changed_datetimes = (
-        [x.last_changed_datetime for x in peers]
-        + [x.last_changed_datetime for x in peer_groups]
-        + [x.last_changed_datetime for x in targets]
-        + [x.last_changed_datetime for x in server_configurations]
-    )
-    last_changed_datetime = (
-        max(last_changed_datetimes) if last_changed_datetimes else None
-    )
-    wg = WireGuardHelper()
-    res = wg.get_server_status(last_db_change_datetime=last_changed_datetime)
+    res = server_helper.get_server_status()
     res["application_details"] = get_application_details()
     return Response(res)
 

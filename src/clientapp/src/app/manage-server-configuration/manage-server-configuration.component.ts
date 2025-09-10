@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ChangeUserPasswordInfo, ServerConfiguration, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
-import { CommonModule } from '@angular/common';
+import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
@@ -13,9 +13,9 @@ import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-server-configuration',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
+  selector: 'app-manage-server-configuration',
+  imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
@@ -27,8 +27,11 @@ export class ManageServerConfigurationComponent {
 
   changeUserPasswordInfo: ChangeUserPasswordInfo = {} as ChangeUserPasswordInfo;
 
+  serverStatus !: ServerStatus;
+
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
+  serverStatusSubscription !: Subscription;
 
 
   constructor(private messageService: MessageService,
@@ -44,12 +47,21 @@ export class ManageServerConfigurationComponent {
       }
     });
     this.loginService.checkIsUserAuthenticated();
+    this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
+      if (!this.serverStatus || (this.serverStatus && data && this.serverStatus.last_db_change_datetime < data.last_db_change_datetime)) {
+        this.refreshData();
+        this.serverStatus = data;
+      }
+    });
     this.refreshData();
   }
 
   ngOnDestroy() {
     if (this.loginServiceSubscription) {
       this.loginServiceSubscription.unsubscribe();
+    }
+    if (this.serverStatusSubscription) {
+      this.serverStatusSubscription.unsubscribe();
     }
   }
 
@@ -82,20 +94,24 @@ export class ManageServerConfigurationComponent {
 
   cancel() {
     this.refreshData();
-    this.messageService.add({ severity: 'warn ', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
+    this.messageService.add({ severity: 'warn', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
   }
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;
 
-  generateWireguardConfig(event: Event): void {
-    this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Configuration files generated on server.' });
+  restartWireguard(event: Event): void {
+    this.webapiService.wireguardRestart().subscribe(data => {
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
     });
   }
 
-  restartWireguard(event: Event): void {
-    this.webapiService.wireguardRestart().subscribe(data => {
-      this.messageService.add({ severity: 'success ', summary: 'Success', detail: 'Wireguard restarted on server.' });
+  applyconfiguration(): void {
+    this.webapiService.generateConfigurationFiles().subscribe(data => {
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Configuration files generated on server.' });
+      this.webapiService.wireguardRestart().subscribe(() => {
+        this.webapiService.checkServerStatus();
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
+      });
     });
   }
 

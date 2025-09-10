@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { WebapiService } from '../webapi.service';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { LicenseInfo } from '../webapi.entities';
 
 
 @Component({
-  selector: 'app-about',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule],
-  templateUrl: './about.component.html',
-  styleUrl: './about.component.scss'
+    standalone: true,
+    selector: 'app-about',
+    imports: [FormsModule, AppSharedModule],
+    templateUrl: './app-about.component.html',
+    styleUrl: './app-about.component.scss'
 })
 export class AboutComponent implements OnInit {
   license: LicenseInfo = { license: '' } as LicenseInfo;

@@ -1,0 +1,21 @@
+<div class="card flex justify-content-center">
+  @if (popup) {
+    <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v" severity="secondary" [raised]="true"
+      [rounded]="true" />
+  }
+  <p-menu #menu [model]="items" [popup]="popup">
+    <ng-template #item let-item>
+      @if (item.route) {
+        <a [routerLink]="item.route" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
+          <span [class]="item.icon"></span>
+          <span>{{ item.label }}</span>
+        </a>
+      } @else {
+        <a [href]="item.url" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
+          <span [class]="item.icon"></span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </ng-template>
+  </p-menu>
+</div>

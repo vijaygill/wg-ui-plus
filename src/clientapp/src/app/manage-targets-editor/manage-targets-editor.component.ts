@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -10,12 +10,12 @@ import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-targets-editor',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
-  templateUrl: './manage-targets-editor.component.html',
-  styleUrl: './manage-targets-editor.component.scss'
+    standalone: true,
+    selector: 'app-manage-targets-editor',
+    imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    providers: [MessageService, ConfirmationDialogService],
+    templateUrl: './manage-targets-editor.component.html',
+    styleUrl: './manage-targets-editor.component.scss'
 })
 export class ManageTargetsEditorComponent {
   @Input()
@@ -100,8 +100,4 @@ export class ManageTargetsEditorComponent {
     this.onFinish.emit(false);
   }
 
-  targetsPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
 }

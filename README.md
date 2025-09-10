@@ -6,9 +6,18 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I was just exploring the combination of Django REST Framework + Angular. So I thought I might as well develop something for myself to replace my current WireGuard based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
+I had a WireGuard (tm) VPN running at home to allow me access various machines/network connexted devices while I am away from home.
+Sometimes I even let my friends access my machine-learning rig but I don't want them to snoop around in my home network.
+I was tired of managing IPTables rules to give fine-grained access to clients.
+So I thought I might develop something for myself to replace my current WireGuard (tm) based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
 
 Use it and raise issues and/or PR's to make it better.
+
+## Warning for existing users before performing upgrade
+Take a backup of your data before you perform upgrade (by downloading a new docker image).
+The application performs in-place migration of database to newer version (if needed).
+Though I take utmost care in testing of upgrades, there is always a chance of things not going well.
+The database is just a SQLite file, so taking a backup is as easy as copying a file.
 
 ## Features
 * Easy management of clients (a.k.a Peers).
@@ -152,4 +161,6 @@ In my case
 * Monitor IPTables
   ![image](./images/wg-ui-plus-monitor-iptables.png)
 
+## Star History
 
+[![Star History Chart](https://api.star-history.com/svg?repos=vijaygill/wg-ui-plus&type=Date)](https://star-history.com/#vijaygill/wg-ui-plus&Date)

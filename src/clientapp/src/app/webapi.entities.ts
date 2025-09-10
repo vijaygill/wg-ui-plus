@@ -154,7 +154,7 @@ export interface ServerStatus {
     platform_architecture: string;
     need_regenerate_files: boolean;
     last_db_change_datetime: Date;
-    last_file_change_datetime: Date;
+    wireguard_config_change_datetime: Date;
     application_details: ApplicationDetails;
 }
 
