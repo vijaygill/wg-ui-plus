@@ -5,7 +5,7 @@ from io import BytesIO
 import qrcode
 from rest_framework import serializers
 
-from .db_seed import PEER_GROUP_EVERYONE_NAME
+from .common import PEER_GROUP_EVERYONE_NAME
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .wireguardhelper import WireGuardHelper
 

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
@@ -10,12 +10,12 @@ import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
 @Component({
-  selector: 'app-manage-peer-groups-editor',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService],
-  templateUrl: './manage-peer-groups-editor.component.html',
-  styleUrl: './manage-peer-groups-editor.component.scss'
+    standalone: true,
+    selector: 'app-manage-peer-groups-editor',
+    imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
+    providers: [MessageService, ConfirmationDialogService],
+    templateUrl: './manage-peer-groups-editor.component.html',
+    styleUrl: './manage-peer-groups-editor.component.scss'
 })
 export class ManagePeerGroupsEditorComponent {
   @Input()
@@ -104,15 +104,5 @@ export class ManagePeerGroupsEditorComponent {
 
   cancel() {
     this.onFinish.emit(false);
-  }
-
-  peersPickListTrackBy(index: number, item: any) {
-    let x = item as PeerGroup;
-    return x.id;
-  }
-
-  targetsPickListTrackBy(index: number, item: any) {
-    let x = item as Target;
-    return x.id;
   }
 }

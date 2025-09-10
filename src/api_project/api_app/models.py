@@ -136,10 +136,12 @@ class Peer(models.Model):
                 [p.ip_address for p in peers if p.ip_address] if peers else []
             )
             existing_ip_addresses += [sc.ip_address]
-            self.ip_address = get_next_free_ip_address(
+            ip_address_temp = get_next_free_ip_address(
                 network_address=sc.network_address,
                 existing_ip_addresses=existing_ip_addresses,
             )
+            if (not self.ip_address) or (self.ip_address != ip_address_temp):
+                self.ip_address = ip_address_temp
         super().save(force_insert, force_update)
 
 
@@ -193,10 +195,14 @@ class ServerConfiguration(models.Model):
     peer_default_port = models.IntegerField()
     allow_check_updates = models.BooleanField(null=True, default=False)
     strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
-    last_changed_datetime = models.DateTimeField()
+    last_changed_datetime = models.DateTimeField(
+        auto_now=False,
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # we save some fields in saved state, so that
         saved_state_fields = [
             "host_name_external",
             "port_external",
@@ -230,6 +236,9 @@ class ServerConfiguration(models.Model):
         else:
             fields_changed = [fields_changed_all]
 
+        if not self.ip_address:
+            fields_changed = ["network_address"]
+
         logger.debug(f"ServerConfiguration: fields_changed: {fields_changed}")
 
         if (
@@ -241,14 +250,18 @@ class ServerConfiguration(models.Model):
             existing_ip_addresses = (
                 [p.ip_address for p in peers if p.ip_address] if peers else []
             )
-            self.ip_address = get_next_free_ip_address(
+
+            ip_address_temp = get_next_free_ip_address(
                 network_address=self.network_address,
                 existing_ip_addresses=existing_ip_addresses,
                 for_server=True,
             )
 
-        if (not self.last_changed_datetime) or fields_changed:
-            self.last_changed_datetime = datetime.datetime.now(datetime.timezone.utc)
+            if (self.ip_address is None) or (self.ip_address != ip_address_temp):
+                self.ip_address = ip_address_temp
+
+        if force_insert or force_update or fields_changed:
+            self.last_changed_datetime = datetime.datetime.now(tz=datetime.timezone.utc)
 
         super().save(force_insert, force_update)
         if ("network_address" in fields_changed) or (

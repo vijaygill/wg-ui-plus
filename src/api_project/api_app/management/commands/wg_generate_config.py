@@ -18,7 +18,6 @@ class Command(BaseCommand):
             res = wg.generate_configuration_files(
                 serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
             )
-            self.stdout.write(f'{res["status"]}')
-            self.stdout.write(self.style.SUCCESS('Generated WireGuard Configuration Files.'))
-        except:
-            raise CommandError('Error:' + traceback.format_exc())
+            self.stdout.write(self.style.SUCCESS(f'Generated WireGuard Configuration Files. {res["status"]}'))
+        except Exception as e:
+            raise CommandError('Error:' + traceback.format_exception(e))

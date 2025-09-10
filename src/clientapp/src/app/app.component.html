@@ -1,43 +1,42 @@
 <p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <mat-card appearance="outlined">
-      <mat-card-content>
-        <div style="display: flex;flex-direction: row;justify-content:flex-end;">
-          <div style="flex-grow: 1;">
-            <h4>WireGuard UI Plus!</h4>
-            <h6>Run &amp; manage your WireGuard &trade; VPN in one UI.</h6>
+    <div class="card flex">
+      <p-panel [showHeader]="false">
+        <div style="display: flex; flex-direction: row;">
+          <div>
+            <h1>WireGuard UI Plus!</h1>
+            <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
           </div>
-          <div style="flex-grow: 0;" *ngIf="platformInformation.is_small_screen">
-            <app-sidepanel [popup]="true"></app-sidepanel>
-          </div>
+          @if (platformInformation.is_small_screen) {
+          <app-sidepanel [popup]="true"></app-sidepanel>
+          }
         </div>
-      </mat-card-content>
-    </mat-card>
+      </p-panel>
+    </div>
 
     <div>
-      <div *ngIf="serverStatus.need_regenerate_files && userSessionInfo.is_logged_in">
-        <p-messages severity="warn">
-          <ng-template pTemplate>
-            <div>
-              <div>
-                <span>Apply changes. This will regenerate Server Configuration files and restart WireGuard.</span>
-              </div>
-              <div>
-                <p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
-              </div>
-            </div>
-          </ng-template>
-        </p-messages>
+      @if (serverStatus.need_regenerate_files && userSessionInfo.is_logged_in) {
+      <div>
+        <p-message severity="warn">
+          <div>
+            <span><p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
+              This will regenerate Server Configuration files and restart WireGuard.</span>
+          </div>
+        </p-message>
       </div>
+      }
     </div>
   </div>
   <div class="item item-main" style="display: flex;flex-direction: row;">
-    <div *ngIf="!platformInformation.is_small_screen">
+    @if (!platformInformation.is_small_screen) {
+    <div>
       <app-sidepanel></app-sidepanel>
     </div>
+    }
     <div style="width: 100%;max-width: 100%; overflow: scroll;">
-        <router-outlet />
+      <router-outlet />
+      <p-confirmdialog />
     </div>
   </div>
   <div class="item item-footer">
@@ -46,18 +45,26 @@
         (c) <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
       </span>
       <br />
-      <span *ngIf="serverStatus.hostname">Host: {{serverStatus.hostname}}</span>
+      @if (serverStatus.hostname) {
+      <span>Host: {{serverStatus.hostname}}</span>
+      }
       &nbsp;
-      <span *ngIf="serverStatus.platform">Platform: {{serverStatus.platform}}</span>
+      @if (serverStatus.platform) {
+      <span>Platform: {{serverStatus.platform}}</span>
+      }
       &nbsp;
-      <span *ngIf="serverStatus.application_details">Running Version:
+      @if (serverStatus.application_details) {
+      <span>Running Version:
         {{serverStatus.application_details.current_version}}</span>
-      <span
-        *ngIf="serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates && (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)">
+      }
+      @if (serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates &&
+      (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)) {
+      <span>
         &nbsp;
         Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
           {{serverStatus.application_details.latest_live_version}}</a>
       </span>
+      }
     </small>
   </div>
 </div>

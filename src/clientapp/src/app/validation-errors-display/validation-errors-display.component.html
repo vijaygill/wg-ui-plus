@@ -1,9 +1,16 @@
 <span>
-    <span *ngIf="!field && errorList().length > 0">
-        Fix the errors before saving.
-        Warnings can be ignored.
+  @if (!field && errorList().length > 0) {
+    <span>
+      Fix the errors before saving.
+      Warnings can be ignored.
     </span>
-    <span *ngIf="field && errorList().length > 0">
-        <p-messages *ngIf="field" [value]="errorList()" [enableService]="true" [closable]="false" />
+  }
+  @if (field && errorList().length > 0) {
+    <span>
+      @if (field) {
+        <!--TODO-->
+        <!-- <p-message [text]="errorList()" [closable]="false" /> -->
+      }
     </span>
+  }
 </span>

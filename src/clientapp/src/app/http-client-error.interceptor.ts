@@ -41,6 +41,10 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
       .pipe(
         catchError((error: HttpErrorResponse) => {
           let errorMessageFromList = this.getHttpError(error.status);
+          if(!errorMessageFromList)
+          {
+            return throwError(() => error);  
+          }
           let m = error.error && error.error.message ? error.error.message : '';
           let message = 'Server returned HTTP Error '
             + error.status
