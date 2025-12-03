@@ -34,7 +34,7 @@ The database is just a SQLite file, so taking a backup is as easy as copying a f
   * Benchmarks show that WireGuard (tm) is multiple times faster than OpenVPN (tm).
 * Web based UI can be accessed from anywhere.
 * Distributed as docker image. So updates are very easy to perform.
-* Can send tunnel information (both QR code image and .conf file) via email if email is snabled (see below).
+* Can send tunnel information (both QR code image and .conf file) via email if email is enabled (see below).
 * Runs on Raspberry Pi. Developed on OrangePi-5+. Thus proven to run at-least on those SBC's.
 
 Functionality implemented so far
