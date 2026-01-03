@@ -32,7 +32,6 @@ DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${BASE_DIR}/config\":/config "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /lib/modules:/lib/modules:ro "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /tmp:/tmp "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /etc/localtime:/etc/localtime:ro "
-DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v /etc/timezone:/etc/timezone:ro "
 
 env | grep "^WG_" > /tmp/env.txt
 while read -r line
