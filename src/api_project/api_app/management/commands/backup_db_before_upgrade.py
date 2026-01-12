@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            db_file_path = settings.DATABASES['default']['NAME']
+            db_file_path = settings.DATABASES["default"]["NAME"]
             db_file_dir = os.path.dirname(db_file_path)
             db_file_name = os.path.basename(db_file_path)
             image_stage = os.environ.get("IMAGE_STAGE", None)
@@ -23,12 +23,24 @@ class Command(BaseCommand):
             if image_stage and new_version:
                 backup_file = f"{db_file_dir}/{db_file_name}-before-{new_version}"
                 if os.path.exists(backup_file):
-                    self.stdout.write(self.style.SUCCESS(f"Database backup exists already: {backup_file}."))
-                else:
-                    self.stdout.write("Database needs backup.")
-                    shutil.copyfile(db_file_path, backup_file)
                     self.stdout.write(
-                        self.style.SUCCESS(f"Database backed up to {backup_file}.")
+                        self.style.SUCCESS(
+                            f"Database backup exists already: {backup_file}."
+                        )
                     )
+                else:
+                    if os.path.exists(db_file_path):
+                        self.stdout.write("Database needs backup.")
+                        shutil.copyfile(db_file_path, backup_file)
+                        self.stdout.write(
+                            self.style.SUCCESS(f"Database backed up to {backup_file}.")
+                        )
+                    else:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                "Database file does not exist. Nothing to back-up."
+                            )
+                        )
+
         except Exception as e:
-            raise CommandError("Error:" + traceback.format_exception(e))
+            raise CommandError("Error:" + "\n".join(traceback.format_exception(e)))
