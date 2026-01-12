@@ -27,7 +27,7 @@ RUN npm update -g npm
 
 RUN npm install -g @angular/cli
 
-RUN pip install --break-system-packages --upgrade qrcode[pil] colorlog Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests cryptography
+RUN pip install --break-system-packages --upgrade qrcode[pil] colorlog "Django<6.0.0" djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields requests cryptography
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
@@ -50,7 +50,7 @@ RUN apk add --no-cache --update wireguard-tools iptables openresolv net-tools \
                                 tzdata gcc libressl-dev musl-dev libffi-dev \
                                 bind-tools \
     &&  pip install --no-cache-dir --break-system-packages --upgrade qrcode[pil] colorlog \
-                    Django djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields \
+                    "Django<6.0.0" djangorestframework django-cors-headers django-spa drf-standardized-errors django-dirtyfields \
                     cryptography requests \
 	&&  apk del gcc libressl-dev musl-dev libffi-dev
 
