@@ -142,7 +142,7 @@ class Peer(models.Model):
             )
             if (not self.ip_address) or (self.ip_address != ip_address_temp):
                 self.ip_address = ip_address_temp
-        super().save(force_insert, force_update)
+        super().save(force_insert=force_insert, force_update=force_update)
 
 
 class Target(models.Model):
@@ -263,7 +263,7 @@ class ServerConfiguration(models.Model):
         if force_insert or force_update or fields_changed:
             self.last_changed_datetime = datetime.datetime.now(tz=datetime.timezone.utc)
 
-        super().save(force_insert, force_update)
+        super().save(force_insert=force_insert, force_update=force_update)
         if ("network_address" in fields_changed) or (
             fields_changed_all in fields_changed
         ):
