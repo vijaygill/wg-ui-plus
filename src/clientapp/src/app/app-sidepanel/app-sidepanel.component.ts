@@ -1,5 +1,5 @@
 
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -11,6 +11,7 @@ import { LoginService } from '../login-service';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sidepanel',
   imports: [FormsModule, RouterModule, AppSharedModule, MenuModule],
   templateUrl: './app-sidepanel.component.html',

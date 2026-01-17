@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { WebapiService } from '../webapi.service';
 
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { LicenseInfo } from '../webapi.entities';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-about',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './app-about.component.html',

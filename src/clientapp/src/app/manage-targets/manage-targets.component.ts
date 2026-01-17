@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { CrudContainerComponent } from '../crud-container/crud-container.component';
@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-manage-targets',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManageTargetsListComponent, ManageTargetsEditorComponent],
     providers: [MessageService],

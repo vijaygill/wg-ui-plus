@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -7,6 +7,7 @@ import { WebapiService } from '../webapi.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-testpage',
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],

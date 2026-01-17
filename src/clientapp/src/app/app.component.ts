@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-root',
     imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
     providers: [MessageService],

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -11,6 +11,7 @@ import { WebapiService } from '../webapi.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-manage-peer-groups-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
     providers: [MessageService, ConfirmationDialogService],

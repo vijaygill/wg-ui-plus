@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
@@ -10,6 +10,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-server-monitor-peers',
     imports: [CommonModule, FormsModule, AppSharedModule],
     providers: [MessageService],

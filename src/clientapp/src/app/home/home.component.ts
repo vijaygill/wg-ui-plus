@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-home',
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],

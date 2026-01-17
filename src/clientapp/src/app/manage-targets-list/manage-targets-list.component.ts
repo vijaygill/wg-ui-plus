@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
@@ -8,6 +8,7 @@ import { WebapiService } from '../webapi.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-manage-targets-list',
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],

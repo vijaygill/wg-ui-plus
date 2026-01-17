@@ -1,4 +1,4 @@
-import { Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ContentChild, ElementRef, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { LoginService } from '../login-service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-crud-container',
     imports: [CommonModule, AppSharedModule, AuthorizedViewComponent],
     templateUrl: './crud-container.component.html',

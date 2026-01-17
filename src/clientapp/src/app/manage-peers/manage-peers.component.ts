@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-manage-peers',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
     providers: [MessageService],

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -13,6 +13,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-manage-peers-editor',
   imports: [ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   providers: [MessageService, ConfirmationDialogService, ConfirmationService],

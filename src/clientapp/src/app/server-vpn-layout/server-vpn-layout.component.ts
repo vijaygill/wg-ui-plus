@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MessageService, TreeNode } from 'primeng/api';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from '../webapi.service';
@@ -9,6 +9,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 
 @Component({
     standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-server-vpn-layout',
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
