@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
@@ -12,12 +12,13 @@ import { WebapiService } from '../webapi.service';
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './manage-peers-list.component.html',
-    styleUrl: './manage-peers-list.component.scss'
+    styleUrl: './manage-peers-list.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagePeersListComponent {
   peers: Peer[] = [];
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+  constructor(private messageService: MessageService, private webapiService: WebapiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.refreshData();
@@ -26,6 +27,7 @@ export class ManagePeersListComponent {
   refreshData(): void {
     this.webapiService.getPeerList().subscribe(data => {
       this.peers = data;
+      this.cdr.markForCheck();
     });
   }
 

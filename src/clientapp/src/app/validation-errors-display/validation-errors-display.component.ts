@@ -1,5 +1,5 @@
 
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ServerValidationError } from '../webapi.entities';
 import { ToastMessageOptions } from 'primeng/api';
 import { MessageModule } from 'primeng/message';
@@ -9,7 +9,8 @@ import { MessageModule } from 'primeng/message';
     selector: 'app-validation-errors-display',
     imports: [MessageModule],
     templateUrl: './validation-errors-display.component.html',
-    styleUrl: './validation-errors-display.component.scss'
+    styleUrl: './validation-errors-display.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ValidationErrorsDisplayComponent {
   @Input() field!: string;

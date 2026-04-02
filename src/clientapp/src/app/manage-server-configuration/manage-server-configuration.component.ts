@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
@@ -18,7 +18,8 @@ import { WebapiService } from '../webapi.service';
   imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
-  styleUrl: './manage-server-configuration.component.scss'
+  styleUrl: './manage-server-configuration.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageServerConfigurationComponent {
 
@@ -36,7 +37,8 @@ export class ManageServerConfigurationComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private router: Router, private loginService: LoginService) { }
+    private router: Router, private loginService: LoginService,
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
@@ -45,12 +47,14 @@ export class ManageServerConfigurationComponent {
       if (!this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/login']);
       }
+      this.cdr.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       if (!this.serverStatus || (this.serverStatus && data && this.serverStatus.last_db_change_datetime < data.last_db_change_datetime)) {
         this.refreshData();
         this.serverStatus = data;
+        this.cdr.markForCheck();
       }
     });
     this.refreshData();
@@ -69,6 +73,7 @@ export class ManageServerConfigurationComponent {
     // get the server configurations and use only first
     this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
+      this.cdr.markForCheck();
     });
   }
 
@@ -78,11 +83,13 @@ export class ManageServerConfigurationComponent {
         next: data => {
           this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
           this.validationResult = { type: '', errors: [] } as ServerValidationError;
+          this.cdr.markForCheck();
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -118,10 +125,12 @@ export class ManageServerConfigurationComponent {
   changePassword(event: Event): void {
     if (this.changeUserPasswordInfo.new_password !== this.changeUserPasswordInfo.new_password_copy) {
       this.userSessionInfo.message = "New Passwords don't match.";
+      this.cdr.markForCheck();
     }
     else {
       this.webapiService.changeUserPassword(this.changeUserPasswordInfo).subscribe(data => {
         this.userSessionInfo.message = data.message;
+        this.cdr.markForCheck();
       });
     }
   }

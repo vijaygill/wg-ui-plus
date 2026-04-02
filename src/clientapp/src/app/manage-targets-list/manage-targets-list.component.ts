@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
@@ -12,12 +12,13 @@ import { WebapiService } from '../webapi.service';
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './manage-targets-list.component.html',
-    styleUrl: './manage-targets-list.component.scss'
+    styleUrl: './manage-targets-list.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageTargetsListComponent {
   targets: Target[] = [];
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+  constructor(private messageService: MessageService, private webapiService: WebapiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.refreshData();
@@ -26,6 +27,7 @@ export class ManageTargetsListComponent {
   refreshData(): void {
     this.webapiService.getTargetList().subscribe(data => {
       this.targets = data;
+      this.cdr.markForCheck();
     });
   }
 

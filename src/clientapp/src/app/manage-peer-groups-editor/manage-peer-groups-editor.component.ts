@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -15,7 +15,8 @@ import { WebapiService } from '../webapi.service';
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
     providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-peer-groups-editor.component.html',
-    styleUrl: './manage-peer-groups-editor.component.scss'
+    styleUrl: './manage-peer-groups-editor.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagePeerGroupsEditorComponent {
   @Input()
@@ -26,6 +27,7 @@ export class ManagePeerGroupsEditorComponent {
       this.webapiService.getPeerGroup(value.id).subscribe(data => {
         this.peerGroup = data;
         this.getLookupData();
+        this.cdr.markForCheck();
       });
     }
     else {
@@ -40,7 +42,8 @@ export class ManagePeerGroupsEditorComponent {
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) { }
+    private confirmationDialogService: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) { }
 
   getLookupData() {
     if (this.peerGroup) {
@@ -49,12 +52,14 @@ export class ManagePeerGroupsEditorComponent {
           lookup.filter(x => !this.peerGroup.peers.some(y => y.id === x.id))
           : lookup;
         this.peerGroup.peers_lookup = lookupItems;
+        this.cdr.markForCheck();
       });
       this.webapiService.getTargetList().subscribe(lookup => {
         let lookupItems = this.peerGroup.targets ?
           lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
           : lookup;
         this.peerGroup.targets_lookup = lookupItems;
+        this.cdr.markForCheck();
       });
     }
   }
@@ -68,6 +73,7 @@ export class ManagePeerGroupsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -92,6 +98,7 @@ export class ManagePeerGroupsEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.cdr.markForCheck();
                 }
               },
               complete: () => {

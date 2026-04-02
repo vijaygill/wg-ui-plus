@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ContentChild, OnInit, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChild, OnInit, TemplateRef } from '@angular/core';
 import { AppSharedModule } from '../app-shared.module';
 import { LoginService } from '../login-service';
 import { Router } from '@angular/router';
@@ -11,7 +11,8 @@ import { Subscription } from 'rxjs';
     selector: 'app-authorized-view',
     imports: [CommonModule, AppSharedModule],
     templateUrl: './authorized-view.component.html',
-    styleUrl: './authorized-view.component.scss'
+    styleUrl: './authorized-view.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthorizedViewComponent implements OnInit{
   userSessionInfo!: UserSessionInfo;
@@ -19,7 +20,7 @@ export class AuthorizedViewComponent implements OnInit{
 
   @ContentChild("childControl") childControl!: TemplateRef<any>;
 
-  constructor(private router: Router, private loginService: LoginService) { }
+  constructor(private router: Router, private loginService: LoginService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
@@ -27,6 +28,7 @@ export class AuthorizedViewComponent implements OnInit{
       if (!this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/login']);
       }
+      this.cdr.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
   }

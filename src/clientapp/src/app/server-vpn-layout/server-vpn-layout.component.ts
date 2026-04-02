@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MessageService, TreeNode } from 'primeng/api';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from '../webapi.service';
@@ -13,7 +13,8 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './server-vpn-layout.component.html',
-    styleUrl: './server-vpn-layout.component.scss'
+    styleUrl: './server-vpn-layout.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerVpnLayoutComponent implements OnInit {
   private timerSubscription !: Subscription;
@@ -21,7 +22,8 @@ export class ServerVpnLayoutComponent implements OnInit {
   refreshDelay: number = 0;
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) {
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -36,6 +38,7 @@ export class ServerVpnLayoutComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.refreshDelay = val;
       this.loadData();
+      this.cdr.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -49,6 +52,7 @@ export class ServerVpnLayoutComponent implements OnInit {
   loadData() {
     this.webapiService.getTargetHeirarchy().subscribe(data => {
       this.heirarchyData = data;
+      this.cdr.markForCheck();
     }
     );
   }

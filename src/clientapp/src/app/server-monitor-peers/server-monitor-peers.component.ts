@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { MessageService } from 'primeng/api';
@@ -14,7 +14,8 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     imports: [CommonModule, FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './server-monitor-peers.component.html',
-    styleUrl: './server-monitor-peers.component.scss'
+    styleUrl: './server-monitor-peers.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServerMonitorPeersComponent implements OnInit {
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
@@ -22,7 +23,8 @@ export class ServerMonitorPeersComponent implements OnInit {
   refreshDelay: number = 0;
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) {
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -37,6 +39,7 @@ export class ServerMonitorPeersComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.refreshDelay = val;
       this.loadData();
+      this.cdr.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -50,6 +53,7 @@ export class ServerMonitorPeersComponent implements OnInit {
   loadData() {
     this.webapiService.getConnectedPeers().subscribe(data => {
       this.connectedPeerData = data;
+      this.cdr.markForCheck();
     });
   }
 

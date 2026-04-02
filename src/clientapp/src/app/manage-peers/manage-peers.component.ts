@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,8 @@ import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
     providers: [MessageService],
     templateUrl: './manage-peers.component.html',
-    styleUrl: './manage-peers.component.scss'
+    styleUrl: './manage-peers.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagePeersComponent {
 

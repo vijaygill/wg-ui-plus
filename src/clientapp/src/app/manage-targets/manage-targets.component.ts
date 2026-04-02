@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { CrudContainerComponent } from '../crud-container/crud-container.component';
@@ -13,7 +13,8 @@ import { MessageService } from 'primeng/api';
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManageTargetsListComponent, ManageTargetsEditorComponent],
     providers: [MessageService],
     templateUrl: './manage-targets.component.html',
-    styleUrl: './manage-targets.component.scss'
+    styleUrl: './manage-targets.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageTargetsComponent {
 

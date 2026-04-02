@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -11,7 +11,8 @@ import { WebapiService } from '../webapi.service';
     imports: [FormsModule, AppSharedModule],
     providers: [MessageService],
     templateUrl: './testpage.component.html',
-    styleUrl: './testpage.component.scss'
+    styleUrl: './testpage.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TestpageComponent {
 

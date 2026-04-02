@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { WebapiService } from '../webapi.service';
 
 import { FormsModule } from '@angular/forms';
@@ -11,11 +11,12 @@ import { LicenseInfo } from '../webapi.entities';
     selector: 'app-about',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './app-about.component.html',
-    styleUrl: './app-about.component.scss'
+    styleUrl: './app-about.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AboutComponent implements OnInit {
   license: LicenseInfo = { license: '' } as LicenseInfo;
-  constructor(private webapiService: WebapiService) {
+  constructor(private webapiService: WebapiService, private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -25,6 +26,7 @@ export class AboutComponent implements OnInit {
   loadData(): void {
     this.webapiService.getLicense().subscribe(data => {
       this.license = data;
+      this.cdr.markForCheck();
     });
   }
 }

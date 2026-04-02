@@ -1,5 +1,5 @@
 
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -14,7 +14,8 @@ import { LoginService } from '../login-service';
   selector: 'app-sidepanel',
   imports: [FormsModule, RouterModule, AppSharedModule, MenuModule],
   templateUrl: './app-sidepanel.component.html',
-  styleUrl: './app-sidepanel.component.scss'
+  styleUrl: './app-sidepanel.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidepanelComponent implements OnInit {
   private menuItemMonitorPeers = {
@@ -145,12 +146,13 @@ export class SidepanelComponent implements OnInit {
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
       this.items = this.userSessionInfo.is_logged_in ? this.itemsAuthorised : this.itemsAnonymous;
+      this.cdr.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
   }

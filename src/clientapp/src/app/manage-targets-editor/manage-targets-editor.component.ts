@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
@@ -15,7 +15,8 @@ import { WebapiService } from '../webapi.service';
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
     providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-targets-editor.component.html',
-    styleUrl: './manage-targets-editor.component.scss'
+    styleUrl: './manage-targets-editor.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageTargetsEditorComponent {
   @Input()
@@ -26,6 +27,7 @@ export class ManageTargetsEditorComponent {
       this.webapiService.getTarget(value.id).subscribe(data => {
         this.target = data;
         this.getLookupData();
+        this.cdr.markForCheck();
       });
     }
     else {
@@ -41,7 +43,8 @@ export class ManageTargetsEditorComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) { }
+    private confirmationDialogService: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) { }
 
   getLookupData() {
     this.webapiService.getPeerGroupList().subscribe(lookup => {
@@ -49,6 +52,7 @@ export class ManageTargetsEditorComponent {
         lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
         : lookup;
       this.target.peer_groups_lookup = lookupItems;
+      this.cdr.markForCheck();
     });
   }
 
@@ -61,6 +65,7 @@ export class ManageTargetsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -85,6 +90,7 @@ export class ManageTargetsEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.cdr.markForCheck();
                 }
               },
               complete: () => {

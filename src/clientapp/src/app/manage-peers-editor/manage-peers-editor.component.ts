@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -17,7 +17,8 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
   imports: [ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   providers: [MessageService, ConfirmationDialogService, ConfirmationService],
   templateUrl: './manage-peers-editor.component.html',
-  styleUrl: './manage-peers-editor.component.scss'
+  styleUrl: './manage-peers-editor.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagePeersEditorComponent {
   @Input()
@@ -28,6 +29,7 @@ export class ManagePeersEditorComponent {
       this.webapiService.getPeer(value.id).subscribe(data => {
         this.peer = data;
         this.getLookupData();
+        this.cdr.markForCheck();
       });
     }
     else {
@@ -43,7 +45,8 @@ export class ManagePeersEditorComponent {
 
   constructor(private messageService: MessageService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) {
+    private confirmationDialogService: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) {
 
   }
 
@@ -54,6 +57,7 @@ export class ManagePeersEditorComponent {
           lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
           : lookup;
         this.peer.peer_groups_lookup = lookupItems;
+        this.cdr.markForCheck();
       });
     }
   }
@@ -75,6 +79,7 @@ export class ManagePeersEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -103,6 +108,7 @@ export class ManagePeersEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.cdr.markForCheck();
                 }
               },
               complete: () => {

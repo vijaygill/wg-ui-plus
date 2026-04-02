@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +19,8 @@ import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
     imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
     providers: [MessageService],
     templateUrl: './app.component.html',
-    styleUrl: './app.component.scss'
+    styleUrl: './app.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   title = 'WireGuard UI Plus';
@@ -41,7 +42,8 @@ export class AppComponent implements OnInit {
     private webapiService: WebapiService,
     private loginService: LoginService,
     private platformInformationService: PlatformInformationService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) { }
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     // this.primengConfig.zIndex = {
@@ -54,6 +56,7 @@ export class AppComponent implements OnInit {
     this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
       (data) => {
         this.platformInformation = data;
+        this.cdr.markForCheck();
       }
     );
 
@@ -75,10 +78,12 @@ export class AppComponent implements OnInit {
           closable: false,
         });
       }
+      this.cdr.markForCheck();
     });
 
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
+      this.cdr.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();

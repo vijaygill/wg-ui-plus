@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -13,7 +13,8 @@ import { JsonPipe } from '@angular/common';
     selector: 'app-login',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './login.component.html',
-    styleUrl: './login.component.scss'
+    styleUrl: './login.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
   credentials: UserCrendentials = { username: '', password: '' } as UserCrendentials;
@@ -21,7 +22,7 @@ export class LoginComponent implements OnInit {
   loginServiceSubscription !: Subscription;
   url !: string;
 
-  constructor(private router: Router, private loginService: LoginService) {
+  constructor(private router: Router, private loginService: LoginService, private cdr: ChangeDetectorRef) {
 
   }
 
@@ -32,6 +33,7 @@ export class LoginComponent implements OnInit {
       if (this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/']);
       }
+      this.cdr.markForCheck();
     });
   }
 
