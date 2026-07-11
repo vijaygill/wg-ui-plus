@@ -93,36 +93,21 @@ jobs:
         run: |
           echo "APP_VERSION=${{ env.IMAGE_TAG }}-${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Generate build-args for docker image - amd64
-        id: gen_docker_build_args_amd64
-        if: matrix.runner == 'ubuntu-latest'
-        run: |
-          echo "APP_ARCH=amd64" >> $GITHUB_OUTPUT
-
-      - name: Generate build-args for docker image - arm64
-        id: gen_docker_build_args_arm64
-        if: matrix.runner == 'self-hosted'
-        run: |
-          echo "APP_ARCH=arm64" >> $GITHUB_OUTPUT
-
       - name: Build and push Docker image (amd64)
         if: matrix.runner == 'ubuntu-latest'
         id: push_gh_hosted
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: dev.Dockerfile
+          file: Dockerfile
           target: live
           build-args: |
             APP_VERSION=${{ steps.gen_docker_build_args_release.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_dev.outputs.APP_VERSION }}
-            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance:
             false
-            #        cache-from: type=gha
-            #        cache-to: type=gha,mode=max
 
       - name: Build and push Docker image (arm64)
         if: matrix.runner == 'self-hosted'
@@ -130,18 +115,15 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: dev.Dockerfile
+          file: Dockerfile
           target: live
           build-args: |
             APP_VERSION=${{ steps.gen_docker_build_args_release.outputs.APP_VERSION }}${{ steps.gen_docker_build_args_dev.outputs.APP_VERSION }}
-            APP_ARCH=${{ steps.gen_docker_build_args_amd64.outputs.APP_ARCH }}${{ steps.gen_docker_build_args_arm64.outputs.APP_ARCH }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance:
             false
-            #        cache-from: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }}
-            #        cache-to: type=registry,ref=docker-registry.gillsoft.ie/${{ env.IMAGE_NAME }}:buildcache-${{ github.ref_name }},mode=max
 
   create-multiarch-image:
     runs-on: ubuntu-latest
