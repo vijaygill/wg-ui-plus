@@ -289,3 +289,22 @@ Per the mapping table in §4.1–4.6:
 - `src/app/testpage/testpage.component.{html,ts}`
 
 **Unchanged**: backend, all `webapi.entities.ts` entity shapes, `app.routes.ts`, `authorized-view`, `home` (template already empty).
+
+---
+
+## Implementation status (2026-08-02)
+
+**DONE** — migrated on branch `migrate-to-angular-material` (commits `0b5a18e` + `0598d4e`).
+
+- **Deps**: `@angular/material@^21.2.13`, `material-icons@^1.13.14` added; `primeng`, `@primeuix/themes`, `primeicons` removed; `package-lock.json` regenerated (no stale entries).
+- **Theme**: single global Material dark theme via `mat.theme()` on `html` (primary azure, tertiary blue); self-hosted Material icon font (all 5 weights bundled under `dist/.../browser/media/`); Google Fonts Material Icons link removed from `index.html` (Roboto kept).
+- **Infra**: `NotificationService` (MatSnackBar, FIFO queue + replace-current `clear()`), `ConfirmDialogComponent`, `ConfirmationDialogService` rewritten on `MatDialog` (API unchanged; latent shared-`Subject` bug fixed), `app-dual-list` (CDK drag-drop + ctrl/meta multi-select + move buttons, name-sorted), `app-org-chart` (recursive HTML/CSS tree with per-type disabled tooltips), `NavMenuItem` type.
+- **All pages migrated** to Material: sidepanel (`mat-nav-list`/`mat-menu`), login, crud-container (dead `p-dialog`/`useDialogForEditor` removed), lists ×3 (native `.data-table` + `matSortDisableClear`), editors ×3 (`mat-form-field` + `app-dual-list`), monitors ×2, server-vpn-layout (`app-org-chart`), server-configuration (`mat-tab-group`), about, validation-errors, testpage.
+- **Naming fixes**: `UserCrendentials`→`UserCredentials`, `getTargetHeirarchy`→`getTargetHierarchy`, `urlPeerGroupHeirarchy`→`urlPeerGroupHierarchy`, `heirarchyData`→`hierarchyData`, `applyconfiguration`→`applyConfiguration`, `itemsAuthorised`→`itemsAuthorized`. Not renamed (churn-only): `WebapiService`, `WireguardConfiguration`.
+- **Review**: independent review found no blockers; fixed W1 (poll `clear()` no longer kills user toasts), W2 (dual-list `undefined` input hardening), W3 (Esc/backdrop now reject per spec), plus nits (global `.empty-row`, removed `MatProgressSpinnerModule`, dead `restartWireguard()`, `matSortDisableClear` ×4).
+- **Verification**: production build passes in `node:22` container; static-serve smoke test: every asset referenced by `index.html` returns 200, all 10 icon font files present, `material-icons` @font-face in CSS, no `editor-table`/primeng remnants in bundle. Grep gates: zero hits for `primeng|primeicons|@primeuix|<p-*|pInputText|pButton|pTooltip|pi pi-` across `src/`.
+
+**Not done / notes**:
+- Full runtime test of the Dockerized app (backend + SPA) not possible in this sandbox (dev image not built locally; docker daemon here has a different `/workspace` view). Recommend `./build-docker-images.sh dev` + `./run-app-dev.sh` smoke test on a real checkout.
+- Known pre-existing build warnings: `tslib`/`rxjs` CommonJS "not ESM" optimization bailouts (unchanged from before the migration).
+- NITs skipped by design (Material-native): org-chart collapse toggle dropped, popup-menu tooltips not ported, password `autocomplete` attrs not added.
