@@ -4,6 +4,16 @@
     gap: 0.5rem;
 }
 
+.editor-fields-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+
+    mat-form-field {
+        flex: 1;
+    }
+}
+
 .editor-row {
     display: flex;
     align-items: center;

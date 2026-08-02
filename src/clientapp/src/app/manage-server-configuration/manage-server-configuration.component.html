@@ -13,37 +13,41 @@
               </mat-form-field>
               <app-validation-errors-display field="network_address" [validationResult]="validationResult">
               </app-validation-errors-display>
-              <mat-form-field>
-                <mat-label>Server IP Address</mat-label>
-                <input matInput id="serverIPAddress" [(ngModel)]="editItem.ip_address"
-                  matTooltip="IP address of the VPN server." matTooltipPosition="above" [readonly]="true"
-                  [disabled]="true" />
-              </mat-form-field>
+              <div class="editor-fields-row">
+                <mat-form-field>
+                  <mat-label>Server IP Address</mat-label>
+                  <input matInput id="serverIPAddress" [(ngModel)]="editItem.ip_address"
+                    matTooltip="IP address of the VPN server." matTooltipPosition="above" [readonly]="true"
+                    [disabled]="true" />
+                </mat-form-field>
+                <mat-form-field>
+                  <mat-label>Port Internal</mat-label>
+                  <input matInput id="portInternal" type="number" [min]="1024" [max]="65535" required
+                    [(ngModel)]="editItem.port_internal"
+                    matTooltip="Port on the host where the VPN is running." matTooltipPosition="above" />
+                </mat-form-field>
+              </div>
               <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
               </app-validation-errors-display>
-              <mat-form-field>
-                <mat-label>Host Name External</mat-label>
-                <input matInput id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
-                  matTooltip="Peers connect to this VPN from internet using this name." matTooltipPosition="above" />
-              </mat-form-field>
+              <app-validation-errors-display field="port_internal" [validationResult]="validationResult">
+              </app-validation-errors-display>
+              <div class="editor-fields-row">
+                <mat-form-field>
+                  <mat-label>Host Name External</mat-label>
+                  <input matInput id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
+                    matTooltip="Peers connect to this VPN from internet using this name." matTooltipPosition="above" />
+                </mat-form-field>
+                <mat-form-field>
+                  <mat-label>Port External</mat-label>
+                  <input matInput id="portExternal" type="number" [min]="1024" [max]="65535" required
+                    [(ngModel)]="editItem.port_external"
+                    matTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
+                    matTooltipPosition="above" />
+                </mat-form-field>
+              </div>
               <app-validation-errors-display field="host_name_external" [validationResult]="validationResult">
               </app-validation-errors-display>
-              <mat-form-field>
-                <mat-label>Port External</mat-label>
-                <input matInput id="portExternal" type="number" [min]="1024" [max]="65535" required
-                  [(ngModel)]="editItem.port_external"
-                  matTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
-                  matTooltipPosition="above" />
-              </mat-form-field>
               <app-validation-errors-display field="port_external" [validationResult]="validationResult">
-              </app-validation-errors-display>
-              <mat-form-field>
-                <mat-label>Port Internal</mat-label>
-                <input matInput id="portInternal" type="number" [min]="1024" [max]="65535" required
-                  [(ngModel)]="editItem.port_internal"
-                  matTooltip="Port on the host where the VPN is running." matTooltipPosition="above" />
-              </mat-form-field>
-              <app-validation-errors-display field="port_internal" [validationResult]="validationResult">
               </app-validation-errors-display>
               <mat-form-field>
                 <mat-label>Local Networks</mat-label>
