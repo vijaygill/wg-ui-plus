@@ -19,8 +19,13 @@ export interface DualListItem {
 })
 export class DualListComponent<T extends DualListItem> {
 
-    @Input() source: T[] = [];
-    @Input() selected: T[] = [];
+    private _source: T[] = [];
+    private _selected: T[] = [];
+
+    @Input() set source(v: T[] | undefined) { this._source = v ?? []; }
+    get source(): T[] { return this._source; }
+    @Input() set selected(v: T[] | undefined) { this._selected = v ?? []; }
+    get selected(): T[] { return this._selected; }
     @Input() sourceHeader: string = '';
     @Input() targetHeader: string = '';
     @Input() disabled: boolean = false;
@@ -33,6 +38,9 @@ export class DualListComponent<T extends DualListItem> {
 
     onDrop(event: CdkDragDrop<T[]>): void {
         if (this.disabled) {
+            return;
+        }
+        if (!this.source || !this.selected) {
             return;
         }
         const previous = event.previousContainer.data;
@@ -70,6 +78,9 @@ export class DualListComponent<T extends DualListItem> {
         if (this.disabled) {
             return;
         }
+        if (!this.source || !this.selected) {
+            return;
+        }
         const selection = this.selectionFor(from === this.source ? 'source' : 'target');
         const items = Array.from(selection);
         selection.clear();
@@ -87,6 +98,9 @@ export class DualListComponent<T extends DualListItem> {
         if (this.disabled) {
             return;
         }
+        if (!this.source || !this.selected) {
+            return;
+        }
         this.selectionFor(from === this.source ? 'source' : 'target').clear();
         to.push(...from.splice(0, from.length));
         this.sortBoth();
@@ -101,8 +115,8 @@ export class DualListComponent<T extends DualListItem> {
     }
 
     private sortBoth(): void {
-        this.sortByName(this.source);
-        this.sortByName(this.selected);
+        this.sortByName(this.source ?? []);
+        this.sortByName(this.selected ?? []);
     }
 
     private sortByName(items: T[]): void {

@@ -102,6 +102,13 @@ mat-form-field {
     }
 }
 
+/* Empty-state row rendered inside data tables ("No peers found." etc.). */
+.empty-row {
+    text-align: center;
+    opacity: 0.6;
+    padding: 1rem;
+}
+
 /* Notification (snackbar) severity icon colours. */
 .snackbar-success mat-icon {
     color: #4caf50;

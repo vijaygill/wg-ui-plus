@@ -23,7 +23,6 @@ export class ConfirmationDialogService {
     private openDialog(title: string, message: string): Observable<boolean> {
         const dialogRef = this.dialog.open(ConfirmDialogComponent, {
             data: { title, message },
-            disableClose: true,
         });
         return dialogRef.afterClosed().pipe(
             map((result: boolean | undefined) => result === true)

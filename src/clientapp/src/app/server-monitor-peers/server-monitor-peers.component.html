@@ -10,7 +10,7 @@
       Last update time: {{connectedPeerData.datetime}} (Refreshed every {{refreshDelay}} seconds)
     </div>
     <div class="table-wrapper">
-      <table class="data-table" matSort matSortActive="peer_name" matSortDirection="asc"
+      <table class="data-table" matSort matSortDisableClear matSortActive="peer_name" matSortDirection="asc"
         (matSortChange)="sortData($event)">
         <thead>
           <tr>

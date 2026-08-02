@@ -98,12 +98,6 @@ export class ManageServerConfigurationComponent {
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;
 
-  restartWireguard(event: Event): void {
-    this.webapiService.wireguardRestart().subscribe(data => {
-      this.notification.success('Wireguard restarted on server.');
-    });
-  }
-
   applyConfiguration(): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
       this.notification.success('Configuration files generated on server.');

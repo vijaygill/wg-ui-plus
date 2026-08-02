@@ -55,11 +55,12 @@ export class AppComponent implements OnInit {
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
-      // The server status is re-reported on every poll tick (~10s). Clear the
-      // snackbar first so the new status replaces the previous one instead of
-      // queueing up behind it.
-      this.notification.clear();
       if (this.serverStatus && this.serverStatus.message) {
+        // The server status is re-reported on every poll tick (~10s). Clear the
+        // snackbar only when a fresh status message is available, so it replaces
+        // the previous one instead of queueing up behind it — and so that
+        // user-action toasts are not nuked by empty poll ticks.
+        this.notification.clear();
         if (this.serverStatus.status == 'error') {
           this.notification.error(this.serverStatus.message);
         } else {
