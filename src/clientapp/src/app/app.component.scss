@@ -1,0 +1,24 @@
+/* Warning bar shown when the server needs its configuration files
+   regenerated (replaces the old message banner). */
+.message-warn {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    background: rgba(255, 183, 77, 0.15);
+    color: #ffb74d;
+
+    mat-icon {
+        flex-shrink: 0;
+    }
+
+    .message-warn-text {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+}

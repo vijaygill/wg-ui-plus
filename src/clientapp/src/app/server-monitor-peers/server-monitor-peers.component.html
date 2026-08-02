@@ -1,31 +1,46 @@
-<p-card header="Connected Peers" [subheader]="connectedPeerData.message">
-	<p-table sortField="peer_name" [value]="connectedPeerData.items" styleClass="p-datatable-striped" dataKey="id">
-		<ng-template pTemplate="caption">
-			<div class="flex align-items-center justify-content-between">
-				Last update time: {{connectedPeerData.datetime}} (Refreshed every {{refreshDelay}} seconds)
-			</div>
-		</ng-template>
-		<ng-template pTemplate="header">
-			<tr>
-				<th>Name</th>
-				<th>Status</th>
-				<th>IP Address (Public)</th>
-				<th>IP Address (Internal)</th>
-				<th>Last Handshake</th>
-				<th>Data Tx</th>
-				<th>Data Rx</th>
-			</tr>
-		</ng-template>
-		<ng-template pTemplate="body" let-connectedPeer>
-			<tr>
-				<td>{{ connectedPeer.peer_name }}</td>
-				<td>{{ connectedPeer.status }}</td>
-				<td>{{ connectedPeer.end_point_ip }}</td>
-				<td>{{ connectedPeer.allowed_ips_ip }}</td>
-				<td>{{ connectedPeer.latest_handshake }}</td>
-				<td>{{ connectedPeer.transfer_rx | number}} </td>
-				<td>{{ connectedPeer.transfer_tx | number }}</td>
-			</tr>
-		</ng-template>
-	</p-table>
-</p-card>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Connected Peers</mat-card-title>
+    @if (connectedPeerData.message) {
+      <mat-card-subtitle>{{connectedPeerData.message}}</mat-card-subtitle>
+    }
+  </mat-card-header>
+  <mat-card-content>
+    <div class="table-caption">
+      Last update time: {{connectedPeerData.datetime}} (Refreshed every {{refreshDelay}} seconds)
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table" matSort matSortActive="peer_name" matSortDirection="asc"
+        (matSortChange)="sortData($event)">
+        <thead>
+          <tr>
+            <th mat-sort-header="peer_name">Name</th>
+            <th>Status</th>
+            <th>IP Address (Public)</th>
+            <th>IP Address (Internal)</th>
+            <th>Last Handshake</th>
+            <th>Data Tx</th>
+            <th>Data Rx</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (connectedPeer of connectedPeerData.items; track connectedPeer.peer_name) {
+            <tr>
+              <td>{{ connectedPeer.peer_name }}</td>
+              <td>{{ connectedPeer.status }}</td>
+              <td>{{ connectedPeer.end_point_ip }}</td>
+              <td>{{ connectedPeer.allowed_ips_ip }}</td>
+              <td>{{ connectedPeer.latest_handshake }}</td>
+              <td>{{ connectedPeer.transfer_rx | number}} </td>
+              <td>{{ connectedPeer.transfer_tx | number }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-row">No connected peers.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,6 +1,9 @@
-<p-card header="IP-Tables log">
-    Last update time: {{ipTablesLog.datetime}} (Refreshed every {{refreshDelay}} seconds)
-    <div>
-        <pre>{{ipTablesLog.output}}</pre>
-    </div>
-</p-card>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>IP-Tables log</mat-card-title>
+    <mat-card-subtitle>Last update time: {{ipTablesLog.datetime}} (Refreshed every {{refreshDelay}} seconds)</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <pre>{{ipTablesLog.output}}</pre>
+  </mat-card-content>
+</mat-card>

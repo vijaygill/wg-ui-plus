@@ -1,29 +1,28 @@
-<p-toast></p-toast>
 <div class="container">
   <div class="item item-header">
-    <div class="card flex">
-      <p-panel [showHeader]="false">
-        <div style="display: flex; flex-direction: row;">
-          <div>
-            <h1>WireGuard UI Plus!</h1>
-            <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
-          </div>
-          @if (platformInformation.is_small_screen) {
-          <app-sidepanel [popup]="true"></app-sidepanel>
-          }
+    <div class="card">
+      <div style="display: flex; flex-direction: row;">
+        <div>
+          <h1>WireGuard UI Plus!</h1>
+          <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
         </div>
-      </p-panel>
+        @if (platformInformation.is_small_screen) {
+        <app-sidepanel [popup]="true"></app-sidepanel>
+        }
+      </div>
     </div>
 
     <div>
       @if (serverStatus.need_regenerate_files && userSessionInfo.is_logged_in) {
-      <div>
-        <p-message severity="warn">
-          <div>
-            <span><p-button icon="pi pi-check" label="Apply Changes" (onClick)="applyconfiguration($event)"></p-button>
-              This will regenerate Server Configuration files and restart WireGuard.</span>
-          </div>
-        </p-message>
+      <div class="message-warn">
+        <mat-icon>warning</mat-icon>
+        <span class="message-warn-text">
+          <button mat-flat-button color="warn" (click)="applyConfiguration($event)">
+            <mat-icon>check</mat-icon>
+            Apply Changes
+          </button>
+          This will regenerate Server Configuration files and restart WireGuard.
+        </span>
       </div>
       }
     </div>
@@ -36,7 +35,6 @@
     }
     <div style="width: 100%;max-width: 100%; overflow: scroll;">
       <router-outlet />
-      <p-confirmdialog />
     </div>
   </div>
   <div class="item item-footer">

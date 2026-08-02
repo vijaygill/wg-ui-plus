@@ -1,0 +1,23 @@
+<div class="org-chart">
+    <ng-template #nodeTpl let-node>
+        <div class="org-node" [class.org-node-disabled]="node.data?.disabled === true">
+            <div class="org-node-label">
+                <span>{{ node.label }}</span>
+                <mat-icon *ngIf="node.data?.disabled === true"
+                          class="org-node-block-icon"
+                          [matTooltip]="disabledTooltip(node)"
+                          matTooltipPosition="above">block</mat-icon>
+            </div>
+            <div class="org-node-ip" *ngIf="node.data?.ip_address">{{ node.data.ip_address }}</div>
+        </div>
+        <div class="org-children" *ngIf="node.children && node.children.length">
+            <div class="org-child" *ngFor="let child of node.children">
+                <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: child }"></ng-container>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-container *ngFor="let node of value">
+        <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: node }"></ng-container>
+    </ng-container>
+</div>

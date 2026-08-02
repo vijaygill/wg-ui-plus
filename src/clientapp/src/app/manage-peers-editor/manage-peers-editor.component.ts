@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 
 import { FormsModule } from '@angular/forms';
@@ -9,13 +8,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../confirmation-dialog-service';
-import { ConfirmDialog } from 'primeng/confirmdialog';
+import { NotificationService } from '../notification.service';
 
 @Component({
   standalone: true,
   selector: 'app-manage-peers-editor',
-  imports: [ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService, ConfirmationService],
+  imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   templateUrl: './manage-peers-editor.component.html',
   styleUrl: './manage-peers-editor.component.scss'
 })
@@ -41,7 +39,7 @@ export class ManagePeersEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService,
+  constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private confirmationDialogService: ConfirmationDialogService) {
 
@@ -138,7 +136,7 @@ export class ManagePeersEditorComponent {
 
           this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
             next: data => {
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'e-Mail sent successully.' });
+              this.notification.success('e-Mail sent successully.');
             },
             error: error => {
               let response = error as HttpErrorResponse;

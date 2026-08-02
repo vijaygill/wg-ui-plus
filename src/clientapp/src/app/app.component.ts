@@ -5,19 +5,18 @@ import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SidepanelComponent } from './app-sidepanel/app-sidepanel.component';
 import { AppSharedModule } from './app-shared.module';
-import { MessageService } from 'primeng/api';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription } from 'rxjs';
 import { WebapiService } from './webapi.service';
 import { LoginService } from './login-service';
 import { PlatformInformationService } from './platform-information.service';
 import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
+import { NotificationService } from './notification.service';
 
 @Component({
     standalone: true,
     selector: 'app-root',
     imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
-    providers: [MessageService],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
@@ -37,20 +36,13 @@ export class AppComponent implements OnInit {
 
   platformInformation: PlatformInformation = {} as PlatformInformation;
 
-  constructor(private messageService: MessageService,
+  constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private loginService: LoginService,
     private platformInformationService: PlatformInformationService,
     private periodicRefreshUiService: PeriodicRefreshUiService) { }
 
   ngOnInit() {
-    // this.primengConfig.zIndex = {
-    //   modal: 1100,    // dialog, sidebar
-    //   overlay: 1000,  // dropdown, overlaypanel
-    //   menu: 1000,     // overlay menus
-    //   tooltip: 1100   // tooltip
-    // };
-
     this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
       (data) => {
         this.platformInformation = data;
@@ -63,17 +55,16 @@ export class AppComponent implements OnInit {
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
-      this.messageService.clear();
+      // The server status is re-reported on every poll tick (~10s). Clear the
+      // snackbar first so the new status replaces the previous one instead of
+      // queueing up behind it.
+      this.notification.clear();
       if (this.serverStatus && this.serverStatus.message) {
-        let severity = this.serverStatus.status == 'error' ? 'error'
-          : this.serverStatus.status == 'ok' ? 'info'
-            : 'info';
-        this.messageService.add({
-          summary: 'Server Status',
-          detail: this.serverStatus.message,
-          severity: severity,
-          closable: false,
-        });
+        if (this.serverStatus.status == 'error') {
+          this.notification.error(this.serverStatus.message);
+        } else {
+          this.notification.info(this.serverStatus.message);
+        }
       }
     });
 
@@ -100,12 +91,12 @@ export class AppComponent implements OnInit {
     }
   }
 
-  applyconfiguration(event: Event): void {
+  applyConfiguration(event: Event): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Configuration files generated on server.' });
+      this.notification.success('Configuration files generated on server.');
       this.webapiService.wireguardRestart().subscribe(() => {
         this.webapiService.checkServerStatus();
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
+        this.notification.success('Wireguard restarted on server.');
       });
     });
   }

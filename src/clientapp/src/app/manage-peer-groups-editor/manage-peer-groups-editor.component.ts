@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
@@ -13,7 +12,6 @@ import { WebapiService } from '../webapi.service';
     standalone: true,
     selector: 'app-manage-peer-groups-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-    providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-peer-groups-editor.component.html',
     styleUrl: './manage-peer-groups-editor.component.scss'
 })

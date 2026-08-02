@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { MessageService } from 'primeng/api';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -11,12 +10,12 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
+import { NotificationService } from '../notification.service';
 
 @Component({
   standalone: true,
   selector: 'app-manage-server-configuration',
   imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
-  providers: [MessageService],
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
 })
@@ -34,7 +33,7 @@ export class ManageServerConfigurationComponent {
   serverStatusSubscription !: Subscription;
 
 
-  constructor(private messageService: MessageService,
+  constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private router: Router, private loginService: LoginService) { }
 
@@ -76,7 +75,7 @@ export class ManageServerConfigurationComponent {
     this.webapiService.saveServerConfiguration(this.editItem)
       .subscribe({
         next: data => {
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Server configuration saved.' });
+          this.notification.success('Server configuration saved.');
           this.validationResult = { type: '', errors: [] } as ServerValidationError;
         },
         error: error => {
@@ -94,23 +93,23 @@ export class ManageServerConfigurationComponent {
 
   cancel() {
     this.refreshData();
-    this.messageService.add({ severity: 'warn', summary: 'Cancel', detail: 'Server configuration reloaded from database.' });
+    this.notification.warn('Server configuration reloaded from database.');
   }
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;
 
   restartWireguard(event: Event): void {
     this.webapiService.wireguardRestart().subscribe(data => {
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
+      this.notification.success('Wireguard restarted on server.');
     });
   }
 
-  applyconfiguration(): void {
+  applyConfiguration(): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Configuration files generated on server.' });
+      this.notification.success('Configuration files generated on server.');
       this.webapiService.wireguardRestart().subscribe(() => {
         this.webapiService.checkServerStatus();
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Wireguard restarted on server.' });
+        this.notification.success('Wireguard restarted on server.');
       });
     });
   }

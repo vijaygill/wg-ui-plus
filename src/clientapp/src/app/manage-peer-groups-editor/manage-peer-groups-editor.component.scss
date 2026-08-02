@@ -1,0 +1,46 @@
+.editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.editor-row {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+.editor-picklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.editor-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: color-mix(in srgb, currentColor 72%, transparent);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    padding: 1rem 0 0.5rem;
+}
+
+.editor-validation {
+    padding-top: 0.5rem;
+}
+
+.dual-list-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.dual-list-item-name {
+    font-weight: 600;
+}

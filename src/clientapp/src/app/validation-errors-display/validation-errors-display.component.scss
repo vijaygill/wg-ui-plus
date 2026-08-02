@@ -1,0 +1,26 @@
+.validation-errors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0.5rem 0;
+}
+
+.validation-errors-summary {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.validation-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ef5350;
+    font-size: 0.875rem;
+
+    mat-icon {
+        font-size: 1.125rem;
+        width: 1.125rem;
+        height: 1.125rem;
+        flex-shrink: 0;
+    }
+}

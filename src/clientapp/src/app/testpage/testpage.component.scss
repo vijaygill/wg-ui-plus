@@ -1,0 +1,12 @@
+.test-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    mat-card-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+    }
+}

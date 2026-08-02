@@ -1,25 +1,24 @@
-<p-card header="WireGuard UI Plus!">
-    <p-tabs value="0">
-        <p-tablist>
-            <p-tab value="0">License</p-tab>
-            <p-tab value="1">Acknowledments</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-            <p-tabpanel value="0">
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>WireGuard UI Plus!</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <mat-tab-group>
+            <mat-tab label="License">
                 <pre style="white-space:pre-wrap;">
                 {{license.license}}
                 </pre>
-            </p-tabpanel>
-            <p-tabpanel value="1">
+            </mat-tab>
+            <mat-tab label="Acknowledgments">
                 <ul>
                     <li>WireGuard and the WireGuard logo are registered trademarks of Jason A. Donenfeld.
                         <a href=" https://www.wireguard.com/" target="_blank">Link</a>
                     </li>
                     <li>
-                        UI Components are from <a href="https://primeng.org/" target="_blank">PrimeNG</a>.
+                        UI Components are from <a href="https://material.angular.io/" target="_blank">Angular Material</a>.
                     </li>
                 </ul>
-            </p-tabpanel>
-        </p-tabpanels>
-    </p-tabs>
-</p-card>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-card-content>
+</mat-card>

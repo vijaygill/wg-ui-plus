@@ -1,7 +1,25 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import "primeicons/primeicons.css";
+@use '@angular/material' as mat;
+@import "material-icons/iconfont/material-icons.css";
 
+html {
+    color-scheme: dark;
+
+    @include mat.theme((
+        color: (
+            theme-type: dark,
+            primary: mat.$azure-palette,
+            tertiary: mat.$blue-palette,
+        ),
+        typography: Roboto,
+        density: 0,
+    ));
+}
+
+html.my-app-dark {
+    color-scheme: dark;
+}
 
 body,
 html {
@@ -53,38 +71,57 @@ body {
         "footer";
 }
 
-table {
+table td {
+    vertical-align: top;
+}
+
+mat-form-field {
+    width: 100%;
+}
+
+/* Generic Material-styled data table built on native <table> markup. */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        text-transform: uppercase;
+        font-weight: 400;
+        color: color-mix(in srgb, currentColor 54%, transparent);
+    }
+
     td {
-        vertical-align: top;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    }
+
+    tbody tr:hover {
+        background: color-mix(in srgb, currentColor 6%, transparent);
     }
 }
 
-.editor-table {
-    min-width: 50%;
-    // max-width: 70%;
+/* Notification (snackbar) severity icon colours. */
+.snackbar-success mat-icon {
+    color: #4caf50;
+}
 
-    td:nth-child(1) {
-        width: auto;
-        text-wrap: nowrap;
-        vertical-align: top;
-    }
+.snackbar-error mat-icon {
+    color: #ef5350;
+}
 
-    td:nth-child(2) {
-        width: 100%;
-        vertical-align: top;
+.snackbar-warn mat-icon {
+    color: #ffb74d;
+}
 
-        input {
-            width: 100%;
-        }
+.snackbar-info mat-icon {
+    color: #64b5f6;
+}
 
-        textarea {
-            width: 100%;
-        }
-    }
-
-    td.errorColumn {
-        vertical-align: top;
-        text-wrap: nowrap;
-    }
-
+/* MatSnackBar overlays are rendered outside any component tree, so this
+   selector must be global (no ::ng-deep needed at the stylesheet root). */
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+    background: #202124;
+    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
 }

@@ -1,42 +1,32 @@
 import { Injectable } from '@angular/core';
-import { ConfirmationService, } from 'primeng/api';
-import { Observable, Subject } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class ConfirmationDialogService {
 
-  public dialogResult = new Subject<boolean>();
+    constructor(private dialog: MatDialog) {
+    }
 
-  constructor(private confirmationService: ConfirmationService) {
-  }
+    public confirm(title: string, message: string): Observable<boolean> {
+        return this.openDialog(title, message);
+    }
 
-  public confirm(title: string, message: string): Observable<boolean> {
-    this.confirmationService.confirm({
-      header: title,
-      message: message,
-      accept: () => {
-        this.dialogResult.next(true);
-      },
-      reject: () => {
-        this.dialogResult.next(false);
-      },
-    });
-    return this.dialogResult;
-  }
+    public showMessage(title: string, message: string): Observable<boolean> {
+        return this.openDialog(title, message);
+    }
 
-  public showMessage(title: string, message: string): Observable<boolean> {
-    this.confirmationService.confirm({
-      header: title,
-      message: message,
-      accept: () => {
-        this.dialogResult.next(true);
-      },
-      reject: () => {
-        this.dialogResult.next(false);
-      },
-    });
-    return this.dialogResult;
-  }
+    private openDialog(title: string, message: string): Observable<boolean> {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: { title, message },
+            disableClose: true,
+        });
+        return dialogRef.afterClosed().pipe(
+            map((result: boolean | undefined) => result === true)
+        );
+    }
 }

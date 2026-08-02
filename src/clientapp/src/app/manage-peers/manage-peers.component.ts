@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,7 +10,6 @@ import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-
     standalone: true,
     selector: 'app-manage-peers',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
-    providers: [MessageService],
     templateUrl: './manage-peers.component.html',
     styleUrl: './manage-peers.component.scss'
 })

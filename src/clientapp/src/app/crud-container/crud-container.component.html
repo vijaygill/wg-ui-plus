@@ -1,25 +1,22 @@
 <app-authorized-view>
   <ng-template #childControl>
-    <p-card [header]="header" [subheader]="subheader">
-      @if (useDialogForEditor) {
-        <ng-container>
-          <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
-        </ng-container>
-        <p-dialog [(visible)]="isEditing"
-          [modal]="true"
-          [style]="{ width: '90vw' }">
-          <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
-        </p-dialog>
-      }
-
-      @if (!useDialogForEditor) {
+    <mat-card>
+      <mat-card-header>
+        @if (header) {
+          <mat-card-title>{{ header }}</mat-card-title>
+        }
+        @if (subheader) {
+          <mat-card-subtitle>{{ subheader }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+      <mat-card-content>
         @if (!isEditing) {
           <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
         }
         @if (isEditing) {
           <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
         }
-      }
-    </p-card>
+      </mat-card-content>
+    </mat-card>
   </ng-template>
 </app-authorized-view>

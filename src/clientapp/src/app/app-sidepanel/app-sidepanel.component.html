@@ -1,21 +1,52 @@
-<div class="card flex justify-content-center">
+<div class="sidepanel">
   @if (popup) {
-    <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v" severity="secondary" [raised]="true"
-      [rounded]="true" />
-  }
-  <p-menu #menu [model]="items" [popup]="popup">
-    <ng-template #item let-item>
-      @if (item.route) {
-        <a [routerLink]="item.route" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
-          <span [class]="item.icon"></span>
-          <span>{{ item.label }}</span>
-        </a>
-      } @else {
-        <a [href]="item.url" class="p-menu-item-link" pTooltip="{{item.tooltip}}">
-          <span [class]="item.icon"></span>
-          <span>{{ item.label }}</span>
-        </a>
+    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Menu" aria-label="Menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      @for (section of sections; track $index) {
+        @for (item of section.items; track item.label) {
+          @if (item.route) {
+            <a mat-menu-item [routerLink]="item.route" [replaceUrl]="item.replaceUrl ?? false">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+            </a>
+          } @else {
+            <button mat-menu-item (click)="onItemCommand(item)">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+            </button>
+          }
+        }
+        @if (!$last) {
+          <mat-divider></mat-divider>
+        }
       }
-    </ng-template>
-  </p-menu>
+    </mat-menu>
+  } @else {
+    <mat-nav-list>
+      @for (section of sections; track $index) {
+        @if (section.label) {
+          <div mat-subheader>{{ section.label }}</div>
+        }
+        @for (item of section.items; track item.label) {
+          @if (item.route) {
+            <a mat-list-item [routerLink]="item.route" [replaceUrl]="item.replaceUrl ?? false"
+              routerLinkActive="active-nav-item" [matTooltip]="item.tooltip">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </a>
+          } @else {
+            <button mat-list-item (click)="onItemCommand(item)" [matTooltip]="item.tooltip">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </button>
+          }
+        }
+        @if (!$last) {
+          <mat-divider></mat-divider>
+        }
+      }
+    </mat-nav-list>
+  }
 </div>

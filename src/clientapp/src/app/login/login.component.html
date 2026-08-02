@@ -1,34 +1,26 @@
-<p-card header="Login">
-  <form #userLogin="ngForm" novalidate (ngSubmit)="onSubmit()">
-    <table>
-      <tr>
-        <td>User name</td>
-        <td>
-          <input pInputText id="username" name="username" [(ngModel)]="credentials.username" [autofocus]="true" #id="ngModel"/>
-        </td>
-      </tr>
-      <tr>
-        <td>Password</td>
-        <td>
-          <p-password id="password" name="password" [(ngModel)]="credentials.password" [feedback]="false" />
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <div style="width:100%;align-items: center; text-align: center;">
-            <button type="submit" pButton>Login</button>
-          </div>
-        </td>
-      </tr>
+<mat-card class="login-card">
+  <mat-card-header>
+    <mat-card-title>Login</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #userLogin="ngForm" novalidate (ngSubmit)="onSubmit()">
+      <mat-form-field>
+        <mat-label>User name</mat-label>
+        <input matInput id="username" name="username" [(ngModel)]="credentials.username" autofocus #id="ngModel"/>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput id="password" name="password" type="password" [(ngModel)]="credentials.password" />
+      </mat-form-field>
+      <div class="login-actions">
+        <button type="submit" mat-flat-button color="primary">Login</button>
+      </div>
       @if (userSessionInfo && userSessionInfo.message) {
-      <tr>
-        <td colspan="2">
-          <div style="width:100%;align-items: center; text-align: center;">
-            {{userSessionInfo.message}}
-          </div>
-        </td>
-      </tr>
+        <div class="login-message">
+          <mat-icon>info</mat-icon>
+          <span>{{userSessionInfo.message}}</span>
+        </div>
       }
-    </table>
-  </form>
-</p-card>
+    </form>
+  </mat-card-content>
+</mat-card>

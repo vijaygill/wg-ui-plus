@@ -1,0 +1,28 @@
+.login-card {
+    max-width: 28rem;
+    margin: 1rem auto;
+
+    mat-card-content {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+.login-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.login-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: #64b5f6;
+
+    mat-icon {
+        flex-shrink: 0;
+    }
+}

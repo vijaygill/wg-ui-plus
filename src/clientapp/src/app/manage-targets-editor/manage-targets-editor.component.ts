@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -13,7 +12,6 @@ import { WebapiService } from '../webapi.service';
     standalone: true,
     selector: 'app-manage-targets-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-    providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-targets-editor.component.html',
     styleUrl: './manage-targets-editor.component.scss'
 })
@@ -39,8 +37,7 @@ export class ManageTargetsEditorComponent {
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService,
-    private webapiService: WebapiService,
+  constructor(private webapiService: WebapiService,
     private confirmationDialogService: ConfirmationDialogService) { }
 
   getLookupData() {

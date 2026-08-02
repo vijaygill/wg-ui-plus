@@ -1,16 +1,16 @@
-<span>
-  @if (!field && errorList().length > 0) {
-    <span>
-      Fix the errors before saving.
-      Warnings can be ignored.
-    </span>
-  }
-  @if (field && errorList().length > 0) {
-    <span>
-      @if (field) {
-        <!--TODO-->
-        <!-- <p-message [text]="errorList()" [closable]="false" /> -->
-      }
-    </span>
-  }
-</span>
+@if (errorList().length > 0) {
+  <div class="validation-errors">
+    @if (!field) {
+      <div class="validation-errors-summary">
+        Fix the errors before saving.
+        Warnings can be ignored.
+      </div>
+    }
+    @for (error of errorList(); track $index) {
+      <div class="validation-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ error.detail }}</span>
+      </div>
+    }
+  </div>
+}
