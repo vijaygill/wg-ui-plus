@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { LoginService } from '../login-service';
 import { WebapiService } from '../webapi.service';
 import { NotificationService } from '../notification.service';
+import { EditStateService } from '../edit-state.service';
 
 @Component({
   standalone: true,
@@ -19,7 +20,7 @@ import { NotificationService } from '../notification.service';
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
 })
-export class ManageServerConfigurationComponent {
+export class ManageServerConfigurationComponent implements OnDestroy {
 
   editItem: ServerConfiguration = {} as ServerConfiguration;
   validationResult!: ServerValidationError;
@@ -35,7 +36,9 @@ export class ManageServerConfigurationComponent {
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
-    private router: Router, private loginService: LoginService) { }
+    private router: Router, private loginService: LoginService, private editStateService: EditStateService) {
+    this.editStateService.setEditing(true);
+  }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
@@ -62,6 +65,7 @@ export class ManageServerConfigurationComponent {
     if (this.serverStatusSubscription) {
       this.serverStatusSubscription.unsubscribe();
     }
+    this.editStateService.setEditing(false);
   }
 
   refreshData(): void {

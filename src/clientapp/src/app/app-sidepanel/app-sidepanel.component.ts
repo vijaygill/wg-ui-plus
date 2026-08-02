@@ -7,6 +7,7 @@ import { NavMenuItem } from '../nav-menu-item';
 import { UserSessionInfo } from '../webapi.entities';
 import { Subscription } from 'rxjs';
 import { LoginService } from '../login-service';
+import { EditStateService } from '../edit-state.service';
 
 /**
  * Navigation item: a NavMenuItem plus the optional bits the side panel needs
@@ -150,13 +151,18 @@ export class SidepanelComponent implements OnInit {
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
+  editStateSubscription !: Subscription;
+  isEditing: boolean = false;
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private editStateService: EditStateService) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
       this.sections = this.userSessionInfo.is_logged_in ? this.itemsAuthorized : this.itemsAnonymous;
+    });
+    this.editStateSubscription = this.editStateService.isEditing$.subscribe(editing => {
+      this.isEditing = editing;
     });
     this.loginService.checkIsUserAuthenticated();
   }
@@ -164,6 +170,9 @@ export class SidepanelComponent implements OnInit {
   ngOnDestroy() {
     if (this.loginServiceSubscription) {
       this.loginServiceSubscription.unsubscribe();
+    }
+    if (this.editStateSubscription) {
+      this.editStateSubscription.unsubscribe();
     }
   }
 
