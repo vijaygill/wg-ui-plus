@@ -2,7 +2,7 @@
   <mat-form-field>
     <mat-label>Name</mat-label>
     <input matInput id="peerGroupName" [(ngModel)]="editItem.name"
-      [disabled]="!editItem.allow_modify_self" matTooltip="Name of the Peer-Group."
+      [disabled]="!editItem.allow_modify_self" matTooltip="Name of the Peer-Group." matTooltipShowDelay="500"
       matTooltipPosition="above" autofocus />
   </mat-form-field>
   <app-validation-errors-display field="name" [validationResult]="validationResult">
@@ -10,7 +10,7 @@
   <mat-form-field>
     <mat-label>Description</mat-label>
     <input matInput id="peerGroupDescription" [(ngModel)]="editItem.description"
-      [disabled]="!editItem.allow_modify_self" matTooltip="Some helpful description."
+      [disabled]="!editItem.allow_modify_self" matTooltip="Some helpful description." matTooltipShowDelay="500"
       matTooltipPosition="above" />
   </mat-form-field>
   <app-validation-errors-display field="description"
@@ -18,7 +18,7 @@
   <div class="editor-row">
     <mat-checkbox id="peerGroupDisabled" [(ngModel)]="editItem.disabled"
       [disabled]="!editItem.allow_modify_self"
-      matTooltip="Disabled Peer-Groups are denied access to VPN." matTooltipPosition="above">
+      matTooltip="Disabled Peer-Groups are denied access to VPN." matTooltipPosition="above" matTooltipShowDelay="500">
       Disabled
     </mat-checkbox>
   </div>
@@ -33,7 +33,7 @@
         sourceHeader="Available" targetHeader="Selected"
         [disabled]="!editItem.allow_modify_self"
         matTooltip="Selected Peers in this group will have access to selected Targets."
-        matTooltipPosition="above">
+        matTooltipPosition="above" matTooltipShowDelay="500">
         <ng-template #itemTemplate let-item>
           <div class="dual-list-item-content">
             <div class="dual-list-item-name">{{ item.name }}</div>
@@ -53,7 +53,7 @@
       <app-dual-list id="target" [source]="editItem.targets_lookup" [selected]="editItem.targets"
         sourceHeader="Available" targetHeader="Selected"
         matTooltip="Peers in this Peer-Group will have access to the selected Targets."
-        matTooltipPosition="above">
+        matTooltipPosition="above" matTooltipShowDelay="500">
         <ng-template #itemTemplate let-item>
           <div class="dual-list-item-content">
             <div class="dual-list-item-name">{{ item.name }}</div>

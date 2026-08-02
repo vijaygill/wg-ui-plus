@@ -27,28 +27,28 @@
                 [disabled]="disabled"
                 (click)="moveSelected(source, selected)"
                 matTooltip="Move selected to target"
-                matTooltipPosition="above">
+                matTooltipPosition="above" matTooltipShowDelay="500">
             <mat-icon>chevron_right</mat-icon>
         </button>
         <button mat-icon-button type="button"
                 [disabled]="disabled"
                 (click)="moveAll(source, selected)"
                 matTooltip="Move all to target"
-                matTooltipPosition="above">
+                matTooltipPosition="above" matTooltipShowDelay="500">
             <mat-icon>last_page</mat-icon>
         </button>
         <button mat-icon-button type="button"
                 [disabled]="disabled"
                 (click)="moveAll(selected, source)"
                 matTooltip="Move all to source"
-                matTooltipPosition="above">
+                matTooltipPosition="above" matTooltipShowDelay="500">
             <mat-icon>first_page</mat-icon>
         </button>
         <button mat-icon-button type="button"
                 [disabled]="disabled"
                 (click)="moveSelected(selected, source)"
                 matTooltip="Move selected to source"
-                matTooltipPosition="above">
+                matTooltipPosition="above" matTooltipShowDelay="500">
             <mat-icon>chevron_left</mat-icon>
         </button>
     </div>

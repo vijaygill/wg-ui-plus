@@ -10,7 +10,7 @@
         <mat-form-field>
           <mat-label>Name</mat-label>
           <input matInput id="peerName" [(ngModel)]="editItem.name"
-            matTooltip="Name of the device/computer you wish to connect with VPN."
+            matTooltip="Name of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
             matTooltipPosition="above" autofocus />
         </mat-form-field>
         <app-validation-errors-display field="name" [validationResult]="validationResult">
@@ -18,7 +18,7 @@
         <mat-form-field>
           <mat-label>Description</mat-label>
           <input matInput id="peerDescription" [(ngModel)]="editItem.description"
-            matTooltip="Some description of the device/computer you wish to connect with VPN."
+            matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
             matTooltipPosition="above" />
         </mat-form-field>
         <app-validation-errors-display field="description"
@@ -29,14 +29,14 @@
             <mat-label>IP Address</mat-label>
             <input matInput id="peerIPAddress" [(ngModel)]="editItem.ip_address"
               matTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
-              matTooltipPosition="above" [readonly]="true" [disabled]="true" />
+              matTooltipPosition="above" matTooltipShowDelay="500" [readonly]="true" [disabled]="true" />
           </mat-form-field>
         }
         <mat-form-field>
           <mat-label>e-Mail Address</mat-label>
           <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
             matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
-            matTooltipPosition="above" />
+            matTooltipPosition="above" matTooltipShowDelay="500" />
         </mat-form-field>
         <div class="editor-row">
           <mat-checkbox id="peerDisabled" [(ngModel)]="editItem.disabled">Disabled</mat-checkbox>
@@ -46,7 +46,7 @@
           <app-dual-list id="peerGroups" [source]="editItem.peer_groups_lookup"
             [selected]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
             matTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
-            matTooltipPosition="above">
+            matTooltipPosition="above" matTooltipShowDelay="500">
             <ng-template #itemTemplate let-item>
               <div class="dual-list-item-content">
                 <div class="dual-list-item-name">{{ item.name }}</div>

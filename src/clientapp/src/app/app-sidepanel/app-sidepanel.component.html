@@ -1,6 +1,6 @@
 <div class="sidepanel">
   @if (popup) {
-    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Menu" aria-label="Menu">
+    <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Menu" matTooltipShowDelay="500" aria-label="Menu">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
@@ -32,12 +32,12 @@
         @for (item of section.items; track item.label) {
           @if (item.route) {
             <a mat-list-item [routerLink]="item.route" [replaceUrl]="item.replaceUrl ?? false"
-              routerLinkActive="active-nav-item" [matTooltip]="item.tooltip">
+              routerLinkActive="active-nav-item" [matTooltip]="item.tooltip" matTooltipShowDelay="500">
               <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
             </a>
           } @else {
-            <button mat-list-item (click)="onItemCommand(item)" [matTooltip]="item.tooltip">
+            <button mat-list-item (click)="onItemCommand(item)" [matTooltip]="item.tooltip" matTooltipShowDelay="500">
               <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
             </button>
