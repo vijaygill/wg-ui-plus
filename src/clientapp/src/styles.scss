@@ -264,3 +264,12 @@ app-nav-drawer.nav-drawer-collapsed .mdc-list-item__content {
 app-nav-drawer.nav-drawer-collapsed .mat-mdc-list-item {
     justify-content: center;
 }
+
+/* The sidebar drawer width is transitioned in CSS (app.component.scss) while
+   the content margin is synced per-frame via
+   MatSidenavContainer.updateContentMargins(). Neutralise Material's own
+   margin transition so the two move in lock-step instead of double-animating.
+   Safe for over-mode drawers, which never push content via margins. */
+.mat-drawer-transition .mat-drawer-content {
+    transition: none;
+}

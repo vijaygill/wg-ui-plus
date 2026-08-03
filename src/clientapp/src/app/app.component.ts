@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
-import { MatDrawerMode } from '@angular/material/sidenav';
+import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
 import { NavDrawerComponent } from './app-nav-drawer/app-nav-drawer.component';
 import { AppSharedModule } from './app-shared.module';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
@@ -36,6 +36,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /** Small screen only: whether the overlay drawer is open. */
   mobileNavOpen = false;
+
+  /** The sidenav container, so the content margin can be re-synced on collapse. */
+  @ViewChild(MatSidenavContainer) sidenavContainer?: MatSidenavContainer;
 
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
@@ -155,7 +158,32 @@ export class AppComponent implements OnInit, OnDestroy {
       this.mobileNavOpen = !this.mobileNavOpen;
     } else {
       this.navCollapsed = !this.navCollapsed;
+      this.syncSidenavMargins();
     }
+  }
+
+  /**
+   * Keeps the main content area in lock-step with the collapsing rail.
+   *
+   * The drawer width is transitioned in CSS (see app.component.scss), but
+   * Angular Material only recomputes the content margin on drawer open/close.
+   * Calling updateContentMargins() every frame during the transition makes the
+   * main area's margin track the drawer element's current offsetWidth.
+   */
+  private syncSidenavMargins(): void {
+    const container = this.sidenavContainer;
+    if (!container) {
+      return;
+    }
+    const start = performance.now();
+    const duration = 400; // must match the width transition in app.component.scss
+    const tick = () => {
+      container.updateContentMargins();
+      if (performance.now() - start < duration) {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
   }
 
   /** Accessible label for the nav toggle, describing the action the tap performs. */
