@@ -1,54 +1,8 @@
-import { Component, Inject, Injectable } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarModule, MatSnackBarRef } from '@angular/material/snack-bar';
+import { Injectable } from '@angular/core';
+import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { NotificationComponent, NotificationData, NotificationType } from './notification/notification.component';
 
-export type NotificationType = 'success' | 'error' | 'warn' | 'info';
-
-interface NotificationData {
-    type: NotificationType;
-    message: string;
-}
-
-@Component({
-    selector: 'app-notification',
-    standalone: true,
-    imports: [MatIconModule, MatSnackBarModule],
-    template: `
-        <div class="snackbar-{{ data.type }}">
-            <mat-icon>{{ icon }}</mat-icon>
-            <span>{{ data.message }}</span>
-        </div>
-    `,
-    styles: [`
-        :host {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        mat-icon {
-            flex-shrink: 0;
-        }
-    `],
-})
-export class NotificationComponent {
-    constructor(@Inject(MAT_SNACK_BAR_DATA) public data: NotificationData) { }
-
-    get icon(): string {
-        switch (this.data.type) {
-            case 'success':
-                return 'check_circle';
-            case 'error':
-                return 'error';
-            case 'warn':
-                return 'warning';
-            case 'info':
-                return 'info';
-            default:
-                return 'info';
-        }
-    }
-}
+export { NotificationComponent, NotificationData, NotificationType } from './notification/notification.component';
 
 /**
  * Material-native replacement for the old toast pattern.

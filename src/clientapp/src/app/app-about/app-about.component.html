@@ -1,24 +1,23 @@
+<app-page-header title="About"
+  subtitle="Information about the WireGuard UI Plus application.">
+</app-page-header>
+
 <mat-card>
-    <mat-card-header>
-        <mat-card-title>WireGuard UI Plus!</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-        <mat-tab-group>
-            <mat-tab label="License">
-                <pre style="white-space:pre-wrap;">
-                {{license.license}}
-                </pre>
-            </mat-tab>
-            <mat-tab label="Acknowledgments">
-                <ul>
-                    <li>WireGuard and the WireGuard logo are registered trademarks of Jason A. Donenfeld.
-                        <a href=" https://www.wireguard.com/" target="_blank">Link</a>
-                    </li>
-                    <li>
-                        UI Components are from <a href="https://material.angular.io/" target="_blank">Angular Material</a>.
-                    </li>
-                </ul>
-            </mat-tab>
-        </mat-tab-group>
-    </mat-card-content>
+  <mat-card-content>
+    <mat-tab-group>
+      <mat-tab label="License">
+        <pre class="license-output">{{license.license}}</pre>
+      </mat-tab>
+      <mat-tab label="Acknowledgments">
+        <ul class="acknowledgments">
+          <li>WireGuard and the WireGuard logo are registered trademarks of Jason A. Donenfeld.
+            <a href="https://www.wireguard.com/" target="_blank" rel="noopener">Link</a>
+          </li>
+          <li>
+            UI Components are from <a href="https://material.angular.io/" target="_blank" rel="noopener">Angular Material</a>.
+          </li>
+        </ul>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card-content>
 </mat-card>

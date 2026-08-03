@@ -18,8 +18,25 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
 export class ServerMonitorPeersComponent implements OnInit {
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
   timerSubscription !: Subscription;
+  loadDataSubscription !: Subscription;
   refreshDelay: number = 0;
   private currentSort: Sort = { active: 'peer_name', direction: 'asc' };
+
+  get connectedCount(): number {
+    return this.connectedPeerData.items.filter(i => i.status === 'connected').length;
+  }
+
+  get offlineCount(): number {
+    return this.connectedPeerData.items.length - this.connectedCount;
+  }
+
+  get totalTx(): number {
+    return this.connectedPeerData.items.reduce((sum, i) => sum + (i.transfer_tx || 0), 0);
+  }
+
+  get totalRx(): number {
+    return this.connectedPeerData.items.reduce((sum, i) => sum + (i.transfer_rx || 0), 0);
+  }
 
   constructor(private webapiService: WebapiService,
     private periodicRefreshUiService: PeriodicRefreshUiService) {
@@ -31,6 +48,9 @@ export class ServerMonitorPeersComponent implements OnInit {
 
   ngOnDestroy() {
     this.unsubscribeTimer();
+    if (this.loadDataSubscription) {
+      this.loadDataSubscription.unsubscribe();
+    }
   }
 
   subscribeTimer(): void {
@@ -48,7 +68,7 @@ export class ServerMonitorPeersComponent implements OnInit {
   }
 
   loadData() {
-    this.webapiService.getConnectedPeers().subscribe(data => {
+    this.loadDataSubscription = this.webapiService.getConnectedPeers().subscribe(data => {
       this.connectedPeerData = data;
       // Re-apply the current sort so the user's chosen ordering survives the
       // periodic refresh (default: sorted by peer name, as before).

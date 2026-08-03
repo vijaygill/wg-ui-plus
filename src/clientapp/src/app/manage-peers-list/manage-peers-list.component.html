@@ -1,18 +1,13 @@
+<div class="list-toolbar">
+  <span class="list-hint">Add/Edit/Delete Peers here...</span>
+  <button mat-flat-button color="primary" type="button" (click)="newItem();">
+    <mat-icon>add</mat-icon>
+    New
+  </button>
+</div>
+<div class="table-scroll">
 <table class="data-table" matSort matSortDisableClear matSortActive="name" matSortDirection="asc" (matSortChange)="sortData($event)">
   <thead>
-    <tr>
-      <th colspan="5">
-        <span>
-          Add/Edit/Delete Peers here...
-        </span>
-      </th>
-      <th>
-        <button mat-flat-button type="button" (click)="newItem();">
-          <mat-icon>add</mat-icon>
-          New
-        </button>
-      </th>
-    </tr>
     <tr>
       <th mat-sort-header="name">Name</th>
       <th>Description</th>
@@ -28,11 +23,14 @@
         <td>{{ peer.name }}</td>
         <td>{{ peer.description }}</td>
         <td>{{ peer.ip_address }}</td>
-        <td>@if (peer.disabled) {
-          <mat-icon color="warn" aria-label="Disabled">block</mat-icon>
-        }</td>
-        <td>{{ peer.target_names }}
+        <td>
+          @if (peer.disabled) {
+            <span class="status-chip status-chip-off">Disabled</span>
+          } @else {
+            <span class="status-chip status-chip-ok">Enabled</span>
+          }
         </td>
+        <td>{{ peer.target_names }}</td>
         <td>
           <button mat-stroked-button type="button" (click)="editItem(peer);">
             <mat-icon>edit</mat-icon>
@@ -47,3 +45,4 @@
     }
   </tbody>
 </table>
+</div>

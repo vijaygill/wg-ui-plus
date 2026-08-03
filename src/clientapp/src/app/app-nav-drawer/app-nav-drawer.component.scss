@@ -1,0 +1,50 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.nav-drawer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    min-width: 15rem;
+}
+
+.nav-main {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-top: 0.5rem;
+}
+
+.nav-bottom {
+    flex-shrink: 0;
+    padding-top: 0.5rem;
+}
+
+.nav-section-label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.75rem 1rem 0.5rem;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+}
+
+.active-nav-item {
+    background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+}
+
+/* Icon-only rail: fixed width, centered icons, labels hidden. */
+.nav-drawer.collapsed {
+    min-width: 4rem;
+    width: 4rem;
+
+    mat-icon {
+        margin: 0 auto;
+    }
+
+    /* Note: the Material list-item internals (.mdc-list-item__content /
+       .mat-mdc-list-item) are styled globally for this rail — see the
+       `app-nav-drawer.nav-drawer-collapsed` rules in styles.scss. They cannot
+       be reached from this view-encapsulated stylesheet without ::ng-deep. */
+}

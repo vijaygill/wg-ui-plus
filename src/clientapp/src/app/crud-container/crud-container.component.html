@@ -1,14 +1,6 @@
 <app-authorized-view>
   <ng-template #childControl>
-    <mat-card>
-      <mat-card-header>
-        @if (header) {
-          <mat-card-title>{{ header }}</mat-card-title>
-        }
-        @if (subheader) {
-          <mat-card-subtitle>{{ subheader }}</mat-card-subtitle>
-        }
-      </mat-card-header>
+    <mat-card class="crud-card" appearance="outlined">
       <mat-card-content>
         @if (!isEditing) {
           <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>

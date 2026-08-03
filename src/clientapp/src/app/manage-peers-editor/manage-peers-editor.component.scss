@@ -1,7 +1,12 @@
-.editor-form {
+.editor-layout {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    .editor-form {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 }
 
 .editor-row {
@@ -26,7 +31,8 @@
 .editor-actions {
     display: flex;
     gap: 0.75rem;
-    justify-content: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     padding: 1rem 0 0.5rem;
 }
 
@@ -40,9 +46,25 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0;
+    flex: 0 0 11rem;
 
     button {
         width: 100%;
+    }
+
+    img {
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 720px) {
+    .editor-layout {
+        flex-direction: column;
+
+        .side-column {
+            flex: 1 1 auto;
+            width: 100%;
+        }
     }
 }
 

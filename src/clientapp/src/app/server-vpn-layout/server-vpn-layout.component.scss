@@ -1,0 +1,15 @@
+.layout-notes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+
+    ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    li {
+        margin: 0.25rem 0;
+        line-height: 1.5;
+    }
+}

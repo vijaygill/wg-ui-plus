@@ -1,18 +1,13 @@
+<div class="list-toolbar">
+  <span class="list-hint">Add/Edit/Delete Targets here...</span>
+  <button mat-flat-button color="primary" type="button" (click)="newItem();">
+    <mat-icon>add</mat-icon>
+    New
+  </button>
+</div>
+<div class="table-scroll">
 <table class="data-table" matSort matSortDisableClear matSortActive="name" matSortDirection="asc" (matSortChange)="sortData($event)">
   <thead>
-    <tr>
-      <th colspan="3">
-        <span>
-          Add/Edit/Delete Targets here...
-        </span>
-      </th>
-      <th>
-        <button mat-flat-button type="button" (click)="newItem();">
-          <mat-icon>add</mat-icon>
-          New
-        </button>
-      </th>
-    </tr>
     <tr>
       <th mat-sort-header="name">Name</th>
       <th>IP Address</th>
@@ -25,9 +20,13 @@
       <tr>
         <td>{{ targetGroup.name }}</td>
         <td>{{ targetGroup.ip_address }}</td>
-        <td>@if (targetGroup.disabled) {
-          <mat-icon color="warn" aria-label="Disabled">block</mat-icon>
-        }</td>
+        <td>
+          @if (targetGroup.disabled) {
+            <span class="status-chip status-chip-off">Disabled</span>
+          } @else {
+            <span class="status-chip status-chip-ok">Enabled</span>
+          }
+        </td>
         <td>
           <button mat-stroked-button type="button" (click)="editItem(targetGroup);">
             <mat-icon>edit</mat-icon>
@@ -42,3 +41,4 @@
     }
   </tbody>
 </table>
+</div>

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
 import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
-import { LoginService } from '../login-service';
+import { LoginService } from '../login.service';
 
 @Component({
     standalone: true,

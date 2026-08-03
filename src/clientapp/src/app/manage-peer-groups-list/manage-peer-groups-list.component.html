@@ -1,18 +1,13 @@
+<div class="list-toolbar">
+  <span class="list-hint">Add/Edit/Delete Peer-Groups here...</span>
+  <button mat-flat-button color="primary" type="button" (click)="newItem();">
+    <mat-icon>add</mat-icon>
+    New
+  </button>
+</div>
+<div class="table-scroll">
 <table class="data-table" matSort matSortDisableClear matSortActive="name" matSortDirection="asc" (matSortChange)="sortData($event)">
   <thead>
-    <tr>
-      <th colspan="4">
-        <span>
-          Add/Edit/Delete Peer-Groups here...
-        </span>
-      </th>
-      <th>
-        <button mat-flat-button type="button" (click)="newItem();">
-          <mat-icon>add</mat-icon>
-          New
-        </button>
-      </th>
-    </tr>
     <tr>
       <th mat-sort-header="name">Name</th>
       <th>Description</th>
@@ -24,13 +19,15 @@
   <tbody>
     @for (peerGroup of peerGroups; track peerGroup.id) {
       <tr>
-        <td>
-          {{ peerGroup.name }}
-        </td>
+        <td>{{ peerGroup.name }}</td>
         <td>{{ peerGroup.description }}</td>
-        <td>@if (peerGroup.disabled) {
-          <mat-icon color="warn" aria-label="Disabled">block</mat-icon>
-        }</td>
+        <td>
+          @if (peerGroup.disabled) {
+            <span class="status-chip status-chip-off">Disabled</span>
+          } @else {
+            <span class="status-chip status-chip-ok">Enabled</span>
+          }
+        </td>
         <td>{{ peerGroup.target_names }}</td>
         <td>
           <button mat-stroked-button type="button" (click)="editItem(peerGroup);">
@@ -46,3 +43,4 @@
     }
   </tbody>
 </table>
+</div>

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { WebapiService } from '../webapi.service';
 import { NotificationService } from '../notification.service';
-import { ConfirmationDialogService } from '../confirmation-dialog-service';
+import { ConfirmationDialogService } from '../confirmation-dialog.service';
 
 @Component({
     standalone: true,

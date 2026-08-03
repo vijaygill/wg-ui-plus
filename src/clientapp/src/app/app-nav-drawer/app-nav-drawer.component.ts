@@ -1,4 +1,3 @@
-
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -6,75 +5,83 @@ import { AppSharedModule } from '../app-shared.module';
 import { NavMenuItem } from '../nav-menu-item';
 import { UserSessionInfo } from '../webapi.entities';
 import { Subscription } from 'rxjs';
-import { LoginService } from '../login-service';
+import { LoginService } from '../login.service';
 
 /**
- * Navigation item: a NavMenuItem plus the optional bits the side panel needs
- * (tooltip text, a click command for items such as "Log out" that perform an
- * action instead of navigating, and `replaceUrl` for router links such as
+ * Navigation item: a NavMenuItem plus the optional bits the navigation drawer
+ * needs (tooltip text, a click command for items such as "Log out" that perform
+ * an action instead of navigating, and `replaceUrl` for router links such as
  * "Log in" that should not leave a back-navigation entry behind).
  */
-export interface SidepanelMenuItem extends NavMenuItem {
+export interface NavDrawerMenuItem extends NavMenuItem {
     tooltip: string;
     command?: () => void;
     replaceUrl?: boolean;
 }
 
-/**
- * A labelled group of navigation items (rendered as a subheader in the nav
- * list and flattened with dividers in the popup menu).
- */
-export interface SidepanelMenuSection {
+/** A labelled group of navigation items (rendered as a subheader in the nav list). */
+export interface NavDrawerMenuSection {
     label?: string;
-    items: SidepanelMenuItem[];
+    items: NavDrawerMenuItem[];
 }
 
+/**
+ * Side navigation drawer rendered inside the app's `mat-sidenav`.
+ *
+ * Supports a collapsible icon-only rail: when `collapsed` is true the item
+ * labels and section headers are hidden and full labels are revealed via
+ * hover tooltips. The authentication item (Log in / Log out) is pinned at the
+ * bottom of the drawer.
+ */
 @Component({
   standalone: true,
-  selector: 'app-sidepanel',
+  selector: 'app-nav-drawer',
   imports: [FormsModule, RouterModule, AppSharedModule],
-  templateUrl: './app-sidepanel.component.html',
-  styleUrl: './app-sidepanel.component.scss'
+  templateUrl: './app-nav-drawer.component.html',
+  styleUrl: './app-nav-drawer.component.scss',
+  // Exposes the collapsed state as a host class so the icon-only rail's
+  // Material list-item internals can be styled globally (see styles.scss).
+  host: { '[class.nav-drawer-collapsed]': 'collapsed' },
 })
-export class SidepanelComponent implements OnInit {
-  private menuItemMonitorPeers: SidepanelMenuItem = {
+export class NavDrawerComponent implements OnInit {
+  private menuItemMonitorPeers: NavDrawerMenuItem = {
     label: 'Monitor Peers',
     route: '/server-monitor-peers',
     icon: 'visibility',
     tooltip: 'See the status of all the peers in one page.',
   };
-  private menuItemMonitorIPTables: SidepanelMenuItem = {
+  private menuItemMonitorIPTables: NavDrawerMenuItem = {
     label: 'Monitor IP-Tables',
     route: '/server-monitor-iptables',
     icon: 'visibility',
     tooltip: 'See the chains defined in IPTables.',
   };
-  private menuItemVPNLayout: SidepanelMenuItem = {
+  private menuItemVPNLayout: NavDrawerMenuItem = {
     label: 'VPN Layout',
     route: '/server-vpn-layout',
     icon: 'grid_view',
-    tooltip: 'See the how all peers/peer-groups/targets tie together.',
+    tooltip: 'See how all peers/peer-groups/targets tie together.',
   };
-  private menuItemServerConfiguration: SidepanelMenuItem = {
+  private menuItemServerConfiguration: NavDrawerMenuItem = {
     label: 'Configuration',
     route: '/server-configuration',
     icon: 'build',
     tooltip: 'Configure the VPN on the server side.',
   };
-  private menuItemAbout: SidepanelMenuItem = {
+  private menuItemAbout: NavDrawerMenuItem = {
     label: 'About',
     route: '/about',
     icon: 'help',
     tooltip: 'Some information about the application itself.',
   };
-  private menuItemLogIn: SidepanelMenuItem = {
+  private menuItemLogIn: NavDrawerMenuItem = {
     label: 'Log in',
     route: '/login',
     icon: 'login',
     tooltip: 'Log in to manage the data (peers/peer-groups/targets).',
     replaceUrl: true,
   };
-  private menuItemLogOut: SidepanelMenuItem = {
+  private menuItemLogOut: NavDrawerMenuItem = {
     label: 'Log out',
     icon: 'logout',
     tooltip: 'Log out (before you step away from your machine).',
@@ -82,28 +89,32 @@ export class SidepanelComponent implements OnInit {
       this.loginService.logout();
     },
   };
-  private menuItemPeerGroups: SidepanelMenuItem = {
+  private menuItemPeerGroups: NavDrawerMenuItem = {
     label: 'Peer-Groups',
     route: '/manage-peer-groups',
     icon: 'account_tree',
     tooltip: 'Add/Edit/Remove Peer-Groups. Link/Unlink Peer-Groups with Targets.',
   };
-  private menuItemPeers: SidepanelMenuItem = {
+  private menuItemPeers: NavDrawerMenuItem = {
     label: 'Peers',
     route: '/manage-peers',
     icon: 'desktop_windows',
     tooltip: 'Add/Edit/Remove Peers. Add/Remove Peers to Peer-Groups.',
   };
-  private menuItemTargets: SidepanelMenuItem = {
+  private menuItemTargets: NavDrawerMenuItem = {
     label: 'Targets',
     route: '/manage-targets',
     icon: 'track_changes',
     tooltip: 'Add/Edit/Remove Targets. Link/Unlink Targets with Peer-Groups.',
   };
 
-  sections: SidepanelMenuSection[] = [];
+  /** Sections rendered in the upper portion of the drawer. */
+  sections: NavDrawerMenuSection[] = [];
 
-  itemsAuthorized: SidepanelMenuSection[] = [
+  /** Items pinned at the bottom of the drawer (About + auth item). */
+  bottomItems: NavDrawerMenuItem[] = [];
+
+  private itemsAuthorized: NavDrawerMenuSection[] = [
     {
       label: 'Server',
       items: [
@@ -121,15 +132,14 @@ export class SidepanelComponent implements OnInit {
         this.menuItemTargets,
       ]
     },
-    {
-      items: [
-        this.menuItemAbout,
-        this.menuItemLogOut,
-      ]
-    }
   ];
 
-  itemsAnonymous: SidepanelMenuSection[] = [
+  private bottomAuthorized: NavDrawerMenuItem[] = [
+    this.menuItemAbout,
+    this.menuItemLogOut,
+  ];
+
+  private itemsAnonymous: NavDrawerMenuSection[] = [
     {
       label: 'Server',
       items: [
@@ -138,15 +148,15 @@ export class SidepanelComponent implements OnInit {
         this.menuItemVPNLayout,
       ]
     },
-    {
-      items: [
-        this.menuItemAbout,
-        this.menuItemLogIn,
-      ]
-    }
   ];
 
-  @Input() popup: boolean = false;
+  private bottomAnonymous: NavDrawerMenuItem[] = [
+    this.menuItemAbout,
+    this.menuItemLogIn,
+  ];
+
+  /** When true, the drawer renders as an icon-only rail. */
+  @Input() collapsed: boolean = false;
 
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
@@ -157,6 +167,7 @@ export class SidepanelComponent implements OnInit {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
       this.sections = this.userSessionInfo.is_logged_in ? this.itemsAuthorized : this.itemsAnonymous;
+      this.bottomItems = this.userSessionInfo.is_logged_in ? this.bottomAuthorized : this.bottomAnonymous;
     });
     this.loginService.checkIsUserAuthenticated();
   }
@@ -167,7 +178,7 @@ export class SidepanelComponent implements OnInit {
     }
   }
 
-  onItemCommand(item: SidepanelMenuItem): void {
+  onItemCommand(item: NavDrawerMenuItem): void {
     if (item.command) {
       item.command();
     }

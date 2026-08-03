@@ -1,9 +1,9 @@
+<app-page-header title="Monitor IP-Tables"
+  subtitle="Last update: {{ipTablesLog.datetime}} · Refreshed every {{refreshDelay}} seconds">
+</app-page-header>
+
 <mat-card>
-  <mat-card-header>
-    <mat-card-title>IP-Tables log</mat-card-title>
-    <mat-card-subtitle>Last update time: {{ipTablesLog.datetime}} (Refreshed every {{refreshDelay}} seconds)</mat-card-subtitle>
-  </mat-card-header>
   <mat-card-content>
-    <pre>{{ipTablesLog.output}}</pre>
+    <pre class="iptables-output">{{ipTablesLog.output}}</pre>
   </mat-card-content>
 </mat-card>

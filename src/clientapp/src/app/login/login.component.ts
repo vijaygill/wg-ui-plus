@@ -5,7 +5,7 @@ import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { UserCredentials, UserSessionInfo } from '../webapi.entities';
-import { LoginService } from '../login-service';
+import { LoginService } from '../login.service';
 import { JsonPipe } from '@angular/common';
 
 @Component({
@@ -45,10 +45,6 @@ export class LoginComponent implements OnInit {
   {
     this.userSessionInfo.message = 'Logging in. Please wait...';
     this.loginService.login(this.credentials);
-  }
-
-  logout(event: Event): void {
-    this.loginService.logout();
   }
 }
 

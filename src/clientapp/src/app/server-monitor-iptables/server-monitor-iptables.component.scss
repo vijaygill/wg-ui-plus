@@ -1,4 +1,8 @@
-pre {
+.iptables-output {
     white-space: pre-wrap;
     word-break: break-word;
+    margin: 0;
+    font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
 }
