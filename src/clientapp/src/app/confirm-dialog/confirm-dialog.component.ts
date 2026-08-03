@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { A11yModule } from '@angular/cdk/a11y';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,7 @@ export interface ConfirmDialogData {
     selector: 'app-confirm-dialog',
     imports: [CommonModule, A11yModule, MatDialogModule, MatButtonModule],
     templateUrl: './confirm-dialog.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './confirm-dialog.component.scss'
 })
 export class ConfirmDialogComponent {

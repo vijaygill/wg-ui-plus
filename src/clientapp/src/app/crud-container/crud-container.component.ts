@@ -1,4 +1,4 @@
-import { Component, ContentChild, Input, TemplateRef } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { LoginService } from '../login.service';
     selector: 'app-crud-container',
     imports: [CommonModule, AppSharedModule, AuthorizedViewComponent],
     templateUrl: './crud-container.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './crud-container.component.scss'
 })
 export class CrudContainerComponent<T> {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../webapi.service';
 import { IpTablesLog } from '../webapi.entities';
@@ -12,6 +12,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     selector: 'app-server-monitor-iptables',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './server-monitor-iptables.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './server-monitor-iptables.component.scss'
 })
 export class ServerMonitorIptablesComponent implements OnInit {

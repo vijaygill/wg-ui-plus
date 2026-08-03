@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,6 +11,7 @@ import { WebapiService } from '../webapi.service';
     selector: 'app-manage-peers-list',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './manage-peers-list.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-peers-list.component.scss'
 })
 export class ManagePeersListComponent {

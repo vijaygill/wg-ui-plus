@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
 import { NavDrawerComponent } from './app-nav-drawer/app-nav-drawer.component';
@@ -18,6 +18,7 @@ import { ThemeService } from './theme.service';
     selector: 'app-root',
     imports: [RouterModule, RouterOutlet, NavDrawerComponent, AppSharedModule, NotificationComponent],
     templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {

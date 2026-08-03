@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,6 +11,7 @@ import { ConfirmationDialogService } from '../confirmation-dialog.service';
     selector: 'app-testpage',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './testpage.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './testpage.component.scss'
 })
 export class TestpageComponent {

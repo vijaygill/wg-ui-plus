@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -15,6 +15,7 @@ import { AppNotification, NotificationService } from '../notification.service';
     standalone: true,
     imports: [MatIconModule, MatButtonModule, MatTooltipModule],
     templateUrl: './notification.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './notification.component.scss',
 })
 export class NotificationComponent implements OnDestroy {

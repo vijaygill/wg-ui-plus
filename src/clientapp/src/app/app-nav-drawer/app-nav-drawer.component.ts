@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppSharedModule } from '../app-shared.module';
@@ -41,6 +41,7 @@ export interface NavDrawerMenuSection {
   styleUrl: './app-nav-drawer.component.scss',
   // Exposes the collapsed state as a host class so the icon-only rail's
   // Material list-item internals can be styled globally (see styles.scss).
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: { '[class.nav-drawer-collapsed]': 'collapsed' },
 })
 export class NavDrawerComponent implements OnInit {

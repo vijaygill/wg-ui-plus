@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -22,6 +22,7 @@ interface OrgChartConnector {
     selector: 'app-org-chart',
     imports: [CommonModule, MatIconModule, MatTooltipModule],
     templateUrl: './org-chart.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './org-chart.component.scss'
 })
 export class OrgChartComponent implements OnChanges {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 import { AppSharedModule } from '../app-shared.module';
@@ -15,6 +15,7 @@ import { NotificationService } from '../notification.service';
   selector: 'app-manage-peers-editor',
   imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   templateUrl: './manage-peers-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './manage-peers-editor.component.scss'
 })
 export class ManagePeersEditorComponent {

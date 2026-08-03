@@ -1,4 +1,4 @@
-import { Component, ContentChild, Input, TemplateRef } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, transferArrayItem } from '@angular/cdk/drag-drop';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +15,7 @@ export interface DualListItem {
     selector: 'app-dual-list',
     imports: [CommonModule, DragDropModule, MatIconModule, MatButtonModule, MatTooltipModule],
     templateUrl: './dual-list.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './dual-list.component.scss'
 })
 export class DualListComponent<T extends DualListItem> {

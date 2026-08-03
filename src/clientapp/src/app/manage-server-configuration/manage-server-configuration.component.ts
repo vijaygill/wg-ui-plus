@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -17,6 +17,7 @@ import { NotificationService } from '../notification.service';
   selector: 'app-manage-server-configuration',
   imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   templateUrl: './manage-server-configuration.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './manage-server-configuration.component.scss'
 })
 export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
