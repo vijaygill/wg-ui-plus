@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { CrudContainerComponent } from '../crud-container/crud-container.component';
@@ -11,6 +11,7 @@ import { ManageTargetsEditorComponent } from '../manage-targets-editor/manage-ta
     selector: 'app-manage-targets',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManageTargetsListComponent, ManageTargetsEditorComponent],
     templateUrl: './manage-targets.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-targets.component.scss'
 })
 export class ManageTargetsComponent {

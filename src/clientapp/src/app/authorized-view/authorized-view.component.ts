@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ContentChild, OnInit, TemplateRef } from '@angular/core';
+import { Component, ContentChild, OnInit, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
 import { AppSharedModule } from '../app-shared.module';
 import { LoginService } from '../login.service';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
     selector: 'app-authorized-view',
     imports: [CommonModule, AppSharedModule],
     templateUrl: './authorized-view.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './authorized-view.component.scss'
 })
 export class AuthorizedViewComponent implements OnInit{

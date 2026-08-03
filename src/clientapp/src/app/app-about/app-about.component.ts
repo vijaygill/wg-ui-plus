@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { WebapiService } from '../webapi.service';
 
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,7 @@ import { LicenseInfo } from '../webapi.entities';
     selector: 'app-about',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './app-about.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './app-about.component.scss'
 })
 export class AboutComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from '../webapi.service';
 import { OrgChartNode } from '../webapi.entities';
@@ -12,6 +12,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     selector: 'app-server-vpn-layout',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './server-vpn-layout.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './server-vpn-layout.component.scss'
 })
 export class ServerVpnLayoutComponent implements OnInit {

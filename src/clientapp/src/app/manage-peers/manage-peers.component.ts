@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,6 +11,7 @@ import { ManagePeersEditorComponent } from '../manage-peers-editor/manage-peers-
     selector: 'app-manage-peers',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManagePeersListComponent, ManagePeersEditorComponent],
     templateUrl: './manage-peers.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-peers.component.scss'
 })
 export class ManagePeersComponent {

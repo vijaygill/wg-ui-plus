@@ -1,5 +1,5 @@
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ServerValidationError } from '../webapi.entities';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -13,6 +13,7 @@ export interface ValidationErrorMessage {
     selector: 'app-validation-errors-display',
     imports: [MatIconModule],
     templateUrl: './validation-errors-display.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './validation-errors-display.component.scss'
 })
 export class ValidationErrorsDisplayComponent {

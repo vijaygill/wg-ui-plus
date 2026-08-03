@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ChangeUserPasswordInfo, McpConfiguration, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { ConfirmationDialogService } from '../confirmation-dialog.service';
   selector: 'app-manage-server-configuration',
   imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent, AuthorizedViewComponent],
   templateUrl: './manage-server-configuration.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './manage-server-configuration.component.scss'
 })
 export class ManageServerConfigurationComponent implements OnInit, OnDestroy {

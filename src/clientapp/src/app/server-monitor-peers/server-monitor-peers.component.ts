@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -13,6 +13,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     selector: 'app-server-monitor-peers',
     imports: [CommonModule, FormsModule, AppSharedModule],
     templateUrl: './server-monitor-peers.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './server-monitor-peers.component.scss'
 })
 export class ServerMonitorPeersComponent implements OnInit {

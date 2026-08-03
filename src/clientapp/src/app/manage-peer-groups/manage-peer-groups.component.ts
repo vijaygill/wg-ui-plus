@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,6 +11,7 @@ import { CrudContainerComponent } from '../crud-container/crud-container.compone
     selector: 'app-manage-peer-groups',
     imports: [FormsModule, AppSharedModule, CrudContainerComponent, ManagePeerGroupsListComponent, ManagePeerGroupsEditorComponent],
     templateUrl: './manage-peer-groups.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-peer-groups.component.scss'
 })
 export class ManagePeerGroupsComponent {

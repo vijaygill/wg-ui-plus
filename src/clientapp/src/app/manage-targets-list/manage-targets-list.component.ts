@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -11,6 +11,7 @@ import { WebapiService } from '../webapi.service';
     selector: 'app-manage-targets-list',
     imports: [FormsModule, AppSharedModule],
     templateUrl: './manage-targets-list.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-targets-list.component.scss'
 })
 export class ManageTargetsListComponent {

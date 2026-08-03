@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -13,6 +13,7 @@ import { WebapiService } from '../webapi.service';
     selector: 'app-manage-targets-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
     templateUrl: './manage-targets-editor.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './manage-targets-editor.component.scss'
 })
 export class ManageTargetsEditorComponent {
