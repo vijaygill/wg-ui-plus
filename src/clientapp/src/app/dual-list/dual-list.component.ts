@@ -29,7 +29,7 @@ export class DualListComponent<T extends DualListItem> {
     @Input() sourceHeader: string = '';
     @Input() targetHeader: string = '';
     @Input() disabled: boolean = false;
-    @Input() height: string = '20rem';
+    @Input() height: string = '14rem';
 
     @ContentChild('itemTemplate') itemTemplate!: TemplateRef<any>;
 
