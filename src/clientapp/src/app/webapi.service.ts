@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
-import { TreeNode } from 'primeng/api';
 import { map, tap } from 'rxjs/operators'
-import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCrendentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +18,7 @@ export class WebapiService {
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
     private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
-    private urlPeerGroupHeirarchy = '/api/v1/data/target_heirarchy/';
+    private urlPeerGroupHierarchy = '/api/v1/data/target_heirarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
     private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
     private urlGetServerStatus = '/api/v1/control/get_server_status';
@@ -168,8 +167,8 @@ export class WebapiService {
         return this.http.get<any>(this.urlControlWireguardRestart);
     }
 
-    getTargetHeirarchy(): Observable<TreeNode[]> {
-        return this.http.get<Target[]>(this.urlPeerGroupHeirarchy)
+    getTargetHierarchy(): Observable<OrgChartNode[]> {
+        return this.http.get<Target[]>(this.urlPeerGroupHierarchy)
             .pipe(map(targets => {
                 let items = targets.map(target => {
                     return {
@@ -200,11 +199,11 @@ export class WebapiService {
                                             details: peer.description,
                                             ip_address: peer.ip_address,
                                         },
-                                    } as TreeNode
+                                    } as OrgChartNode
                                 })
-                            } as TreeNode
+                            } as OrgChartNode
                         })
-                    } as TreeNode
+                    } as OrgChartNode
                 }
                 );
                 let parentItem = {
@@ -214,7 +213,7 @@ export class WebapiService {
                         details: 'VPN running on your server',
                     },
                     children: items,
-                } as TreeNode;
+                } as OrgChartNode;
                 let res = [parentItem];
                 return res;
             }));
@@ -242,7 +241,7 @@ export class WebapiService {
         return this.http.get<UserSessionInfo>(this.urlIsUserLogIn);
     }
 
-    login(credentials: UserCrendentials): Observable<UserSessionInfo> {
+    login(credentials: UserCredentials): Observable<UserSessionInfo> {
         return this.http.post<UserSessionInfo>(this.urlIsUserLogIn, credentials);
     }
 

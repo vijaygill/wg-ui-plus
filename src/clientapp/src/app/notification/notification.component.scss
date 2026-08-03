@@ -1,0 +1,9 @@
+:host {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+mat-icon {
+    flex-shrink: 0;
+}

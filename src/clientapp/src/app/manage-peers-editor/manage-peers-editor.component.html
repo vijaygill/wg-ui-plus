@@ -1,140 +1,92 @@
-<p-toast></p-toast>
-<p-confirmdialog />
-<table style="width: 100%;">
-  <colgroup>
-  <col style="width:100%;" />
-  <col style="width:180px;min-width:180px;max-width:180px;" />
-</colgroup>
-<tbody>
-  <tr>
-    <td>
-      <table class="editor-table">
-        <tbody>
-          <tr>
-            <td><label for="peerName">Name</label></td>
-            <td><input pInputText id="peerName" [(ngModel)]="editItem.name"
-              pTooltip="Name of the device/computer you wish to connect with VPN."
-              tooltipPosition="top" [autofocus]="true" />
-            <app-validation-errors-display field="name" [validationResult]="validationResult">
-            </app-validation-errors-display>
-          </td>
-        </tr>
-        <tr>
-          <td><label for="peerDescription">Description</label></td>
-          <td><input pInputText id="peerDescription" [(ngModel)]="editItem.description"
-            pTooltip="Some description of the device/computer you wish to connect with VPN."
-            tooltipPosition="top" />
-          <app-validation-errors-display field="description"
-            [validationResult]="validationResult">
-          </app-validation-errors-display>
-        </td>
-      </tr>
-      @if (editItem.ip_address) {
-        <tr>
-          <td><label for="peerIPAddress">IP Address</label></td>
-          <td><input pInputText id="peerIPAddress" [(ngModel)]="editItem.ip_address"
-            pTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
-          tooltipPosition="top" [readonly]="true" [disabled]="true" /></td>
-        </tr>
+<div class="editor-layout">
+  <div class="editor-form form-grid">
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput id="peerName" [(ngModel)]="editItem.name"
+        matTooltip="Name of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
+        matTooltipPosition="above" autofocus />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Description</mat-label>
+      <input matInput id="peerDescription" [(ngModel)]="editItem.description"
+        matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
+        matTooltipPosition="above" />
+    </mat-form-field>
+    <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
+    </app-validation-errors-display>
+    <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
+    </app-validation-errors-display>
+    @if (editItem.ip_address) {
+      <mat-form-field>
+        <mat-label>IP Address</mat-label>
+        <input matInput id="peerIPAddress" [(ngModel)]="editItem.ip_address"
+          matTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
+          matTooltipPosition="above" matTooltipShowDelay="500" [readonly]="true" [disabled]="true" />
+      </mat-form-field>
+    }
+    <mat-form-field>
+      <mat-label>e-Mail Address</mat-label>
+      <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
+        matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
+        matTooltipPosition="above" matTooltipShowDelay="500" />
+    </mat-form-field>
+    <div class="form-span editor-row">
+      <mat-checkbox id="peerDisabled" [(ngModel)]="editItem.disabled">Disabled</mat-checkbox>
+    </div>
+    <div class="form-span editor-picklist">
+      <label class="editor-label" for="peerGroups">Peer-Groups</label>
+      <app-dual-list id="peerGroups" [source]="editItem.peer_groups_lookup"
+        [selected]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
+        matTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
+        matTooltipPosition="above" matTooltipShowDelay="500">
+        <ng-template #itemTemplate let-item>
+          <div class="dual-list-item-content">
+            <div class="dual-list-item-name">{{ item.name }}</div>
+            <small>
+              {{ item.description }}
+            </small>
+          </div>
+        </ng-template>
+      </app-dual-list>
+      <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+      </app-validation-errors-display>
+    </div>
+    <div class="form-span editor-actions">
+      <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
+        <mat-icon>check</mat-icon>
+        Ok
+      </button>
+      <button mat-stroked-button type="button" (click)="cancel()">
+        <mat-icon>close</mat-icon>
+        Cancel
+      </button>
+      @if (editItem.id) {
+        <button mat-flat-button color="warn" type="button" (click)="delete($event)">
+          <mat-icon>block</mat-icon>
+          Delete
+        </button>
       }
-      <tr>
-        <td><label for="peerEmailAddress">e-Mail Address</label></td>
-        <td><input pInputText id="peerEmailAddress" [(ngModel)]="editItem.email_address"
-          pTooltip="e-Mail Address for sending VPN/Tunnel configuration."
-        tooltipPosition="top" /></td>
-      </tr>
-      <!-- <tr>
-      <td><label for="portnumber">Port</label></td>
-      <td>
-        <p-inputNumber id="portnumber" inputId="integeronly" [min]="1024" [max]="65535" [allowEmpty]="false"
-          [required]="true" [format]="false" [(ngModel)]="editItem.port" />
-      </td>
-    </tr> -->
-    <tr>
-      <td><label for="peerDisabled">Disabled</label></td>
-      <td><p-checkbox id="peerDisabled" [binary]="true" [(ngModel)]="editItem.disabled" /></td>
-    </tr>
-    <tr>
-      <td><label for="peerGroups">Peer-Groups</label></td>
-      <td>
-        <p-pickList id="peerGroups" [source]="editItem.peer_groups_lookup"
-          [metaKeySelection]="true"
-          [target]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
-          [dragdrop]="true" [responsive]="true"
-          [showSourceControls]="false" [showTargetControls]="false" [stripedRows]="true"
-          [sourceStyle]="{ height: '20rem' }" [targetStyle]="{ height: '20rem' }"
-          breakpoint="900px"
-          pTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
-          tooltipPosition="top">
-          <ng-template let-peerGroupLink pTemplate="item">
-            <div class="flex flex-wrap p-2 align-items-center gap-3">
-              <div class="flex-1 flex flex-column gap-2">
-                <span class="font-bold">{{ peerGroupLink.name }}</span>
-                <div class="flex align-items-center gap-2">
-                  <i class="pi pi-tag text-sm"></i>
-                  <small>
-                    {{ peerGroupLink.description }}
-                  </small>
-                </div>
-              </div>
-            </div>
-          </ng-template>
-        </p-pickList>
-        <app-validation-errors-display field="peer_groups"
-          [validationResult]="validationResult">
-        </app-validation-errors-display>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <div style="width:100%;align-items: center; text-align: center;">
-          <span>
-            <p-button icon="pi pi-check" label="Ok" (onClick)="ok()"></p-button>
-            &nbsp;
-          </span>
-          <span>
-            <p-button icon="pi pi-times" label="Cancel" severity="warn"
-            (onClick)="cancel()"></p-button>
-            &nbsp;
-          </span>
-          @if (editItem.id) {
-            <span>
-              <p-button icon="pi pi-ban" label="Delete" severity="danger"
-              (onClick)="delete($event)"></p-button>
-              &nbsp;
-            </span>
-          }
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        <div style="width:100%;align-items: center; text-align: center;">
-          <app-validation-errors-display
-          [validationResult]="validationResult"></app-validation-errors-display>
-        </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
-</td>
-<td>
-  @if (editItem.configuration) {
-    <img width="180px" [src]="getQrCode()" />
-  }
-  <br />
-  @if (editItem.configuration) {
-    <p-button label="Download .conf file" (onClick)="downloadConfigFile($event)"
-    ></p-button>
-  }
-  <br />
-  <br />
-  @if (editItem.id && editItem.email_address) {
-    <p-button icon="pi pi-mail" label="Send Config By Email" (onClick)="sendConfigurationByEmail($event)"
-    ></p-button>
-  }
+    </div>
+    <div class="form-span editor-validation">
+      <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
+    </div>
+  </div>
 
-</td>
-</tr>
-</tbody>
-</table>
+  <div class="side-column">
+    @if (editItem.configuration) {
+      <img width="180px" [src]="getQrCode()" />
+    }
+    @if (editItem.configuration) {
+      <button mat-flat-button type="button" (click)="downloadConfigFile($event)">
+        <mat-icon>download</mat-icon>
+        Download .conf file
+      </button>
+    }
+    @if (editItem.id && editItem.email_address) {
+      <button mat-stroked-button type="button" (click)="sendConfigurationByEmail($event)">
+        <mat-icon>mail</mat-icon>
+        Send Config By Email
+      </button>
+    }
+  </div>
+</div>

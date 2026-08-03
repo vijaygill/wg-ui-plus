@@ -1,0 +1,78 @@
+<div class="dual-list" cdkDropListGroup>
+
+    <div class="dual-list-pane">
+        <div class="dual-list-pane-header">{{ sourceHeader }}</div>
+        <div class="dual-list-pane-items"
+             cdkDropList
+             [cdkDropListData]="source"
+             [cdkDropListDisabled]="disabled"
+             [style.height]="height"
+             (cdkDropListDropped)="onDrop($event)">
+            <div class="dual-list-item"
+                 *ngFor="let item of source; trackBy: trackByFn"
+                 cdkDrag
+                 [cdkDragDisabled]="disabled"
+                 [class.selected]="isSelected(item, 'source')"
+                 (click)="onItemClick(item, 'source', $event)">
+                <ng-container *ngIf="itemTemplate; else plainItem">
+                    <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-container>
+                </ng-container>
+                <ng-template #plainItem>{{ item.name }}</ng-template>
+            </div>
+        </div>
+    </div>
+
+    <div class="dual-list-buttons">
+        <button mat-icon-button type="button"
+                [disabled]="disabled"
+                (click)="moveSelected(source, selected)"
+                matTooltip="Move selected to target"
+                matTooltipPosition="above" matTooltipShowDelay="500">
+            <mat-icon>chevron_right</mat-icon>
+        </button>
+        <button mat-icon-button type="button"
+                [disabled]="disabled"
+                (click)="moveAll(source, selected)"
+                matTooltip="Move all to target"
+                matTooltipPosition="above" matTooltipShowDelay="500">
+            <mat-icon>last_page</mat-icon>
+        </button>
+        <button mat-icon-button type="button"
+                [disabled]="disabled"
+                (click)="moveAll(selected, source)"
+                matTooltip="Move all to source"
+                matTooltipPosition="above" matTooltipShowDelay="500">
+            <mat-icon>first_page</mat-icon>
+        </button>
+        <button mat-icon-button type="button"
+                [disabled]="disabled"
+                (click)="moveSelected(selected, source)"
+                matTooltip="Move selected to source"
+                matTooltipPosition="above" matTooltipShowDelay="500">
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+    </div>
+
+    <div class="dual-list-pane">
+        <div class="dual-list-pane-header">{{ targetHeader }}</div>
+        <div class="dual-list-pane-items"
+             cdkDropList
+             [cdkDropListData]="selected"
+             [cdkDropListDisabled]="disabled"
+             [style.height]="height"
+             (cdkDropListDropped)="onDrop($event)">
+            <div class="dual-list-item"
+                 *ngFor="let item of selected; trackBy: trackByFn"
+                 cdkDrag
+                 [cdkDragDisabled]="disabled"
+                 [class.selected]="isSelected(item, 'target')"
+                 (click)="onItemClick(item, 'target', $event)">
+                <ng-container *ngIf="itemTemplate; else plainItem">
+                    <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-container>
+                </ng-container>
+                <ng-template #plainItem>{{ item.name }}</ng-template>
+            </div>
+        </div>
+    </div>
+
+</div>

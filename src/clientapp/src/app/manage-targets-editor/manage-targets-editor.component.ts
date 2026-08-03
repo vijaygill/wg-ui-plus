@@ -1,11 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MessageService } from 'primeng/api';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { ConfirmationDialogService } from '../confirmation-dialog-service';
+import { ConfirmationDialogService } from '../confirmation-dialog.service';
 import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
@@ -13,7 +12,6 @@ import { WebapiService } from '../webapi.service';
     standalone: true,
     selector: 'app-manage-targets-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-    providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-targets-editor.component.html',
     styleUrl: './manage-targets-editor.component.scss'
 })
@@ -22,25 +20,30 @@ export class ManageTargetsEditorComponent {
   get editItem(): Target { return this.target; }
   set editItem(value: Target) {
     this.target = value;
+    this.captureSnapshot();
     if (this.target.id) {
       this.webapiService.getTarget(value.id).subscribe(data => {
         this.target = data;
         this.getLookupData();
+        this.captureSnapshot();
       });
     }
     else {
       this.getLookupData();
+      this.captureSnapshot();
     }
   }
 
   target: Target = {} as Target;
 
+  /** Serialized snapshot of the editable fields as originally loaded. */
+  private snapshot = '';
+
   validationResult!: any;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService,
-    private webapiService: WebapiService,
+  constructor(private webapiService: WebapiService,
     private confirmationDialogService: ConfirmationDialogService) { }
 
   getLookupData() {
@@ -50,6 +53,31 @@ export class ManageTargetsEditorComponent {
         : lookup;
       this.target.peer_groups_lookup = lookupItems;
     });
+  }
+
+  /** Sorted list of ids from the given related-item array (order-independent). */
+  private sortedIds(list: Array<{ id: number }> | undefined): number[] {
+    return (list || []).map(x => x.id).sort((a, b) => a - b);
+  }
+
+  /** Normalized representation of the user-editable fields. */
+  private get editableState(): any {
+    return {
+      name: this.target.name,
+      description: this.target.description,
+      ip_address: this.target.ip_address,
+      disabled: this.target.disabled,
+      peer_groups: this.sortedIds(this.target.peer_groups),
+    };
+  }
+
+  private captureSnapshot(): void {
+    this.snapshot = JSON.stringify(this.editableState);
+  }
+
+  /** True when any user-editable field differs from the originally loaded data. */
+  get hasChanges(): boolean {
+    return JSON.stringify(this.editableState) !== this.snapshot;
   }
 
   ok() {

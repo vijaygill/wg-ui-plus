@@ -1,34 +1,33 @@
-<p-card header="Login">
-  <form #userLogin="ngForm" novalidate (ngSubmit)="onSubmit()">
-    <table>
-      <tr>
-        <td>User name</td>
-        <td>
-          <input pInputText id="username" name="username" [(ngModel)]="credentials.username" [autofocus]="true" #id="ngModel"/>
-        </td>
-      </tr>
-      <tr>
-        <td>Password</td>
-        <td>
-          <p-password id="password" name="password" [(ngModel)]="credentials.password" [feedback]="false" />
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <div style="width:100%;align-items: center; text-align: center;">
-            <button type="submit" pButton>Login</button>
+<div class="login-page">
+  <mat-card class="login-card" appearance="outlined">
+    <mat-card-content>
+      <div class="login-brand">
+        <span class="login-monogram" aria-hidden="true">W</span>
+        <h1 class="login-title">WireGuard UI Plus</h1>
+        <p class="login-subtitle">Run &amp; manage your WireGuard VPN in one UI.</p>
+      </div>
+
+      <form #userLogin="ngForm" novalidate (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline">
+          <mat-label>User name</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput id="username" name="username" [(ngModel)]="credentials.username" autofocus #id="ngModel" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <mat-icon matPrefix>lock</mat-icon>
+          <input matInput id="password" name="password" type="password" [(ngModel)]="credentials.password" />
+        </mat-form-field>
+        <div class="login-actions">
+          <button type="submit" mat-flat-button color="primary" class="login-button">Login</button>
+        </div>
+        @if (userSessionInfo && userSessionInfo.message) {
+          <div class="login-message">
+            <mat-icon>info</mat-icon>
+            <span>{{userSessionInfo.message}}</span>
           </div>
-        </td>
-      </tr>
-      @if (userSessionInfo && userSessionInfo.message) {
-      <tr>
-        <td colspan="2">
-          <div style="width:100%;align-items: center; text-align: center;">
-            {{userSessionInfo.message}}
-          </div>
-        </td>
-      </tr>
-      }
-    </table>
-  </form>
-</p-card>
+        }
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

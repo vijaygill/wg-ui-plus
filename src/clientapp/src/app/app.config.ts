@@ -7,9 +7,6 @@ import { HttpClientErrorInterceptor } from './http-client-error.interceptor';
 
 import { routes } from './app.routes';
 
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
-
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,14 +17,6 @@ export const appConfig: ApplicationConfig = {
       }
     )),
     provideAnimationsAsync(),
-    providePrimeNG({
-      theme: {
-        preset: Aura,
-        options: {
-          darkModeSelector: '.my-app-dark',
-        }
-      }
-    }),
     provideRouter(routes), provideAnimationsAsync('noop'),
     provideClientHydration(), provideHttpClient(withInterceptorsFromDi()),
     {

@@ -1,4 +1,4 @@
-export interface UserCrendentials {
+export interface UserCredentials {
     username: string;
     password: string;
 }
@@ -160,4 +160,12 @@ export interface ServerStatus {
 
 export interface PlatformInformation {
     is_small_screen: boolean;
+}
+
+export interface OrgChartNode {
+    label: string;
+    type?: string;             // 'target' | 'peerGroup' | 'peer' | root(undefined)
+    expanded?: boolean;
+    data?: { disabled?: boolean; details?: string; ip_address?: string };
+    children?: OrgChartNode[];
 }

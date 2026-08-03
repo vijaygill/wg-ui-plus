@@ -1,5 +1,40 @@
-<p-toast></p-toast>
-<div>
-    This is test component!
-    
+<div class="test-page">
+    <h1>Test Component</h1>
+    <p>This is test component!</p>
+
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>Buttons</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <button mat-flat-button color="primary">Flat (primary)</button>
+            <button mat-stroked-button>Stroked</button>
+            <button mat-button>Text</button>
+            <button mat-icon-button aria-label="Icon button">
+                <mat-icon>favorite</mat-icon>
+            </button>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>Notifications</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <button mat-flat-button color="primary" (click)="showSuccess()">Success</button>
+            <button mat-flat-button color="warn" (click)="showError()">Error</button>
+            <button mat-stroked-button (click)="showWarn()">Warn</button>
+            <button mat-stroked-button (click)="showInfo()">Info</button>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+        <mat-card-header>
+            <mat-card-title>Confirmations</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <button mat-flat-button (click)="confirmDemo()">Confirm dialog</button>
+            <button mat-stroked-button (click)="showMessageDemo()">Show message</button>
+        </mat-card-content>
+    </mat-card>
 </div>

@@ -1,0 +1,17 @@
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.table-caption {
+    padding: 0.5rem 0 0.75rem;
+    opacity: 0.75;
+}
+
+@media (max-width: 600px) {
+    .metrics-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

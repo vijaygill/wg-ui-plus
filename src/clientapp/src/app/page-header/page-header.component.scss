@@ -1,0 +1,43 @@
+:host {
+    display: block;
+}
+
+.page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.page-header-text {
+    min-width: 0;
+}
+
+.page-header-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--mat-sys-on-surface);
+}
+
+.page-header-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    opacity: 0.75;
+    color: var(--mat-sys-on-surface);
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* Hide the actions container when nothing is projected into it. */
+.page-header-actions:empty {
+    display: none;
+}

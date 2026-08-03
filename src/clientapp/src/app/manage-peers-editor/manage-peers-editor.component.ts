@@ -1,21 +1,19 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Peer, PeerGroup, ServerValidationError, } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ConfirmationDialogService } from '../confirmation-dialog-service';
-import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmationDialogService } from '../confirmation-dialog.service';
+import { NotificationService } from '../notification.service';
 
 @Component({
   standalone: true,
   selector: 'app-manage-peers-editor',
-  imports: [ConfirmDialog, FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-  providers: [MessageService, ConfirmationDialogService, ConfirmationService],
+  imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
   templateUrl: './manage-peers-editor.component.html',
   styleUrl: './manage-peers-editor.component.scss'
 })
@@ -24,24 +22,30 @@ export class ManagePeersEditorComponent {
   get editItem(): Peer { return this.peer; }
   set editItem(value: Peer) {
     this.peer = value;
+    this.captureSnapshot();
     if (value.id) {
       this.webapiService.getPeer(value.id).subscribe(data => {
         this.peer = data;
         this.getLookupData();
+        this.captureSnapshot();
       });
     }
     else {
       this.getLookupData();
+      this.captureSnapshot();
     }
   }
 
   peer: Peer = {} as Peer;
 
+  /** Serialized snapshot of the editable fields as originally loaded. */
+  private snapshot = '';
+
   validationResult!: ServerValidationError;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
-  constructor(private messageService: MessageService,
+  constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private confirmationDialogService: ConfirmationDialogService) {
 
@@ -61,6 +65,31 @@ export class ManagePeersEditorComponent {
   getQrCode() {
     let imagePath = this.editItem.qr ? 'data:image/jpg;base64,' + this.editItem.qr : '';
     return imagePath;
+  }
+
+  /** Sorted list of ids from the given related-item array (order-independent). */
+  private sortedIds(list: Array<{ id: number }> | undefined): number[] {
+    return (list || []).map(x => x.id).sort((a, b) => a - b);
+  }
+
+  /** Normalized representation of the user-editable fields. */
+  private get editableState(): any {
+    return {
+      name: this.peer.name,
+      description: this.peer.description,
+      email_address: this.peer.email_address,
+      disabled: this.peer.disabled,
+      peer_groups: this.sortedIds(this.peer.peer_groups),
+    };
+  }
+
+  private captureSnapshot(): void {
+    this.snapshot = JSON.stringify(this.editableState);
+  }
+
+  /** True when any user-editable field differs from the originally loaded data. */
+  get hasChanges(): boolean {
+    return JSON.stringify(this.editableState) !== this.snapshot;
   }
 
   ok() {
@@ -138,7 +167,7 @@ export class ManagePeersEditorComponent {
 
           this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
             next: data => {
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'e-Mail sent successully.' });
+              this.notification.success('e-Mail sent successully.');
             },
             error: error => {
               let response = error as HttpErrorResponse;

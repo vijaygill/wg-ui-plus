@@ -2,7 +2,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
-import { MessageService } from 'primeng/api';
+import { Sort } from '@angular/material/sort';
 import { PeerGroup, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
@@ -10,14 +10,14 @@ import { WebapiService } from '../webapi.service';
     standalone: true,
     selector: 'app-manage-targets-list',
     imports: [FormsModule, AppSharedModule],
-    providers: [MessageService],
     templateUrl: './manage-targets-list.component.html',
     styleUrl: './manage-targets-list.component.scss'
 })
 export class ManageTargetsListComponent {
   targets: Target[] = [];
+  private currentSort: Sort = { active: 'name', direction: 'asc' };
 
-  constructor(private messageService: MessageService, private webapiService: WebapiService) { }
+  constructor(private webapiService: WebapiService) { }
 
   ngOnInit() {
     this.refreshData();
@@ -26,6 +26,9 @@ export class ManageTargetsListComponent {
   refreshData(): void {
     this.webapiService.getTargetList().subscribe(data => {
       this.targets = data;
+      // Preserve the default sort (by name, ascending) on first load,
+      // matching the original sortField="name" behaviour.
+      this.sortData(this.currentSort);
     });
   }
 
@@ -48,5 +51,19 @@ export class ManageTargetsListComponent {
     if (this.onEdit) {
       this.onEdit.emit(peer);
     }
+  }
+
+  sortData(sort: Sort): void {
+    this.currentSort = sort;
+    if (!sort.active || sort.direction === '') {
+      return;
+    }
+    const sorted = [...this.targets].sort((a, b) => {
+      const aValue = String((a as any)[sort.active] ?? '');
+      const bValue = String((b as any)[sort.active] ?? '');
+      const cmp = aValue.localeCompare(bValue);
+      return sort.direction === 'asc' ? cmp : -cmp;
+    });
+    this.targets = sorted;
   }
 }

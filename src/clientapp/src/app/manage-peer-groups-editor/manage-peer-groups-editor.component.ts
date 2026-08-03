@@ -1,11 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { AppSharedModule } from '../app-shared.module';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../validation-errors-display/validation-errors-display.component';
-import { ConfirmationDialogService } from '../confirmation-dialog-service';
+import { ConfirmationDialogService } from '../confirmation-dialog.service';
 import { PeerGroup, ServerValidationError, Target } from '../webapi.entities';
 import { WebapiService } from '../webapi.service';
 
@@ -13,7 +12,6 @@ import { WebapiService } from '../webapi.service';
     standalone: true,
     selector: 'app-manage-peer-groups-editor',
     imports: [FormsModule, AppSharedModule, ValidationErrorsDisplayComponent],
-    providers: [MessageService, ConfirmationDialogService],
     templateUrl: './manage-peer-groups-editor.component.html',
     styleUrl: './manage-peer-groups-editor.component.scss'
 })
@@ -22,18 +20,24 @@ export class ManagePeerGroupsEditorComponent {
   get editItem(): PeerGroup { return this.peerGroup; }
   set editItem(value: PeerGroup) {
     this.peerGroup = value;
+    this.captureSnapshot();
     if (this.peerGroup.id) {
       this.webapiService.getPeerGroup(value.id).subscribe(data => {
         this.peerGroup = data;
         this.getLookupData();
+        this.captureSnapshot();
       });
     }
     else {
       this.getLookupData();
+      this.captureSnapshot();
     }
   }
 
   peerGroup: PeerGroup = {} as PeerGroup;
+
+  /** Serialized snapshot of the editable fields as originally loaded. */
+  private snapshot = '';
 
   validationResult!: ServerValidationError;
 
@@ -57,6 +61,31 @@ export class ManagePeerGroupsEditorComponent {
         this.peerGroup.targets_lookup = lookupItems;
       });
     }
+  }
+
+  /** Sorted list of ids from the given related-item array (order-independent). */
+  private sortedIds(list: Array<{ id: number }> | undefined): number[] {
+    return (list || []).map(x => x.id).sort((a, b) => a - b);
+  }
+
+  /** Normalized representation of the user-editable fields. */
+  private get editableState(): any {
+    return {
+      name: this.peerGroup.name,
+      description: this.peerGroup.description,
+      disabled: this.peerGroup.disabled,
+      peers: this.sortedIds(this.peerGroup.peers),
+      targets: this.sortedIds(this.peerGroup.targets),
+    };
+  }
+
+  private captureSnapshot(): void {
+    this.snapshot = JSON.stringify(this.editableState);
+  }
+
+  /** True when any user-editable field differs from the originally loaded data. */
+  get hasChanges(): boolean {
+    return JSON.stringify(this.editableState) !== this.snapshot;
   }
 
   ok() {

@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { UserCrendentials, UserSessionInfo } from '../webapi.entities';
-import { LoginService } from '../login-service';
+import { UserCredentials, UserSessionInfo } from '../webapi.entities';
+import { LoginService } from '../login.service';
 import { JsonPipe } from '@angular/common';
 
 @Component({
@@ -16,7 +16,7 @@ import { JsonPipe } from '@angular/common';
     styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
-  credentials: UserCrendentials = { username: '', password: '' } as UserCrendentials;
+  credentials: UserCredentials = { username: '', password: '' } as UserCredentials;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' } as UserSessionInfo;
   loginServiceSubscription !: Subscription;
   url !: string;
@@ -45,10 +45,6 @@ export class LoginComponent implements OnInit {
   {
     this.userSessionInfo.message = 'Logging in. Please wait...';
     this.loginService.login(this.credentials);
-  }
-
-  logout(event: Event): void {
-    this.loginService.logout();
   }
 }
 

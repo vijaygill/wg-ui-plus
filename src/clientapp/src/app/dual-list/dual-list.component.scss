@@ -1,0 +1,56 @@
+.dual-list {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.dual-list-pane {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dual-list-pane-header {
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.dual-list-pane-items {
+    overflow-y: auto;
+}
+
+.dual-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        background: color-mix(in srgb, currentColor 6%, transparent);
+    }
+}
+
+.dual-list-item.selected {
+    background: color-mix(in srgb, var(--mat-sys-primary, #4d9fff) 15%, transparent);
+    color: var(--mat-sys-primary, #4d9fff);
+}
+
+.dual-list-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.25rem;
+}
+
+/* Keep the item visible (semi-transparent) while it is being dragged. */
+.cdk-drag-placeholder {
+    opacity: 0.3;
+}

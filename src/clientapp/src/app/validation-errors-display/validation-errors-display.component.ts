@@ -1,13 +1,17 @@
 
 import { Component, Input } from '@angular/core';
 import { ServerValidationError } from '../webapi.entities';
-import { ToastMessageOptions } from 'primeng/api';
-import { MessageModule } from 'primeng/message';
+import { MatIconModule } from '@angular/material/icon';
+
+export interface ValidationErrorMessage {
+    severity: string;
+    detail: string;
+}
 
 @Component({
     standalone: true,
     selector: 'app-validation-errors-display',
-    imports: [MessageModule],
+    imports: [MatIconModule],
     templateUrl: './validation-errors-display.component.html',
     styleUrl: './validation-errors-display.component.scss'
 })
@@ -15,8 +19,8 @@ export class ValidationErrorsDisplayComponent {
   @Input() field!: string;
   @Input() validationResult!: ServerValidationError;
 
-  errorList(): ToastMessageOptions[] {
-    let res: ToastMessageOptions [] = [];
+  errorList(): ValidationErrorMessage[] {
+    let res: ValidationErrorMessage [] = [];
     if (this.validationResult && this.validationResult.errors) {
       this.validationResult.errors.forEach(validationResultItem => {
         let createMessage = !this.field || this.field == validationResultItem.attr;
@@ -26,11 +30,7 @@ export class ValidationErrorsDisplayComponent {
         if (!validationResultItem.detail) {
           return;
         }
-        // let severity = 'error' == validationResultItem.type ? 'error'
-        //   : 'warning' == validationResultItem.type ? 'warn'
-        //     : 'info';
-        let severity = 'error';
-        let message = { severity: severity, detail: validationResultItem.detail } as ToastMessageOptions ;
+        let message = { severity: 'error', detail: validationResultItem.detail } as ValidationErrorMessage;
         res.push(message);
       }
       );
@@ -39,4 +39,3 @@ export class ValidationErrorsDisplayComponent {
   }
 
 }
-

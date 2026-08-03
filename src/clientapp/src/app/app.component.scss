@@ -1,0 +1,180 @@
+:host {
+    display: block;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+}
+
+/* ---------- Top app bar ---------- */
+.app-toolbar {
+    flex-shrink: 0;
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+    z-index: 10;
+}
+
+.toolbar-btn {
+    flex-shrink: 0;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    text-decoration: none;
+    color: inherit;
+    min-width: 0;
+}
+
+.brand-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 18%, transparent);
+    color: var(--mat-sys-on-surface);
+    font-weight: 600;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.brand-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    color: var(--mat-sys-on-surface);
+}
+
+.toolbar-spacer {
+    flex: 1 1 auto;
+}
+
+.server-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-right: 0.25rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    color: var(--mat-sys-on-surface);
+}
+
+.status-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 0 2px color-mix(in srgb, #4caf50 30%, transparent);
+}
+
+.server-status.status-error .status-dot {
+    background: #ef5350;
+    box-shadow: 0 0 0 2px color-mix(in srgb, #ef5350 30%, transparent);
+}
+
+.server-status.status-warn .status-dot {
+    background: #ffb74d;
+    box-shadow: 0 0 0 2px color-mix(in srgb, #ffb74d 30%, transparent);
+}
+
+/* ---------- Sidenav + content ---------- */
+.app-sidenav-container {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.app-sidenav {
+    border-right: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+}
+
+.app-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.content-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.route-container {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1.5rem;
+    min-height: 0;
+}
+
+/* ---------- Regenerate-files warning banner ---------- */
+.regenerate-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    margin: 0 0 1rem;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mat-sys-error) 40%, transparent);
+    color: var(--mat-sys-error);
+
+    .banner-icon {
+        flex-shrink: 0;
+    }
+
+    .banner-text {
+        flex: 1 1 auto;
+        min-width: 10rem;
+        color: var(--mat-sys-on-surface);
+    }
+
+    .banner-dismiss {
+        flex-shrink: 0;
+    }
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 0.75rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+    background: color-mix(in srgb, var(--mat-sys-surface-container) 60%, transparent);
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--mat-sys-on-surface) 75%, transparent);
+    text-align: center;
+}
+
+.footer-item {
+    white-space: nowrap;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 600px) {
+    .brand-text {
+        display: none; /* collapse brand lockup to the monogram on phones */
+    }
+
+    .server-status .status-text {
+        display: none; /* keep just the dot on very narrow screens */
+    }
+
+    .route-container {
+        padding: 1rem;
+    }
+}

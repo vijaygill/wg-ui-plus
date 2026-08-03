@@ -1,7 +1,55 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles for the WireGuard UI Plus SPA. */
+@use '@angular/material' as mat;
+@import "material-icons/iconfont/material-icons.css";
 
-@import "primeicons/primeicons.css";
+/* ============================================================
+   Material 3 themes (light + dark)
+   ============================================================ */
 
+/* Dark is the default theme. It is applied to bare `html` so the app remains
+   usable before JS runs / without JS, and explicitly via the `dark` class. */
+html {
+    color-scheme: dark;
+
+    @include mat.theme((
+        color: (
+            theme-type: dark,
+            primary: mat.$azure-palette,
+            tertiary: mat.$blue-palette,
+        ),
+        typography: Roboto,
+        density: 0,
+    ));
+}
+
+/* Explicit light theme — more specific selector overrides the dark default. */
+html.light {
+    color-scheme: light;
+
+    @include mat.theme((
+        color: (
+            theme-type: light,
+            primary: mat.$azure-palette,
+            tertiary: mat.$blue-palette,
+        ),
+        typography: Roboto,
+        density: 0,
+    ));
+
+    @include mat.theme-overrides((
+        surface-container-low: #f2f4f8,
+        surface-container: #eceef2,
+        surface-container-high: #e6e8ec,
+    ));
+}
+
+html.dark {
+    @include mat.theme-overrides((
+        surface-container-low: #14171c,
+        surface-container: #1a1e24,
+        surface-container-high: #22262d,
+    ));
+}
 
 body,
 html {
@@ -13,78 +61,234 @@ html {
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
 }
 
-.item {
-    border-style: none;
-    border-color: yellow;
-}
+/* ============================================================
+   Layout utilities
+   ============================================================ */
 
-.item-header {
-    grid-area: header;
-}
-
-.item-main {
-    grid-area: main;
-    overflow-y: auto;
-}
-
-.item-sidebar {
-    grid-area: sidebar;
-}
-
-.item-footer {
-    grid-area: footer;
-    align-items: center;
-    align-content: center;
-    text-align: center;
-}
-
-.container {
+mat-form-field {
     width: 100%;
+}
+
+/* Responsive 2-column form grid (collapses to 1 column on small screens). */
+.form-grid {
     display: grid;
-    height: 100vh;
-    padding: 8px 4px;
-    grid-template-columns: 100%;
-    grid-template-rows: min-content auto min-content;
-    grid-template-areas:
-        "header"
-        "main"
-        "footer";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 1rem;
+    align-items: flex-start;
+
+    > .form-span {
+        grid-column: 1 / -1;
+    }
 }
 
-table {
+@media (max-width: 720px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+/* Form section grouping. */
+.form-section {
+    margin-bottom: 1.5rem;
+
+    .form-section-title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 0.75rem;
+        opacity: 0.75;
+        color: var(--mat-sys-on-surface);
+    }
+}
+
+/* Metric summary tile (monitor pages). */
+.metric-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: var(--mat-sys-surface-container-high);
+    border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+    min-width: 0;
+
+    .metric-value {
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--mat-sys-on-surface);
+    }
+
+    .metric-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        opacity: 0.72;
+        color: var(--mat-sys-on-surface);
+    }
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+
+/* Generic Material-styled data table built on native <table> markup. */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        text-transform: uppercase;
+        font-weight: 400;
+        color: color-mix(in srgb, currentColor 54%, transparent);
+    }
+
     td {
-        vertical-align: top;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+    }
+
+    tbody tr:hover {
+        background: color-mix(in srgb, currentColor 6%, transparent);
     }
 }
 
-.editor-table {
-    min-width: 50%;
-    // max-width: 70%;
+/* Scroll container for data tables so they don't break the page on phones
+   (horizontal scroll within the card). Wrap `<table class="data-table">` in
+   a `<div class="table-scroll">`. */
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
 
-    td:nth-child(1) {
-        width: auto;
-        text-wrap: nowrap;
-        vertical-align: top;
+    /* The wrapper provides horizontal scroll only — the table can exceed the
+       page width on phones but never grows the page vertically, so no sticky
+       header (position: sticky; top: 0) is applied here. */
+    table.data-table {
+        min-width: 44rem;
     }
+}
 
-    td:nth-child(2) {
-        width: 100%;
-        vertical-align: top;
+/* Toolbar row above data tables (hint text left, primary action right). */
+.list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 1rem 0.5rem;
 
-        input {
-            width: 100%;
-        }
-
-        textarea {
-            width: 100%;
-        }
+    .list-hint {
+        font-size: 0.85rem;
+        opacity: 0.72;
     }
+}
 
-    td.errorColumn {
-        vertical-align: top;
-        text-wrap: nowrap;
-    }
+/* Empty-state row rendered inside data tables ("No peers found." etc.). */
+.empty-row {
+    text-align: center;
+    opacity: 0.6;
+    padding: 2rem 1rem !important;
+    font-style: italic;
+}
 
+/* ============================================================
+   Status chips / badges
+   ============================================================ */
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+.status-chip-ok {
+    color: #2e7d32;
+    background: color-mix(in srgb, #4caf50 18%, transparent);
+}
+
+.status-chip-off,
+.status-chip-disconnected {
+    color: #b71c1c;
+    background: color-mix(in srgb, #ef5350 18%, transparent);
+}
+
+.status-chip-down {
+    color: #b71c1c;
+    background: color-mix(in srgb, #ef5350 18%, transparent);
+}
+
+.status-chip-warn {
+    color: #e65100;
+    background: color-mix(in srgb, #ffb74d 22%, transparent);
+}
+
+.status-chip-info {
+    color: #0d47a1;
+    background: color-mix(in srgb, #64b5f6 20%, transparent);
+}
+
+/* Theme-aware versions: brighter text on dark surfaces. */
+html.dark .status-chip-ok { color: #81c784; }
+html.dark .status-chip-off,
+html.dark .status-chip-disconnected,
+html.dark .status-chip-down { color: #ef9a9a; }
+html.dark .status-chip-warn { color: #ffb74d; }
+html.dark .status-chip-info { color: #90caf9; }
+
+/* ============================================================
+   Notification (snackbar) severity icon colours
+   ============================================================ */
+
+.snackbar-success mat-icon {
+    color: #66bb6a;
+}
+
+.snackbar-error mat-icon {
+    color: #ef5350;
+}
+
+.snackbar-warn mat-icon {
+    color: #ffb74d;
+}
+
+.snackbar-info mat-icon {
+    color: #64b5f6;
+}
+
+/* MatSnackBar overlays are rendered outside any component tree, so this
+   selector must be global (no ::ng-deep needed at the stylesheet root). */
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+    background: var(--mat-sys-inverse-surface);
+    color: var(--mat-sys-inverse-on-surface);
+    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+
+/* Collapsed (icon-only rail) navigation drawer.
+   The MDC list-item internals (.mdc-list-item__content, .mat-mdc-list-item)
+   render inside Angular Material's internal components, which are invisible to
+   the nav-drawer component's view-encapsulated stylesheet (hence no ::ng-deep
+   is needed here). These rules are hoisted to the global root and scoped to the
+   rail via the `nav-drawer-collapsed` host class bound in app-nav-drawer. */
+app-nav-drawer.nav-drawer-collapsed .mdc-list-item__content {
+    display: none;
+}
+
+app-nav-drawer.nav-drawer-collapsed .mat-mdc-list-item {
+    justify-content: center;
 }

@@ -1,4 +1,7 @@
-<app-crud-container header="Peer Groups" subheader="Peers-Groups are groups of Peers using the VPN">
+<app-page-header title="Peer Groups"
+  subtitle="Peer-Groups are groups of Peers using the VPN."></app-page-header>
+
+<app-crud-container>
     <ng-template #list let-onEdit="onEdit" let-onNewItem="onNewItem">
         <app-manage-peer-groups-list (onEdit)="onEdit($event)"
             (onNewItem)="onNewItem($event)"></app-manage-peer-groups-list>
