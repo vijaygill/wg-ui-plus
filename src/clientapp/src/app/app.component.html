@@ -30,7 +30,7 @@
 
   <!-- Nav drawer + content -->
   <mat-sidenav-container class="app-sidenav-container">
-    <mat-sidenav class="app-sidenav" [mode]="drawerMode" [opened]="sidenavOpened"
+    <mat-sidenav class="app-sidenav" [class.sidenav-collapsed]="navDrawerCollapsed" [mode]="drawerMode" [opened]="sidenavOpened"
       [disableClose]="isSmallScreen ? false : true" [fixedInViewport]="false">
       <app-nav-drawer [collapsed]="navDrawerCollapsed"></app-nav-drawer>
     </mat-sidenav>

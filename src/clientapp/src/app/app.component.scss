@@ -93,6 +93,14 @@
 
 .app-sidenav {
     border-right: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+    /* The drawer element is fixed at Material's default 360px (M3 token
+       --mat-sidenav-container-width). Collapsing overrides the token so the
+       drawer itself resizes and the main area can expand to fill the space. */
+    transition: width 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.app-sidenav.sidenav-collapsed {
+    --mat-sidenav-container-width: 4rem;
 }
 
 .app-content {
