@@ -10,12 +10,13 @@ import { LoginService } from './login.service';
 import { PlatformInformationService } from './platform-information.service';
 import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 import { NotificationService } from './notification.service';
+import { NotificationComponent } from './notification/notification.component';
 import { ThemeService } from './theme.service';
 
 @Component({
     standalone: true,
     selector: 'app-root',
-    imports: [RouterModule, RouterOutlet, NavDrawerComponent, AppSharedModule],
+    imports: [RouterModule, RouterOutlet, NavDrawerComponent, AppSharedModule, NotificationComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
@@ -36,14 +37,14 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Small screen only: whether the overlay drawer is open. */
   mobileNavOpen = false;
 
-  /** Dismissable warning banner ("need_regenerate_files"). */
-  regenerateBannerDismissed = false;
-
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   loginServiceSubscription !: Subscription;
   platformInformationServiceSubscription !: Subscription;
   routerSubscription !: Subscription;
+
+  /** Key of the status-derived banner currently shown, to avoid re-pushing on every poll. */
+  lastStatusBannerKey: string | null = null;
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
@@ -66,22 +67,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
-      if (this.serverStatus && this.serverStatus.message) {
-        // The server status is re-reported on every poll tick (~10s). Clear the
-        // snackbar only when a fresh status message is available, so it replaces
-        // the previous one instead of queueing up behind it — and so that
-        // user-action toasts are not nuked by empty poll ticks.
-        this.notification.clear();
-        if (this.serverStatus.status == 'error') {
-          this.notification.error(this.serverStatus.message);
-        } else {
-          this.notification.info(this.serverStatus.message);
-        }
-      }
+      this.syncStatusBanner();
     });
 
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
+      this.syncStatusBanner();
     });
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
@@ -129,12 +120,6 @@ export class AppComponent implements OnInit, OnDestroy {
   get navDrawerCollapsed(): boolean {
     // Collapse-to-rail only applies to the persistent (desktop) drawer.
     return !this.isSmallScreen && this.navCollapsed;
-  }
-
-  get showRegenerateBanner(): boolean {
-    return this.serverStatus.need_regenerate_files
-      && this.userSessionInfo.is_logged_in
-      && !this.regenerateBannerDismissed;
   }
 
   /** Server status dot colour class. */
@@ -189,12 +174,45 @@ export class AppComponent implements OnInit, OnDestroy {
     this.themeService.toggle();
   }
 
-  dismissRegenerateBanner(): void {
-    this.regenerateBannerDismissed = true;
+  /** Which status-driven banner (if any) should be showing right now. */
+  private computeStatusBannerKey(): string | null {
+    if (this.serverStatus?.status === 'error') {
+      return 'error';
+    }
+    if (this.serverStatus?.need_regenerate_files && this.userSessionInfo.is_logged_in) {
+      return 'warn:regenerate';
+    }
+    return null;
   }
 
-  applyConfiguration(event: Event): void {
-    event.preventDefault();
+  /** Keeps the unified banner in sync with the server status (offline / regenerate). */
+  private syncStatusBanner(): void {
+    const key = this.computeStatusBannerKey();
+    if (key === this.lastStatusBannerKey) {
+      return;
+    }
+    this.lastStatusBannerKey = key;
+    if (key === null) {
+      this.notification.clear();
+      return;
+    }
+    if (key === 'error') {
+      this.notification.show({
+        type: 'error',
+        message: this.serverStatus?.message || 'Connection to the server was lost.',
+        persistent: true,
+      });
+    } else if (key === 'warn:regenerate') {
+      this.notification.show({
+        type: 'warn',
+        message: 'This will regenerate Server Configuration files and restart WireGuard.',
+        action: { label: 'Apply Changes', callback: () => this.applyConfiguration() },
+        persistent: true,
+      });
+    }
+  }
+
+  applyConfiguration(): void {
     this.webapiService.generateConfigurationFiles().subscribe(data => {
       this.notification.success('Configuration files generated on server.');
       this.webapiService.wireguardRestart().subscribe(() => {

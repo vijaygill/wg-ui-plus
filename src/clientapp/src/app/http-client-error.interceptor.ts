@@ -40,17 +40,24 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
     return next.handle(request)
       .pipe(
         catchError((error: HttpErrorResponse) => {
-          let errorMessageFromList = this.getHttpError(error.status);
-          if(!errorMessageFromList)
-          {
-            return throwError(() => error);  
+          let message: string;
+
+          if (error.status === 0) {
+            // Connection failure (e.g. server unreachable) — report it cleanly.
+            message = 'Connection to the server was lost.';
+          } else {
+            let errorMessageFromList = this.getHttpError(error.status);
+            if(!errorMessageFromList)
+            {
+              return throwError(() => error);
+            }
+            let m = error.error && error.error.message ? error.error.message : '';
+            message = 'Server returned HTTP Error '
+              + error.status
+              + '. '
+              + (m ? m + '. ' : '')
+              + (errorMessageFromList ? errorMessageFromList : 'Please check logs on server side.');
           }
-          let m = error.error && error.error.message ? error.error.message : '';
-          let message = 'Server returned HTTP Error '
-            + error.status
-            + '. '
-            + (m ? m + '. ' : '')
-            + (errorMessageFromList ? errorMessageFromList : 'Please check logs on server side.');
 
           this.webapiService.pushServerStatus({ status: 'error', message: message } as ServerStatus)
           return throwError(() => new Error(message));

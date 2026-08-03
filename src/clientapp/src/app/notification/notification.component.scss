@@ -1,9 +1,66 @@
 :host {
+    display: block;
+}
+
+.notification-banner {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    margin: 0 0 1rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+    background: color-mix(in srgb, var(--mat-sys-surface-container-high) 60%, transparent);
+    color: var(--mat-sys-on-surface);
 }
 
-mat-icon {
+.banner-icon {
     flex-shrink: 0;
+}
+
+.banner-text {
+    flex: 1 1 auto;
+    min-width: 10rem;
+    color: var(--mat-sys-on-surface);
+}
+
+.banner-dismiss {
+    flex-shrink: 0;
+}
+
+.notification-banner.banner-error {
+    background: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+    border-color: color-mix(in srgb, var(--mat-sys-error) 40%, transparent);
+}
+
+.notification-banner.banner-error .banner-icon {
+    color: var(--mat-sys-error);
+}
+
+.notification-banner.banner-warn {
+    background: color-mix(in srgb, #ffb74d 14%, transparent);
+    border-color: color-mix(in srgb, #ffb74d 45%, transparent);
+}
+
+.notification-banner.banner-warn .banner-icon {
+    color: #ffb74d;
+}
+
+.notification-banner.banner-success {
+    background: color-mix(in srgb, #66bb6a 14%, transparent);
+    border-color: color-mix(in srgb, #66bb6a 45%, transparent);
+}
+
+.notification-banner.banner-success .banner-icon {
+    color: #66bb6a;
+}
+
+.notification-banner.banner-info {
+    background: color-mix(in srgb, #64b5f6 14%, transparent);
+    border-color: color-mix(in srgb, #64b5f6 45%, transparent);
+}
+
+.notification-banner.banner-info .banner-icon {
+    color: #64b5f6;
 }

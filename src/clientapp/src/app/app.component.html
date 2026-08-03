@@ -14,14 +14,12 @@
 
     <span class="toolbar-spacer"></span>
 
-    @if (serverStatus.hostname) {
-      <div class="server-status" [class]="statusClass"
-        [matTooltip]="'Host: ' + serverStatus.hostname + (serverStatus.platform ? ' · ' + serverStatus.platform : '')"
-        matTooltipPosition="below">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span class="status-text">{{ statusLabel }}</span>
-      </div>
-    }
+    <div class="server-status" [class]="statusClass"
+      [matTooltip]="serverStatus.hostname ? 'Host: ' + serverStatus.hostname + (serverStatus.platform ? ' · ' + serverStatus.platform : '') : 'Server connection status'"
+      matTooltipPosition="below">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="status-text">{{ statusLabel }}</span>
+    </div>
 
     <button mat-icon-button class="toolbar-btn" (click)="toggleTheme()"
       [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
@@ -39,22 +37,7 @@
 
     <mat-sidenav-content class="app-content">
       <div class="content-column">
-        @if (showRegenerateBanner) {
-          <div class="regenerate-banner">
-            <mat-icon class="banner-icon">warning</mat-icon>
-            <span class="banner-text">
-              This will regenerate Server Configuration files and restart WireGuard.
-            </span>
-            <button mat-flat-button color="warn" (click)="applyConfiguration($event)">
-              <mat-icon>refresh</mat-icon>
-              Apply Changes
-            </button>
-            <button mat-icon-button class="banner-dismiss" (click)="dismissRegenerateBanner()"
-              aria-label="Dismiss warning" matTooltip="Dismiss" matTooltipShowDelay="500">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-        }
+        <app-notification />
         <div class="route-container">
           <router-outlet />
         </div>

@@ -116,34 +116,6 @@
     min-height: 0;
 }
 
-/* ---------- Regenerate-files warning banner ---------- */
-.regenerate-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    padding: 0.75rem 1rem;
-    margin: 0 0 1rem;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--mat-sys-error) 40%, transparent);
-    color: var(--mat-sys-error);
-
-    .banner-icon {
-        flex-shrink: 0;
-    }
-
-    .banner-text {
-        flex: 1 1 auto;
-        min-width: 10rem;
-        color: var(--mat-sys-on-surface);
-    }
-
-    .banner-dismiss {
-        flex-shrink: 0;
-    }
-}
-
 /* ---------- Footer ---------- */
 .app-footer {
     flex-shrink: 0;

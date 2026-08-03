@@ -251,34 +251,6 @@ html.dark .status-chip-down { color: #ef9a9a; }
 html.dark .status-chip-warn { color: #ffb74d; }
 html.dark .status-chip-info { color: #90caf9; }
 
-/* ============================================================
-   Notification (snackbar) severity icon colours
-   ============================================================ */
-
-.snackbar-success mat-icon {
-    color: #66bb6a;
-}
-
-.snackbar-error mat-icon {
-    color: #ef5350;
-}
-
-.snackbar-warn mat-icon {
-    color: #ffb74d;
-}
-
-.snackbar-info mat-icon {
-    color: #64b5f6;
-}
-
-/* MatSnackBar overlays are rendered outside any component tree, so this
-   selector must be global (no ::ng-deep needed at the stylesheet root). */
-.mat-mdc-snack-bar-container .mdc-snackbar__surface {
-    background: var(--mat-sys-inverse-surface);
-    color: var(--mat-sys-inverse-on-surface);
-    border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-}
-
 /* Collapsed (icon-only rail) navigation drawer.
    The MDC list-item internals (.mdc-list-item__content, .mat-mdc-list-item)
    render inside Angular Material's internal components, which are invisible to
