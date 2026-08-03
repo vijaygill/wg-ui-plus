@@ -1,7 +1,8 @@
 <div class="org-chart">
     <ng-template #nodeTpl let-node>
-        <div class="org-node" [class.org-node-disabled]="node.data?.disabled === true">
+        <div class="org-node" [class.org-node-disabled]="node.data?.disabled === true" [class.org-node-root]="isRoot(node)">
             <div class="org-node-label">
+                <mat-icon *ngIf="nodeIcon(node)" class="org-node-type-icon" aria-hidden="true">{{ nodeIcon(node) }}</mat-icon>
                 <span>{{ node.label }}</span>
                 <mat-icon *ngIf="node.data?.disabled === true"
                           class="org-node-block-icon"

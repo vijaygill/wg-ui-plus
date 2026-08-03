@@ -34,6 +34,19 @@
     color: var(--mat-sys-error, #ef5350);
 }
 
+.org-node-type-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--mat-sys-primary, rgba(255, 255, 255, 0.75));
+}
+
+/* Root "VPN" pill spans the full width of the chart. */
+.org-node.org-node-root {
+    width: 100%;
+}
+
 .org-node-ip {
     font-size: 0.8rem;
     opacity: 0.6;

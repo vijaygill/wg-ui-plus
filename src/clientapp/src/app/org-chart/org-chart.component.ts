@@ -15,6 +15,19 @@ export class OrgChartComponent {
 
     @Input() value: OrgChartNode[] = [];
 
+    nodeIcon(node: OrgChartNode): string {
+        switch (node.type) {
+            case 'target': return 'track_changes';
+            case 'peerGroup': return 'account_tree';
+            case 'peer': return 'desktop_windows';
+            default: return 'vpn_lock';  // root "VPN" node
+        }
+    }
+
+    isRoot(node: OrgChartNode): boolean {
+        return !node.type;
+    }
+
     disabledTooltip(node: OrgChartNode): string {
         switch (node.type) {
             case 'target':
