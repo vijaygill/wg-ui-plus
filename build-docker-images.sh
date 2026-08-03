@@ -1,24 +1,13 @@
 #!/bin/bash
 
-BUILD_TYPE="${1}"
-
 APP_VERSION="v0.0.0"
-
-case "${BUILD_TYPE}" in
-    dev|live|all)
-        ;;
-    *)
-        echo "Usage: $0 [dev|live|all]"
-        exit 1
-        ;;
-esac
-
-echo "BUILD_TYPE = ${BUILD_TYPE}"
 
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 source ${BASE_DIR}/set-script-vars.sh
 
 DOCKERFILE="${BASE_DIR}/Dockerfile"
+
+echo "Building all Docker image targets (dev, live)."
 
 build_target() {
     local TARGET=$1
@@ -33,10 +22,6 @@ build_target() {
         -f "${DOCKERFILE}" .
 }
 
-if [ "${BUILD_TYPE}" == "dev" ] || [ "${BUILD_TYPE}" == "all" ]; then
-    build_target "dev"
-fi
+build_target "dev"
 
-if [ "${BUILD_TYPE}" == "live" ] || [ "${BUILD_TYPE}" == "all" ]; then
-    build_target "live"
-fi
+build_target "live"
