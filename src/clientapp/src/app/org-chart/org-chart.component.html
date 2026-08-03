@@ -1,24 +1,28 @@
 <div class="org-chart">
-    <ng-template #nodeTpl let-node>
-        <div class="org-node" [class.org-node-disabled]="node.data?.disabled === true" [class.org-node-root]="isRoot(node)">
+    <div class="org-grid" *ngIf="cells.length > 0"
+         [style.grid-template-columns]="gridColumnsStyle"
+         [style.grid-template-rows]="gridRowsStyle">
+
+        <div *ngFor="let cell of cells"
+             class="org-node"
+             [class.org-node-disabled]="cell.node.data?.disabled === true"
+             [class.org-node-root]="isRoot(cell.node)"
+             [style.grid-column]="cellGridColumn(cell)"
+             [style.grid-row]="cellGridRow(cell)">
             <div class="org-node-label">
-                <mat-icon *ngIf="nodeIcon(node)" class="org-node-type-icon" aria-hidden="true">{{ nodeIcon(node) }}</mat-icon>
-                <span>{{ node.label }}</span>
-                <mat-icon *ngIf="node.data?.disabled === true"
+                <mat-icon *ngIf="nodeIcon(cell.node)" class="org-node-type-icon" aria-hidden="true">{{ nodeIcon(cell.node) }}</mat-icon>
+                <span>{{ cell.node.label }}</span>
+                <mat-icon *ngIf="cell.node.data?.disabled === true"
                           class="org-node-block-icon"
-                          [matTooltip]="disabledTooltip(node)"
+                          [matTooltip]="disabledTooltip(cell.node)"
                           matTooltipPosition="above">block</mat-icon>
             </div>
-            <div class="org-node-ip" *ngIf="node.data?.ip_address">{{ node.data.ip_address }}</div>
+            <div class="org-node-ip" *ngIf="cell.node.data?.ip_address as ipAddress">{{ ipAddress }}</div>
         </div>
-        <div class="org-children" *ngIf="node.children && node.children.length">
-            <div class="org-child" *ngFor="let child of node.children">
-                <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: child }"></ng-container>
-            </div>
-        </div>
-    </ng-template>
 
-    <ng-container *ngFor="let node of value">
-        <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: node }"></ng-container>
-    </ng-container>
+        <div *ngFor="let connector of connectors"
+             class="org-connector"
+             [style.grid-column]="connectorGridColumn(connector)"
+             [style.grid-row]="connectorGridRow(connector)"></div>
+    </div>
 </div>

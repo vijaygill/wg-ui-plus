@@ -1,22 +1,74 @@
 .org-chart {
     overflow-x: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 1rem 0;
 }
 
+/* Table-style grid: the bottom level has the most columns, and parents merge
+   (span) their children's columns, so the whole chart is one intrinsic-width
+   table. As a block-level box it centers via auto margins only when it fits,
+   and is left-anchored when it is wider than the container (no left clipping). */
+.org-grid {
+    display: grid;
+    align-items: start;
+    width: max-content;
+    min-width: 100%;
+    margin-inline: auto;
+}
+
 .org-node {
+    position: relative;
     border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
     border-radius: 8px;
     padding: 0.75rem 1.25rem;
     background: var(--mat-sys-surface-container, #2a2a2d);
     min-width: 9rem;
     text-align: center;
+    margin-inline: 0.75rem;
+}
+
+/* The root "VPN" pill spans every column: let it reach the chart edges. */
+.org-node.org-node-root {
+    margin-inline: 0;
 }
 
 .org-node-disabled {
     opacity: 0.75;
+}
+
+/* Vertical stub from the horizontal line down to a child pill. */
+.org-node:not(.org-node-root)::before {
+    content: '';
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    height: 1rem;
+    border-left: 2px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.org-connector {
+    position: relative;
+    height: 1rem;
+    margin-inline: 0.75rem;
+}
+
+/* Vertical connector from a parent pill down to the horizontal line. */
+.org-connector::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: 1rem;
+    border-left: 2px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* Horizontal connector line across a parent's children. */
+.org-connector::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    right: 0;
+    border-top: 2px solid color-mix(in srgb, currentColor 12%, transparent);
 }
 
 .org-node-label {
@@ -42,64 +94,8 @@
     color: var(--mat-sys-primary, rgba(255, 255, 255, 0.75));
 }
 
-/* Root "VPN" pill spans the full width of the chart. */
-.org-node.org-node-root {
-    width: 100%;
-}
-
 .org-node-ip {
     font-size: 0.8rem;
     opacity: 0.6;
     margin-top: 0.25rem;
-}
-
-.org-children {
-    position: relative;
-    display: flex;
-    gap: 1.5rem;
-    padding-top: 1rem;
-    /* Stop parents (align-items: center) from centering/clipping an overflowing row.
-       align-self: start keeps the row at the left edge when it is too wide so the
-       left-most pill is fully visible and the row is horizontally scrollable, while
-       margin-inline: auto centers it whenever there is room. */
-    align-self: start;
-    margin-inline: auto;
-}
-
-/* Vertical connector from the parent card down to the horizontal line. */
-.org-children::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    height: 1rem;
-    border-left: 2px solid color-mix(in srgb, currentColor 12%, transparent);
-}
-
-/* Horizontal connector line across the children. */
-.org-children::after {
-    content: '';
-    position: absolute;
-    top: 1rem;
-    left: 0;
-    right: 0;
-    border-top: 2px solid color-mix(in srgb, currentColor 12%, transparent);
-}
-
-.org-child {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 1rem;
-}
-
-/* Vertical stub from the horizontal line up to this child's card. */
-.org-child::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    height: 1rem;
-    border-left: 2px solid color-mix(in srgb, currentColor 12%, transparent);
 }
