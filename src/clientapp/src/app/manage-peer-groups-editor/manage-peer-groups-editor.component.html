@@ -1,21 +1,21 @@
-<div class="editor-form">
+<div class="editor-form form-grid">
   <mat-form-field>
     <mat-label>Name</mat-label>
     <input matInput id="peerGroupName" [(ngModel)]="editItem.name"
       [disabled]="!editItem.allow_modify_self" matTooltip="Name of the Peer-Group." matTooltipShowDelay="500"
       matTooltipPosition="above" autofocus />
   </mat-form-field>
-  <app-validation-errors-display field="name" [validationResult]="validationResult">
-  </app-validation-errors-display>
   <mat-form-field>
     <mat-label>Description</mat-label>
     <input matInput id="peerGroupDescription" [(ngModel)]="editItem.description"
       [disabled]="!editItem.allow_modify_self" matTooltip="Some helpful description." matTooltipShowDelay="500"
       matTooltipPosition="above" />
   </mat-form-field>
-  <app-validation-errors-display field="description"
+  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
+  </app-validation-errors-display>
+  <app-validation-errors-display class="form-span" field="description"
     [validationResult]="validationResult"></app-validation-errors-display>
-  <div class="editor-row">
+  <div class="form-span editor-row">
     <mat-checkbox id="peerGroupDisabled" [(ngModel)]="editItem.disabled"
       [disabled]="!editItem.allow_modify_self"
       matTooltip="Disabled Peer-Groups are denied access to VPN." matTooltipPosition="above" matTooltipShowDelay="500">
@@ -23,10 +23,10 @@
     </mat-checkbox>
   </div>
   @if (!editItem.allow_modify_self) {
-    <span>Only changing access to targets is allowed.</span>
+    <span class="form-span editor-note">Only changing access to targets is allowed.</span>
   }
   @if (editItem.allow_modify_peers) {
-    <div class="editor-picklist">
+    <div class="form-span editor-picklist">
       <label class="editor-label" for="peers">Peers</label>
       <app-dual-list id="peers"
         [source]="editItem.peers_lookup" [selected]="editItem.peers"
@@ -47,7 +47,7 @@
         [validationResult]="validationResult"></app-validation-errors-display>
     </div>
   }
-  <div class="editor-picklist">
+  <div class="form-span editor-picklist">
     <label class="editor-label" for="target">Targets</label>
     @if (editItem.allow_modify_targets) {
       <app-dual-list id="target" [source]="editItem.targets_lookup" [selected]="editItem.targets"
@@ -67,8 +67,8 @@
     <app-validation-errors-display field="targets"
       [validationResult]="validationResult"></app-validation-errors-display>
   </div>
-  <div class="editor-actions">
-    <button mat-flat-button color="primary" type="button" (click)="ok()">
+  <div class="form-span editor-actions">
+    <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
       <mat-icon>check</mat-icon>
       Ok
     </button>
@@ -83,8 +83,7 @@
       </button>
     }
   </div>
-  <div class="editor-validation">
-    <app-validation-errors-display
-      [validationResult]="validationResult"></app-validation-errors-display>
+  <div class="form-span editor-validation">
+    <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
   </div>
 </div>

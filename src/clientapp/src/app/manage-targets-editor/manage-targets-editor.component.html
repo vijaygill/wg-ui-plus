@@ -1,20 +1,20 @@
-<div class="editor-form">
+<div class="editor-form form-grid">
   <mat-form-field>
     <mat-label>Name</mat-label>
     <input matInput id="targetName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self"
       matTooltip="Network or a host allowed to be accessed via VPN." matTooltipPosition="above" matTooltipShowDelay="500"
       autofocus />
   </mat-form-field>
-  <app-validation-errors-display field="name" [validationResult]="validationResult">
-  </app-validation-errors-display>
   <mat-form-field>
     <mat-label>Description</mat-label>
     <input matInput id="targetDescription" [(ngModel)]="editItem.description"
       [disabled]="!editItem.allow_modify_self" matTooltip="Suitable description." matTooltipPosition="above" matTooltipShowDelay="500" />
   </mat-form-field>
-  <app-validation-errors-display field="description" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
   </app-validation-errors-display>
-  <mat-form-field>
+  <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
+  </app-validation-errors-display>
+  <mat-form-field class="form-span">
     <mat-label>IP Address/Network</mat-label>
     <input matInput id="targetIPAddress" [(ngModel)]="editItem.ip_address"
       [disabled]="!editItem.allow_modify_self"
@@ -22,16 +22,16 @@
       matTooltipPosition="above" />
     <mat-hint>Valid values XXX.XXX.XXX.XXX / XXX.XXX.XXX.XXX/MASK / XXX.XXX.XXX.XXX:PORT1,PORT2...</mat-hint>
   </mat-form-field>
-  <app-validation-errors-display field="ip_address" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="ip_address" [validationResult]="validationResult">
   </app-validation-errors-display>
-  <div class="editor-row">
+  <div class="form-span editor-row">
     <mat-checkbox id="targetDisabled" [(ngModel)]="editItem.disabled"
       [disabled]="!editItem.allow_modify_self">Disabled</mat-checkbox>
   </div>
   @if (!editItem.allow_modify_self) {
-    <span>In-built Targets are read-only.</span>
+    <span class="form-span editor-note">In-built Targets are read-only.</span>
   }
-  <div class="editor-picklist">
+  <div class="form-span editor-picklist">
     <label class="editor-label" for="target">Peer-Groups</label>
     <app-dual-list id="target" [source]="editItem.peer_groups_lookup" [selected]="editItem.peer_groups"
       sourceHeader="Available" targetHeader="Selected"
@@ -47,8 +47,8 @@
       </ng-template>
     </app-dual-list>
   </div>
-  <div class="editor-actions">
-    <button mat-flat-button color="primary" type="button" (click)="ok()">
+  <div class="form-span editor-actions">
+    <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
       <mat-icon>check</mat-icon>
       Ok
     </button>
@@ -63,8 +63,7 @@
       </button>
     }
   </div>
-  <div class="editor-validation">
-    <app-validation-errors-display
-      [validationResult]="validationResult"></app-validation-errors-display>
+  <div class="form-span editor-validation">
+    <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
   </div>
 </div>

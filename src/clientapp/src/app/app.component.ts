@@ -1,26 +1,25 @@
-
-import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { RouterOutlet } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { SidepanelComponent } from './app-sidepanel/app-sidepanel.component';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
+import { MatDrawerMode } from '@angular/material/sidenav';
+import { NavDrawerComponent } from './app-nav-drawer/app-nav-drawer.component';
 import { AppSharedModule } from './app-shared.module';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
-import { Subscription } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { WebapiService } from './webapi.service';
-import { LoginService } from './login-service';
+import { LoginService } from './login.service';
 import { PlatformInformationService } from './platform-information.service';
 import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
 import { NotificationService } from './notification.service';
+import { ThemeService } from './theme.service';
 
 @Component({
     standalone: true,
     selector: 'app-root',
-    imports: [RouterModule, RouterOutlet, FormsModule, SidepanelComponent, AppSharedModule],
+    imports: [RouterModule, RouterOutlet, NavDrawerComponent, AppSharedModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'WireGuard UI Plus';
 
   serverStatus: ServerStatus = {
@@ -29,18 +28,30 @@ export class AppComponent implements OnInit {
   } as ServerStatus;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
 
+  platformInformation: PlatformInformation = {} as PlatformInformation;
+
+  /** Desktop only: whether the navigation drawer is collapsed to an icon rail. */
+  navCollapsed = false;
+
+  /** Small screen only: whether the overlay drawer is open. */
+  mobileNavOpen = false;
+
+  /** Dismissable warning banner ("need_regenerate_files"). */
+  regenerateBannerDismissed = false;
+
   timerSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   loginServiceSubscription !: Subscription;
   platformInformationServiceSubscription !: Subscription;
-
-  platformInformation: PlatformInformation = {} as PlatformInformation;
+  routerSubscription !: Subscription;
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private loginService: LoginService,
     private platformInformationService: PlatformInformationService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) { }
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private themeService: ThemeService,
+    private router: Router) { }
 
   ngOnInit() {
     this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
@@ -75,6 +86,13 @@ export class AppComponent implements OnInit {
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
     this.platformInformationService.checkPlatform();
+
+    // Auto-close the overlay drawer after navigating on small screens.
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.mobileNavOpen = false;
+      });
   }
 
   ngOnDestroy() {
@@ -90,9 +108,93 @@ export class AppComponent implements OnInit {
     if (this.platformInformationServiceSubscription) {
       this.platformInformationServiceSubscription.unsubscribe();
     }
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  get isSmallScreen(): boolean {
+    return this.platformInformation.is_small_screen;
+  }
+
+  /** Persistent drawer on desktop, overlay drawer on small screens. */
+  get drawerMode(): MatDrawerMode {
+    return this.isSmallScreen ? 'over' : 'side';
+  }
+
+  get sidenavOpened(): boolean {
+    return this.isSmallScreen ? this.mobileNavOpen : true;
+  }
+
+  get navDrawerCollapsed(): boolean {
+    // Collapse-to-rail only applies to the persistent (desktop) drawer.
+    return !this.isSmallScreen && this.navCollapsed;
+  }
+
+  get showRegenerateBanner(): boolean {
+    return this.serverStatus.need_regenerate_files
+      && this.userSessionInfo.is_logged_in
+      && !this.regenerateBannerDismissed;
+  }
+
+  /** Server status dot colour class. */
+  get statusClass(): string {
+    const status = this.serverStatus?.status;
+    if (status === 'error') {
+      return 'status-error';
+    }
+    if (status === 'warning' || status === 'warn') {
+      return 'status-warn';
+    }
+    return 'status-ok';
+  }
+
+  /** Human-readable label for the server status orb. */
+  get statusLabel(): string {
+    const status = this.serverStatus?.status;
+    if (status === 'error') {
+      return 'Offline';
+    }
+    if (status === 'warning' || status === 'warn') {
+      return 'Warning';
+    }
+    return 'Online';
+  }
+
+  get theme() {
+    return this.themeService.theme;
+  }
+
+  onToggleNav(): void {
+    if (this.isSmallScreen) {
+      this.mobileNavOpen = !this.mobileNavOpen;
+    } else {
+      this.navCollapsed = !this.navCollapsed;
+    }
+  }
+
+  /** Accessible label for the nav toggle, describing the action the tap performs. */
+  get navToggleLabel(): string {
+    // Tapping always toggles: on small screens it opens/closes the overlay
+    // drawer; on desktop it collapses/expands the persistent rail. The label
+    // reflects what that tap does — "Collapse" when the surface is currently
+    // open/expanded, "Expand" when it is closed/collapsed.
+    const collapsesOnTap = this.isSmallScreen
+      ? this.mobileNavOpen          // drawer open → tapping closes it
+      : !this.navCollapsed;         // rail expanded → tapping collapses it
+    return collapsesOnTap ? 'Collapse navigation' : 'Expand navigation';
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggle();
+  }
+
+  dismissRegenerateBanner(): void {
+    this.regenerateBannerDismissed = true;
   }
 
   applyConfiguration(event: Event): void {
+    event.preventDefault();
     this.webapiService.generateConfigurationFiles().subscribe(data => {
       this.notification.success('Configuration files generated on server.');
       this.webapiService.wireguardRestart().subscribe(() => {

@@ -1,68 +1,88 @@
-<div class="container">
-  <div class="item item-header">
-    <div class="card">
-      <div style="display: flex; flex-direction: row;">
-        <div>
-          <h1>WireGuard UI Plus!</h1>
-          <h3>Run &amp; manage your WireGuard &trade; VPN in one UI.</h3>
-        </div>
-        @if (platformInformation.is_small_screen) {
-        <app-sidepanel [popup]="true"></app-sidepanel>
-        }
-      </div>
-    </div>
+<div class="app-shell">
+  <!-- Top app bar spanning full width -->
+  <mat-toolbar class="app-toolbar" color="primary">
+    <button mat-icon-button class="toolbar-btn" (click)="onToggleNav()"
+      [attr.aria-label]="navToggleLabel"
+      matTooltip="Toggle navigation" matTooltipPosition="below" matTooltipShowDelay="500">
+      <mat-icon>{{ navDrawerCollapsed ? 'menu_open' : 'menu' }}</mat-icon>
+    </button>
 
-    <div>
-      @if (serverStatus.need_regenerate_files && userSessionInfo.is_logged_in) {
-      <div class="message-warn">
-        <mat-icon>warning</mat-icon>
-        <span class="message-warn-text">
-          <button mat-flat-button color="warn" (click)="applyConfiguration($event)">
-            <mat-icon>check</mat-icon>
-            Apply Changes
-          </button>
-          This will regenerate Server Configuration files and restart WireGuard.
-        </span>
+    <a class="brand" routerLink="/">
+      <span class="brand-monogram" aria-hidden="true">W</span>
+      <span class="brand-text">WireGuard UI Plus</span>
+    </a>
+
+    <span class="toolbar-spacer"></span>
+
+    @if (serverStatus.hostname) {
+      <div class="server-status" [class]="statusClass"
+        [matTooltip]="'Host: ' + serverStatus.hostname + (serverStatus.platform ? ' · ' + serverStatus.platform : '')"
+        matTooltipPosition="below">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="status-text">{{ statusLabel }}</span>
       </div>
-      }
-    </div>
-  </div>
-  <div class="item item-main" style="display: flex;flex-direction: row;">
-    @if (!platformInformation.is_small_screen) {
-    <div>
-      <app-sidepanel></app-sidepanel>
-    </div>
     }
-    <div style="width: 100%;max-width: 100%; overflow: scroll;">
-      <router-outlet />
-    </div>
-  </div>
-  <div class="item item-footer">
-    <small>
-      <span>
-        (c) <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
-      </span>
-      <br />
-      @if (serverStatus.hostname) {
-      <span>Host: {{serverStatus.hostname}}</span>
-      }
-      &nbsp;
-      @if (serverStatus.platform) {
-      <span>Platform: {{serverStatus.platform}}</span>
-      }
-      &nbsp;
-      @if (serverStatus.application_details) {
-      <span>Running Version:
-        {{serverStatus.application_details.current_version}}</span>
-      }
-      @if (serverStatus.application_details && serverStatus.application_details.allow_allow_check_updates &&
-      (serverStatus.application_details.latest_live_version != serverStatus.application_details.current_version)) {
-      <span>
-        &nbsp;
-        Available Version: <a target="_blank" href="https://github.com/vijaygill/wg-ui-plus/releases">
+
+    <button mat-icon-button class="toolbar-btn" (click)="toggleTheme()"
+      [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      matTooltip="Toggle theme" matTooltipPosition="below" matTooltipShowDelay="500">
+      <mat-icon>{{ theme === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Nav drawer + content -->
+  <mat-sidenav-container class="app-sidenav-container">
+    <mat-sidenav class="app-sidenav" [mode]="drawerMode" [opened]="sidenavOpened"
+      [disableClose]="isSmallScreen ? false : true" [fixedInViewport]="false">
+      <app-nav-drawer [collapsed]="navDrawerCollapsed"></app-nav-drawer>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="app-content">
+      <div class="content-column">
+        @if (showRegenerateBanner) {
+          <div class="regenerate-banner">
+            <mat-icon class="banner-icon">warning</mat-icon>
+            <span class="banner-text">
+              This will regenerate Server Configuration files and restart WireGuard.
+            </span>
+            <button mat-flat-button color="warn" (click)="applyConfiguration($event)">
+              <mat-icon>refresh</mat-icon>
+              Apply Changes
+            </button>
+            <button mat-icon-button class="banner-dismiss" (click)="dismissRegenerateBanner()"
+              aria-label="Dismiss warning" matTooltip="Dismiss" matTooltipShowDelay="500">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+        <div class="route-container">
+          <router-outlet />
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+
+  <!-- Footer flush at the very bottom, full width -->
+  <footer class="app-footer">
+    <span class="footer-item">
+      (c) <a target="_blank" rel="noopener" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
+    </span>
+    @if (serverStatus.hostname) {
+      <span class="footer-item">Host: {{serverStatus.hostname}}</span>
+    }
+    @if (serverStatus.platform) {
+      <span class="footer-item">Platform: {{serverStatus.platform}}</span>
+    }
+    @if (serverStatus.application_details.current_version) {
+      <span class="footer-item">Running: {{serverStatus.application_details.current_version}}</span>
+    }
+    @if (serverStatus.application_details.allow_allow_check_updates &&
+      serverStatus.application_details.latest_live_version !== serverStatus.application_details.current_version) {
+      <span class="footer-item">
+        Available: <a target="_blank" rel="noopener"
+          href="https://github.com/vijaygill/wg-ui-plus/releases">
           {{serverStatus.application_details.latest_live_version}}</a>
       </span>
-      }
-    </small>
-  </div>
+    }
+  </footer>
 </div>

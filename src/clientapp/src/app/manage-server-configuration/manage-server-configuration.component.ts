@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthorizedViewComponent } from '../authorized-view/authorized-view.component';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginService } from '../login-service';
+import { LoginService } from '../login.service';
 import { WebapiService } from '../webapi.service';
 import { NotificationService } from '../notification.service';
 
@@ -19,10 +19,13 @@ import { NotificationService } from '../notification.service';
   templateUrl: './manage-server-configuration.component.html',
   styleUrl: './manage-server-configuration.component.scss'
 })
-export class ManageServerConfigurationComponent {
+export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
 
   editItem: ServerConfiguration = {} as ServerConfiguration;
   validationResult!: ServerValidationError;
+
+  /** Serialized snapshot of the editable fields as originally loaded. */
+  private snapshot = '';
 
   changeUserPasswordInfo: ChangeUserPasswordInfo = {} as ChangeUserPasswordInfo;
 
@@ -31,6 +34,9 @@ export class ManageServerConfigurationComponent {
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
+  refreshDataSubscription !: Subscription;
+  saveConfigurationSubscription !: Subscription;
+  changePasswordSubscription !: Subscription;
 
 
   constructor(private notification: NotificationService,
@@ -62,17 +68,52 @@ export class ManageServerConfigurationComponent {
     if (this.serverStatusSubscription) {
       this.serverStatusSubscription.unsubscribe();
     }
+    if (this.refreshDataSubscription) {
+      this.refreshDataSubscription.unsubscribe();
+    }
+    if (this.saveConfigurationSubscription) {
+      this.saveConfigurationSubscription.unsubscribe();
+    }
+    if (this.changePasswordSubscription) {
+      this.changePasswordSubscription.unsubscribe();
+    }
   }
 
   refreshData(): void {
     // get the server configurations and use only first
-    this.webapiService.getServerConfigurationList().subscribe(data => {
+    this.captureSnapshot();
+    this.refreshDataSubscription = this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
+      this.captureSnapshot();
     });
   }
 
+  /** Normalized representation of the user-editable fields. */
+  private get editableState(): any {
+    return {
+      network_address: this.editItem.network_address,
+      ip_address: this.editItem.ip_address,
+      port_internal: this.editItem.port_internal,
+      host_name_external: this.editItem.host_name_external,
+      port_external: this.editItem.port_external,
+      local_networks: this.editItem.local_networks,
+      upstream_dns_ip_address: this.editItem.upstream_dns_ip_address,
+      allow_check_updates: this.editItem.allow_check_updates,
+      strict_allowed_ips_in_peer_config: this.editItem.strict_allowed_ips_in_peer_config,
+    };
+  }
+
+  private captureSnapshot(): void {
+    this.snapshot = JSON.stringify(this.editableState);
+  }
+
+  /** True when any user-editable field differs from the originally loaded data. */
+  get hasChanges(): boolean {
+    return JSON.stringify(this.editableState) !== this.snapshot;
+  }
+
   ok() {
-    this.webapiService.saveServerConfiguration(this.editItem)
+    this.saveConfigurationSubscription = this.webapiService.saveServerConfiguration(this.editItem)
       .subscribe({
         next: data => {
           this.notification.success('Server configuration saved.');
@@ -113,7 +154,7 @@ export class ManageServerConfigurationComponent {
       this.userSessionInfo.message = "New Passwords don't match.";
     }
     else {
-      this.webapiService.changeUserPassword(this.changeUserPasswordInfo).subscribe(data => {
+      this.changePasswordSubscription = this.webapiService.changeUserPassword(this.changeUserPasswordInfo).subscribe(data => {
         this.userSessionInfo.message = data.message;
       });
     }
