@@ -43,9 +43,14 @@
 .org-children {
     position: relative;
     display: flex;
-    justify-content: center;
     gap: 1.5rem;
     padding-top: 1rem;
+    /* Stop parents (align-items: center) from centering/clipping an overflowing row.
+       align-self: start keeps the row at the left edge when it is too wide so the
+       left-most pill is fully visible and the row is horizontally scrollable, while
+       margin-inline: auto centers it whenever there is room. */
+    align-self: start;
+    margin-inline: auto;
 }
 
 /* Vertical connector from the parent card down to the horizontal line. */
