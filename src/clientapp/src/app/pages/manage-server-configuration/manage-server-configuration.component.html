@@ -8,11 +8,11 @@
         <mat-card>
           <mat-card-content>
             <div class="editor-form form-grid">
-               <mat-form-field class="form-span">
-                 <mat-label>Network Address</mat-label>
-                 <input matInput id="networkAddress" [(ngModel)]="editItem.network_address"
-                   matTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer."
-                   matTooltipPosition="above" matTooltipShowDelay="500" autofocus />
+                <mat-form-field class="form-span">
+                  <mat-label>{{environmentVariableLabel('network_address', 'Network Address')}}</mat-label>
+                  <input matInput id="networkAddress" [(ngModel)]="editItem.network_address"
+                    matTooltip="Network address of the VPN. Changing this will require reassignment of IP addresses of all peers and sending out new configuration to each peer."
+                    matTooltipPosition="above" matTooltipShowDelay="500" [disabled]="!!environmentVariableFor('network_address')" autofocus />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="network_address" [validationResult]="validationResult">
                </app-validation-errors-display>
@@ -23,43 +23,46 @@
                    [disabled]="true" />
                </mat-form-field>
                <mat-form-field>
-                 <mat-label>Port Internal</mat-label>
-                 <input matInput id="portInternal" type="number" [min]="1024" [max]="65535" required
-                   [(ngModel)]="editItem.port_internal"
-                   matTooltip="Port on the host where the VPN is running." matTooltipPosition="above" matTooltipShowDelay="500" />
+                 <mat-label>{{environmentVariableLabel('port_internal', 'Port Internal')}}</mat-label>
+                  <input matInput id="portInternal" type="number" [min]="1024" [max]="65535" required
+                    [(ngModel)]="editItem.port_internal"
+                    matTooltip="Port on the host where the VPN is running." matTooltipPosition="above" matTooltipShowDelay="500"
+                    [disabled]="!!environmentVariableFor('port_internal')" />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="ip_address" [validationResult]="validationResult">
                </app-validation-errors-display>
                <app-validation-errors-display class="form-span" field="port_internal" [validationResult]="validationResult">
                </app-validation-errors-display>
                <mat-form-field>
-                 <mat-label>Host Name External</mat-label>
-                 <input matInput id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
-                   matTooltip="Peers connect to this VPN from internet using this name." matTooltipPosition="above" matTooltipShowDelay="500" />
+                 <mat-label>{{environmentVariableLabel('host_name_external', 'Host Name External')}}</mat-label>
+                  <input matInput id="hostNameExternal" [(ngModel)]="editItem.host_name_external"
+                    matTooltip="Peers connect to this VPN from internet using this name." matTooltipPosition="above" matTooltipShowDelay="500"
+                    [disabled]="!!environmentVariableFor('host_name_external')" />
                </mat-form-field>
                <mat-form-field>
-                 <mat-label>Port External</mat-label>
-                 <input matInput id="portExternal" type="number" [min]="1024" [max]="65535" required
-                   [(ngModel)]="editItem.port_external"
-                   matTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
-                   matTooltipPosition="above" matTooltipShowDelay="500" />
+                 <mat-label>{{environmentVariableLabel('port_external', 'Port External')}}</mat-label>
+                  <input matInput id="portExternal" type="number" [min]="1024" [max]="65535" required
+                    [(ngModel)]="editItem.port_external"
+                    matTooltip="Port exposed on your router. This is forwarded to the host where WG is running."
+                    matTooltipPosition="above" matTooltipShowDelay="500" [disabled]="!!environmentVariableFor('port_external')" />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="host_name_external" [validationResult]="validationResult">
                </app-validation-errors-display>
                <app-validation-errors-display class="form-span" field="port_external" [validationResult]="validationResult">
                </app-validation-errors-display>
                <mat-form-field class="form-span">
-                 <mat-label>Local Networks</mat-label>
-                  <input matInput id="localNetworks" [(ngModel)]="editItem.local_networks"
-                    matTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considered as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
-                    matTooltipPosition="above" matTooltipShowDelay="500" />
+                  <mat-label>{{environmentVariableLabel('local_networks', 'Local Networks')}}</mat-label>
+                   <input matInput id="localNetworks" [(ngModel)]="editItem.local_networks"
+                     matTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considered as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
+                     matTooltipPosition="above" matTooltipShowDelay="500" [disabled]="!!environmentVariableFor('local_networks')" />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="local_networks" [validationResult]="validationResult">
                </app-validation-errors-display>
                <mat-form-field>
-                 <mat-label>Upstream DNS Server</mat-label>
-                 <input matInput id="upstreamDnsServer" [(ngModel)]="editItem.upstream_dns_ip_address"
-                   matTooltip="Upstream DNS server for the peers." matTooltipPosition="above" matTooltipShowDelay="500" />
+                 <mat-label>{{environmentVariableLabel('upstream_dns_ip_address', 'Upstream DNS Server')}}</mat-label>
+                  <input matInput id="upstreamDnsServer" [(ngModel)]="editItem.upstream_dns_ip_address"
+                    matTooltip="Upstream DNS server for the peers." matTooltipPosition="above" matTooltipShowDelay="500"
+                    [disabled]="!!environmentVariableFor('upstream_dns_ip_address')" />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="upstream_dns_ip_address"
                  [validationResult]="validationResult">
@@ -71,14 +74,15 @@
                    Allow Check Updates
                  </mat-checkbox>
                </div>
-               <div class="form-span editor-row">
-                 <mat-checkbox id="strictAllowedIpsInPeerConfig"
-                   [(ngModel)]="editItem.strict_allowed_ips_in_peer_config"
-                   matTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes to links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
-                   matTooltipPosition="above" matTooltipShowDelay="500">
-                   Strict AllowedIPs in Peer Config
+                <div class="form-span editor-row">
+                  <mat-checkbox id="strictAllowedIpsInPeerConfig"
+                    [(ngModel)]="editItem.strict_allowed_ips_in_peer_config"
+                    [disabled]="!!environmentVariableFor('strict_allowed_ips_in_peer_config')"
+                    matTooltip="Instead of 0.0.0.0/0 in AllowedIPs in peer-config, have a list of only IP's of allowed targets. Any changes to links between peer-groups and targets will require update of peer tunnel configuration for each affected peer."
+                    matTooltipPosition="above" matTooltipShowDelay="500">
+                   {{environmentVariableLabel('strict_allowed_ips_in_peer_config', 'Strict AllowedIPs in Peer Config')}}
                  </mat-checkbox>
-               </div>
+                </div>
                <div class="form-span editor-actions">
                  <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
                    <mat-icon>check</mat-icon>

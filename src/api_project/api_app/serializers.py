@@ -1,5 +1,6 @@
 import base64
 import logging
+import os
 from io import BytesIO
 
 import qrcode
@@ -145,7 +146,29 @@ class TargetSerializer(serializers.ModelSerializer):
 
 
 class ServerConfigurationSerializer(serializers.ModelSerializer):
+    environment_overrides = serializers.SerializerMethodField()
+
     class Meta:
         model = ServerConfiguration
         exclude = ("mcp_token",)
         depth = 1
+
+    def get_environment_overrides(self, instance):
+        environment_variables = {
+            "network_address": "WG_NETWORK_ADDRESS",
+            "host_name_external": "WG_HOST_NAME_EXTERNAL",
+            "local_networks": "WG_LOCAL_NETWORKS",
+            "upstream_dns_ip_address": "WG_UPSTREAM_DNS_SERVER",
+            "port_external": "WG_PORT_EXTERNAL",
+            "port_internal": "WG_PORT_INTERNAL",
+            "strict_allowed_ips_in_peer_config": "WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG",
+        }
+        overrides = {}
+        for field, variable in environment_variables.items():
+            if field == "strict_allowed_ips_in_peer_config":
+                is_set = variable in os.environ
+            else:
+                is_set = bool(os.environ.get(variable))
+            if is_set:
+                overrides[field] = variable
+        return overrides

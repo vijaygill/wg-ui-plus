@@ -52,6 +52,15 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   private mcpTokenHideTimer: ReturnType<typeof setTimeout> | null = null;
   private mcpTokenFocusTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private readonly environmentVariableNames: { [field: string]: string } = {
+    network_address: 'WG_NETWORK_ADDRESS',
+    host_name_external: 'WG_HOST_NAME_EXTERNAL',
+    local_networks: 'WG_LOCAL_NETWORKS',
+    upstream_dns_ip_address: 'WG_UPSTREAM_DNS_SERVER',
+    port_external: 'WG_PORT_EXTERNAL',
+    port_internal: 'WG_PORT_INTERNAL',
+    strict_allowed_ips_in_peer_config: 'WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG'
+  };
 
   @ViewChild('mcpTokenInput') private mcpTokenInput?: ElementRef<HTMLInputElement>;
 
@@ -171,6 +180,18 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   /** True when any user-editable field differs from the originally loaded data. */
   get hasChanges(): boolean {
     return JSON.stringify(this.editableState) !== this.snapshot;
+  }
+
+  environmentVariableFor(field: string): string | null {
+    return this.editItem.environment_overrides?.[field] ?? null;
+  }
+
+  environmentVariableLabel(field: string, label: string): string {
+    const environmentVariable = this.environmentVariableNames[field];
+    if (!environmentVariable) {
+      return label;
+    }
+    return `${label} (${this.environmentVariableFor(field) ? `${environmentVariable} is set` : `Managed by ${environmentVariable}`})`;
   }
 
   ok() {

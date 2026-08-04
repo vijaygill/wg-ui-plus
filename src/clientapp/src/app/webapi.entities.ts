@@ -84,6 +84,7 @@ export interface ServerConfiguration {
     strict_allowed_ips_in_peer_config: boolean;
     mcp_enabled: boolean;
     mcp_token?: string;
+    environment_overrides?: { [field: string]: string };
 }
 
 export interface McpConfiguration {
