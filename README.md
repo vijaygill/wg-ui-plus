@@ -29,6 +29,7 @@ Issues and pull requests are welcome.
 - Display peer QR codes and allow `.conf` files to be downloaded or shared by email.
 - Run on Raspberry Pi and other single-board computers. The project was developed on an Orange Pi 5+.
 - Toggle between dark and light themes with a responsive layout for small screens.
+- **Streamable HTTP MCP server support** for connecting MCP clients to the application (disabled by default; see [MCP support](#mcp-support)).
 
 ### Implemented functionality
 
@@ -51,7 +52,7 @@ Issues and pull requests are welcome.
   - [x] Strict `AllowedIPs` mode, which lists only the target IP addresses a peer may access instead of `0.0.0.0/0`.
   - [x] Optional update checks against the GitHub releases page. The footer displays the running version and a link when a newer release is available.
 - [x] Back up the SQLite database automatically on every container start.
-- [x] Streamable HTTP MCP server support (disabled by default; see [MCP support](#mcp-support)).
+- [x] **Streamable HTTP MCP server support** (disabled by default; see [MCP support](#mcp-support)).
 
 ## Architecture
 
@@ -195,6 +196,21 @@ The following example grants a peer access to Samba on `192.168.0.51`, where por
 7. Open the peer again and scan its QR code or download its `.conf` file.
 8. The client should now be able to access the NAS Samba shares.
 
+## Warning for existing users before upgrading
+
+Back up your data before upgrading to a new Docker image. On every container start, the application backs up the SQLite database, runs Django migrations, initializes the database, initializes MCP, regenerates the WireGuard configuration, and starts WireGuard when a configuration exists. In-place migrations are intended to be safe, but upgrades can still fail.
+
+The database is a single SQLite file at `/data/wg_ui_plus.db`. Back up the host directory mapped to `/data` before upgrading, and keep the `/config` directory as well because it contains the WireGuard configuration and generated scripts.
+
+## Screenshots with some features shown
+
+- Dashboard showing currently connected peers
+  ![image](./images/wg-ui-plus-monitor-peers.png)
+- Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "EveryOne" group (by default, but can be changed).
+  ![image](./images/wg-ui-plus-vpn-layout.png)
+- Monitor IPTables
+  ![image](./images/wg-ui-plus-monitor-iptables.png)
+
 ## Development
 
 The repository uses a multi-stage Dockerfile for both development and production. The runtime and development-container launch scripts (`run-app-live.sh`, `run-app-dev.sh`, `run-ng-build-watch.sh`, and `run-dev-shell.sh`) use `docker-env.txt`; if a gitignored `docker-env-dev.txt` exists, those scripts prefer it automatically. The image-build script builds Docker targets and does not use the environment file to configure the image.
@@ -237,21 +253,6 @@ The `--prerender=false` option is required because the application is served as 
 cd src/api_project
 ../scripts/run-tests.sh
 ```
-
-## Warning for existing users before upgrading
-
-Back up your data before upgrading to a new Docker image. On every container start, the application backs up the SQLite database, runs Django migrations, initializes the database, initializes MCP, regenerates the WireGuard configuration, and starts WireGuard when a configuration exists. In-place migrations are intended to be safe, but upgrades can still fail.
-
-The database is a single SQLite file at `/data/wg_ui_plus.db`. Back up the host directory mapped to `/data` before upgrading, and keep the `/config` directory as well because it contains the WireGuard configuration and generated scripts.
-
-## Screenshots with some features shown
-
-- Dashboard showing currently connected peers
-  ![image](./images/wg-ui-plus-monitor-peers.png)
-- Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "EveryOne" group (by default, but can be changed).
-  ![image](./images/wg-ui-plus-vpn-layout.png)
-- Monitor IPTables
-  ![image](./images/wg-ui-plus-monitor-iptables.png)
 
 ## Star History
 
