@@ -25,21 +25,22 @@ Important paths:
 
 ### Every development session (required)
 
-For every development session, use the `wg-ui-dev-shell` container as the
-required and supported interactive environment for testing and inspection.
-Start it from the repository root with:
+The current workspace/container does not provide reliable facilities for
+executing or testing this project's Angular or Django/backend code. Always use
+the `wg-ui-dev-shell` container for Angular builds, backend tests, Django
+commands, and any other executable validation. Before attempting validation,
+check that the `wg-ui-dev-shell` container is available. If it is not
+available, stop and ask the user to run `./run-dev-shell.sh`; do not test
+elsewhere or silently start it. Start it from the repository root with:
 
 ```bash
 ./run-dev-shell.sh
 ```
 
-Run backend tests, Django management commands, and ad hoc Angular commands
-inside this shell. The standalone launch scripts `run-ng-build-watch.sh` and
-`run-app-dev.sh` each create their own containers for the Angular watch build
-and Django development application; they can be started independently and do
-not require an already-running `wg-ui-dev-shell`. When both development
-processes are needed, run `run-dev-shell.sh` in another terminal alongside
-those two standalone processes for interactive testing and inspection.
+Once available, run backend tests, Django management commands, and ad hoc
+Angular commands inside this shell. The standalone launch scripts
+`run-ng-build-watch.sh` and `run-app-dev.sh` are for live development processes
+only and are not alternatives for executable validation.
 
 In this development environment, the IDE itself runs inside a container, so
 mounts exposed to its Docker CLI may not work correctly when images are run
@@ -82,7 +83,7 @@ The launch scripts mount the repository and
 networking sysctls, `/config`, `/data`, and host modules; use a host with
 Docker privileges suitable for WireGuard work.
 
-For ad hoc frontend work, the dev shell is recommended because the Docker image
+For ad hoc frontend work, the dev shell is required because the Docker image
 installs Angular CLI globally. From `./run-dev-shell.sh`, run:
 
 ```bash
