@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { WebapiService } from '../webapi.service';
 import { OrgChartNode } from '../webapi.entities';
@@ -16,6 +16,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     styleUrl: './server-vpn-layout.component.scss'
 })
 export class ServerVpnLayoutComponent implements OnInit {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   private timerSubscription !: Subscription;
   hierarchyData!: OrgChartNode[];
   refreshDelay: number = 0;
@@ -36,6 +37,7 @@ export class ServerVpnLayoutComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.refreshDelay = val;
       this.loadData();
+      this.changeDetectorRef.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -49,6 +51,7 @@ export class ServerVpnLayoutComponent implements OnInit {
   loadData() {
     this.webapiService.getTargetHierarchy().subscribe(data => {
       this.hierarchyData = data;
+      this.changeDetectorRef.markForCheck();
     }
     );
   }

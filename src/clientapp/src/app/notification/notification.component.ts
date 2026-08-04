@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -19,6 +19,7 @@ import { AppNotification, NotificationService } from '../notification.service';
     styleUrl: './notification.component.scss',
 })
 export class NotificationComponent implements OnDestroy {
+    private changeDetectorRef = inject(ChangeDetectorRef);
 
     notification: AppNotification | null = null;
 
@@ -26,7 +27,10 @@ export class NotificationComponent implements OnDestroy {
 
     constructor(private notificationService: NotificationService) {
         this.subscription = this.notificationService.notification$.subscribe(
-            (notification) => this.notification = notification
+            (notification) => {
+                this.notification = notification;
+                this.changeDetectorRef.markForCheck();
+            }
         );
     }
 

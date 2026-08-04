@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -17,6 +17,7 @@ import { PeriodicRefreshUiService } from '../periodic-refresh-ui.service';
     styleUrl: './server-monitor-peers.component.scss'
 })
 export class ServerMonitorPeersComponent implements OnInit {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
   timerSubscription !: Subscription;
   loadDataSubscription !: Subscription;
@@ -58,6 +59,7 @@ export class ServerMonitorPeersComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.refreshDelay = val;
       this.loadData();
+      this.changeDetectorRef.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -74,6 +76,7 @@ export class ServerMonitorPeersComponent implements OnInit {
       // Re-apply the current sort so the user's chosen ordering survives the
       // periodic refresh (default: sorted by peer name, as before).
       this.sortData(this.currentSort);
+      this.changeDetectorRef.markForCheck();
     });
   }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ContentChild, OnInit, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ContentChild, OnInit, TemplateRef, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { AppSharedModule } from '../app-shared.module';
 import { LoginService } from '../login.service';
 import { Router } from '@angular/router';
@@ -15,6 +15,7 @@ import { Subscription } from 'rxjs';
     styleUrl: './authorized-view.component.scss'
 })
 export class AuthorizedViewComponent implements OnInit{
+  private changeDetectorRef = inject(ChangeDetectorRef);
   userSessionInfo!: UserSessionInfo;
   loginServiceSubscription !: Subscription;
 
@@ -28,6 +29,7 @@ export class AuthorizedViewComponent implements OnInit{
       if (!this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/login']);
       }
+      this.changeDetectorRef.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
   }

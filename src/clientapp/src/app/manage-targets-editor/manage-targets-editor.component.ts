@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -17,6 +17,7 @@ import { WebapiService } from '../webapi.service';
     styleUrl: './manage-targets-editor.component.scss'
 })
 export class ManageTargetsEditorComponent {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   @Input()
   get editItem(): Target { return this.target; }
   set editItem(value: Target) {
@@ -27,6 +28,7 @@ export class ManageTargetsEditorComponent {
         this.target = data;
         this.getLookupData();
         this.captureSnapshot();
+        this.changeDetectorRef.markForCheck();
       });
     }
     else {
@@ -53,6 +55,7 @@ export class ManageTargetsEditorComponent {
         lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
         : lookup;
       this.target.peer_groups_lookup = lookupItems;
+      this.changeDetectorRef.markForCheck();
     });
   }
 
@@ -90,6 +93,7 @@ export class ManageTargetsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error;
+            this.changeDetectorRef.markForCheck();
           }
         },
         complete: () => {
@@ -114,6 +118,7 @@ export class ManageTargetsEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.changeDetectorRef.markForCheck();
                 }
               },
               complete: () => {

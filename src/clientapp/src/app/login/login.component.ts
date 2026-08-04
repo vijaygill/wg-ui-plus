@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -17,6 +17,7 @@ import { JsonPipe } from '@angular/common';
     styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   credentials: UserCredentials = { username: '', password: '' } as UserCredentials;
   userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' } as UserSessionInfo;
   loginServiceSubscription !: Subscription;
@@ -33,6 +34,7 @@ export class LoginComponent implements OnInit {
       if (this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/']);
       }
+      this.changeDetectorRef.markForCheck();
     });
   }
 

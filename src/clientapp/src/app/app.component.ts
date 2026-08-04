@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
 import { NavDrawerComponent } from './app-nav-drawer/app-nav-drawer.component';
@@ -22,6 +22,7 @@ import { ThemeService } from './theme.service';
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   title = 'WireGuard UI Plus';
 
   serverStatus: ServerStatus = {
@@ -62,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
       (data) => {
         this.platformInformation = data;
+        this.changeDetectorRef.markForCheck();
       }
     );
 
@@ -72,11 +74,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
       this.serverStatus = data;
       this.syncStatusBanner();
+      this.changeDetectorRef.markForCheck();
     });
 
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
       this.userSessionInfo = data;
       this.syncStatusBanner();
+      this.changeDetectorRef.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
@@ -87,6 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.mobileNavOpen = false;
+        this.changeDetectorRef.markForCheck();
       });
   }
 

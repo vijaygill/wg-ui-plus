@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,7 @@ import { NotificationService } from '../notification.service';
   styleUrl: './manage-server-configuration.component.scss'
 })
 export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
+  private changeDetectorRef = inject(ChangeDetectorRef);
 
   editItem: ServerConfiguration = {} as ServerConfiguration;
   validationResult!: ServerValidationError;
@@ -51,6 +52,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
       if (!this.userSessionInfo.is_logged_in) {
         this.router.navigate(['/login']);
       }
+      this.changeDetectorRef.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
     this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
@@ -58,6 +60,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.refreshData();
         this.serverStatus = data;
       }
+      this.changeDetectorRef.markForCheck();
     });
     this.refreshData();
   }
@@ -86,6 +89,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     this.refreshDataSubscription = this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
       this.captureSnapshot();
+      this.changeDetectorRef.markForCheck();
     });
   }
 
@@ -119,11 +123,13 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         next: data => {
           this.notification.success('Server configuration saved.');
           this.validationResult = { type: '', errors: [] } as ServerValidationError;
+          this.changeDetectorRef.markForCheck();
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.changeDetectorRef.markForCheck();
           }
         },
         complete: () => {
@@ -157,6 +163,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     else {
       this.changePasswordSubscription = this.webapiService.changeUserPassword(this.changeUserPasswordInfo).subscribe(data => {
         this.userSessionInfo.message = data.message;
+        this.changeDetectorRef.markForCheck();
       });
     }
   }

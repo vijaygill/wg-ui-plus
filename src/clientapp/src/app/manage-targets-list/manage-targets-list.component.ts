@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -15,6 +15,7 @@ import { WebapiService } from '../webapi.service';
     styleUrl: './manage-targets-list.component.scss'
 })
 export class ManageTargetsListComponent {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   targets: Target[] = [];
   private currentSort: Sort = { active: 'name', direction: 'asc' };
 
@@ -30,6 +31,7 @@ export class ManageTargetsListComponent {
       // Preserve the default sort (by name, ascending) on first load,
       // matching the original sortField="name" behaviour.
       this.sortData(this.currentSort);
+      this.changeDetectorRef.markForCheck();
     });
   }
 

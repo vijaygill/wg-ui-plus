@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppSharedModule } from '../app-shared.module';
@@ -45,6 +45,7 @@ export interface NavDrawerMenuSection {
   host: { '[class.nav-drawer-collapsed]': 'collapsed' },
 })
 export class NavDrawerComponent implements OnInit {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   private menuItemMonitorPeers: NavDrawerMenuItem = {
     label: 'Monitor Peers',
     route: '/server-monitor-peers',
@@ -169,6 +170,7 @@ export class NavDrawerComponent implements OnInit {
       this.userSessionInfo = data;
       this.sections = this.userSessionInfo.is_logged_in ? this.itemsAuthorized : this.itemsAnonymous;
       this.bottomItems = this.userSessionInfo.is_logged_in ? this.bottomAuthorized : this.bottomAnonymous;
+      this.changeDetectorRef.markForCheck();
     });
     this.loginService.checkIsUserAuthenticated();
   }

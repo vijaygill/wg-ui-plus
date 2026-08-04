@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -17,6 +17,7 @@ import { WebapiService } from '../webapi.service';
     styleUrl: './manage-peer-groups-editor.component.scss'
 })
 export class ManagePeerGroupsEditorComponent {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   @Input()
   get editItem(): PeerGroup { return this.peerGroup; }
   set editItem(value: PeerGroup) {
@@ -27,6 +28,7 @@ export class ManagePeerGroupsEditorComponent {
         this.peerGroup = data;
         this.getLookupData();
         this.captureSnapshot();
+        this.changeDetectorRef.markForCheck();
       });
     }
     else {
@@ -54,12 +56,14 @@ export class ManagePeerGroupsEditorComponent {
           lookup.filter(x => !this.peerGroup.peers.some(y => y.id === x.id))
           : lookup;
         this.peerGroup.peers_lookup = lookupItems;
+        this.changeDetectorRef.markForCheck();
       });
       this.webapiService.getTargetList().subscribe(lookup => {
         let lookupItems = this.peerGroup.targets ?
           lookup.filter(x => !this.peerGroup.targets.some(y => y.id === x.id))
           : lookup;
         this.peerGroup.targets_lookup = lookupItems;
+        this.changeDetectorRef.markForCheck();
       });
     }
   }
@@ -98,6 +102,7 @@ export class ManagePeerGroupsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.changeDetectorRef.markForCheck();
           }
         },
         complete: () => {
@@ -122,6 +127,7 @@ export class ManagePeerGroupsEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.changeDetectorRef.markForCheck();
                 }
               },
               complete: () => {

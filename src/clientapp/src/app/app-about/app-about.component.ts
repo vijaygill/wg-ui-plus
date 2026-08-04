@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { WebapiService } from '../webapi.service';
 
 import { FormsModule } from '@angular/forms';
@@ -15,6 +15,7 @@ import { LicenseInfo } from '../webapi.entities';
     styleUrl: './app-about.component.scss'
 })
 export class AboutComponent implements OnInit {
+  private changeDetectorRef = inject(ChangeDetectorRef);
   license: LicenseInfo = { license: '' } as LicenseInfo;
   constructor(private webapiService: WebapiService) {
   }
@@ -26,6 +27,7 @@ export class AboutComponent implements OnInit {
   loadData(): void {
     this.webapiService.getLicense().subscribe(data => {
       this.license = data;
+      this.changeDetectorRef.markForCheck();
     });
   }
 }
