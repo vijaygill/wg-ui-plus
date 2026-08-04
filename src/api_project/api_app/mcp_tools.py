@@ -1,10 +1,6 @@
 """Explicit, authenticated MCP tools for the WireGuard administration surface."""
 
-import base64
-
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.mail import EmailMessage
 from rest_framework import serializers
 
 from mcp_server import MCPToolset
@@ -19,7 +15,14 @@ from .serializers import (
     TargetSerializer,
 )
 from .server_helper import generate_configuration_files, get_application_details, get_server_status
-from .wireguardhelper import WireGuardHelper
+from .shared_functions import (
+    get_connected_peers,
+    get_iptables_log,
+    get_license as read_license,
+    get_wireguard_configuration,
+    restart_wireguard,
+    send_configuration_email,
+)
 
 
 class MCPToolError(ValueError):
@@ -331,9 +334,7 @@ class WireGuardMCPToolset(MCPToolset):
         write files, alter firewall rules, or restart WireGuard.
         """
         configuration = self._configuration()
-        return WireGuardHelper().get_wireguard_configuration(
-            configuration, PeerGroup.objects.all(), Peer.objects.all()
-        )
+        return get_wireguard_configuration(configuration)
 
     def generate_wireguard_configuration_files(self):
         """Generate and write WireGuard and iptables files from database state.
@@ -358,7 +359,7 @@ class WireGuardMCPToolset(MCPToolset):
         """
         configuration = self._configuration()
         return {
-            "output": WireGuardHelper().restart(serverConfiguration=configuration),
+            "output": restart_wireguard(configuration),
             "warning": "WireGuard was restarted.",
         }
 
@@ -371,7 +372,7 @@ class WireGuardMCPToolset(MCPToolset):
         wg show all dump`` and therefore reads live system/network state, but does
         not write the database, files, or WireGuard configuration.
         """
-        return WireGuardHelper().get_connected_peers(Peer.objects.all(), self._configuration())
+        return get_connected_peers(self._configuration())
 
     def get_server_status(self):
         """Return host, database/file freshness, and WireGuard server status.
@@ -392,7 +393,7 @@ class WireGuardMCPToolset(MCPToolset):
         and its NAT-table equivalent. This reads live system/network firewall state
         and performs no writes or configuration changes.
         """
-        return WireGuardHelper().get_iptables_log()
+        return get_iptables_log()
 
     def get_hierarchy(self):
         """Return targets serialized with their related hierarchy.
@@ -412,8 +413,7 @@ class WireGuardMCPToolset(MCPToolset):
         This is a filesystem read only and has no database, network, email, or
         system-state side effect.
         """
-        with open("/app/LICENSE") as license_file:
-            return {"license": license_file.read()}
+        return read_license()
 
     def get_application_info(self):
         """Return application version, update, time, and email capability details.
@@ -445,16 +445,14 @@ class WireGuardMCPToolset(MCPToolset):
         recipient = email_address or peer.email_address
         if not recipient:
             raise MCPToolError("An email address is required.")
-        email = EmailMessage(
-            subject=f"Tunnel configuration sent from {APP_NAME} for {peer.name}",
-            body=f"The WireGuard configuration for {peer.name} is attached. Keep it safe.",
-            from_email=settings.EMAIL_HOST_USER,
-            to=[recipient],
-        )
-        email.attach("tunnel.conf", configuration["configuration"], "text/plain")
-        email.attach("tunnel.png", base64.b64decode(configuration["qr"]), "image/png")
         try:
-            email.send(fail_silently=False)
+            send_configuration_email(
+                f"Tunnel configuration sent from {APP_NAME} for {peer.name}",
+                f"The WireGuard configuration for {peer.name} is attached. Keep it safe.",
+                recipient,
+                configuration["qr"],
+                configuration["configuration"],
+            )
         except Exception as exc:
             raise MCPToolError("Sending peer configuration email failed.") from exc
         return {"message": "Email sent successfully!"}
