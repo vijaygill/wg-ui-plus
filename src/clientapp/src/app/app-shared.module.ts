@@ -15,10 +15,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ValidationErrorsDisplayComponent } from './validation-errors-display/validation-errors-display.component';
-import { DualListComponent } from './dual-list/dual-list.component';
-import { OrgChartComponent } from './org-chart/org-chart.component';
-import { PageHeaderComponent } from './page-header/page-header.component';
+import { ValidationErrorsDisplayComponent } from './controls/validation-errors-display/validation-errors-display.component';
+import { DualListComponent } from './controls/dual-list/dual-list.component';
+import { OrgChartComponent } from './controls/org-chart/org-chart.component';
+import { PageHeaderComponent } from './controls/page-header/page-header.component';
 
 let modules = [
     DragDropModule,

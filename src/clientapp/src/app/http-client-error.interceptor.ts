@@ -7,7 +7,7 @@ import {
   HttpErrorResponse
 } from '@angular/common/http';
 import { Observable, catchError, tap, throwError } from 'rxjs';
-import { WebapiService } from './webapi.service';
+import { WebapiService } from './services/webapi.service';
 import { ServerStatus } from './webapi.entities';
 
 @Injectable({

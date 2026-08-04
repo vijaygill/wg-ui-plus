@@ -1,17 +1,17 @@
 import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
-import { NavDrawerComponent } from './app-nav-drawer/app-nav-drawer.component';
+import { NavDrawerComponent } from './controls/app-nav-drawer/app-nav-drawer.component';
 import { AppSharedModule } from './app-shared.module';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, filter } from 'rxjs';
-import { WebapiService } from './webapi.service';
-import { LoginService } from './login.service';
-import { PlatformInformationService } from './platform-information.service';
-import { PeriodicRefreshUiService } from './periodic-refresh-ui.service';
-import { NotificationService } from './notification.service';
-import { NotificationComponent } from './notification/notification.component';
-import { ThemeService } from './theme.service';
+import { WebapiService } from './services/webapi.service';
+import { LoginService } from './services/login.service';
+import { PlatformInformationService } from './services/platform-information.service';
+import { PeriodicRefreshUiService } from './services/periodic-refresh-ui.service';
+import { NotificationService } from './services/notification.service';
+import { NotificationComponent } from './controls/notification/notification.component';
+import { ThemeService } from './services/theme.service';
 
 @Component({
     standalone: true,
