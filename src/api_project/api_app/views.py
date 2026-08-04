@@ -1,10 +1,7 @@
-import base64
-from django.conf import settings
 from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
 from django.core.cache import cache
-from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
@@ -31,9 +28,16 @@ from .serializers import (
 )
 
 from .server_helper import get_application_details
-from .wireguardhelper import WireGuardHelper
 from api_app import server_helper
 from .mcp_configuration import MCPConfigurationService, MCPTokenService
+from .shared_functions import (
+    get_connected_peers,
+    get_iptables_log,
+    get_license as read_license,
+    get_wireguard_configuration,
+    restart_wireguard,
+    send_configuration_email,
+)
 
 
 class PeerViewSet(viewsets.ModelViewSet):
@@ -135,9 +139,7 @@ def test(request):
 
 @api_view(["GET"])
 def get_license(request):
-    with open("/app/LICENSE") as f:
-        text = f.read()
-        return Response({"license": text})
+    return Response(read_license())
 
 
 @api_view(["GET"])
@@ -152,9 +154,8 @@ def wireguard_generate_configuration_files(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def wireguard_restart(request):
-    wg = WireGuardHelper()
     sc = ServerConfiguration.objects.all()[0]
-    res = wg.restart(serverConfiguration=sc)
+    res = restart_wireguard(sc)
     return Response({"message": "Hello from wireguard_restart!", "output": res})
 
 
@@ -162,31 +163,22 @@ def wireguard_restart(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def wireguard_get_configuration(request):
-    wg = WireGuardHelper()
-    sc = ServerConfiguration.objects.all()[0]
-    peers = Peer.objects.all()
-    peer_groups = PeerGroup.objects.all()
-    res = wg.get_wireguard_configuration(
-        serverConfiguration=sc, peer_groups=peer_groups, peers=peers
-    )
+    res = get_wireguard_configuration()
     return Response(res)
 
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
 def wireguard_get_connected_peers(request):
-    peers = Peer.objects.all()
     sc = ServerConfiguration.objects.all()[0]
-    wg = WireGuardHelper()
-    res = wg.get_connected_peers(peers, sc)
+    res = get_connected_peers(sc)
     return Response(res)
 
 
 @api_view(["GET"])
 @authentication_classes([SessionAuthentication])
 def wireguard_get_iptables_log(request):
-    wg = WireGuardHelper()
-    res = wg.get_iptables_log()
+    res = get_iptables_log()
     return Response(res)
 
 
@@ -323,14 +315,14 @@ How to use {tunnel_conf_file}:
         if not IS_EMAIL_ENABLED:
             raise Exception(("e-Mail is not enabled on the server."))
 
-        from_email = settings.EMAIL_HOST_USER
         recipient_list = [request.data["email_address"]]
-        email = EmailMessage(
-            subject=subject, body=body, from_email=from_email, to=recipient_list
+        send_configuration_email(
+            subject,
+            body,
+            recipient_list[0],
+            request.data["qr"],
+            request.data["configuration"],
         )
-        email.attach(tunnel_qr_file, base64.b64decode(request.data["qr"]), "image/png")
-        email.attach(tunnel_conf_file, request.data["configuration"], "text/plain")
-        email.send(fail_silently=False)
         return Response({"message": "Email sent successfully!"})
     except Exception as e:
         message = e.args[0] if e.args else ""
