@@ -50,9 +50,9 @@
                </app-validation-errors-display>
                <mat-form-field class="form-span">
                  <mat-label>Local Networks</mat-label>
-                 <input matInput id="localNetworks" [(ngModel)]="editItem.local_networks"
-                   matTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considerd as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
-                   matTooltipPosition="above" matTooltipShowDelay="500" />
+                  <input matInput id="localNetworks" [(ngModel)]="editItem.local_networks"
+                    matTooltip="Since the address for internet target is 0.0.0.0/0, your local network(s) will also be considered as part of internet. Enter comma-separated list of those local networks you want to keep safe from clients (you can add separate targets for those networks to allow access)."
+                    matTooltipPosition="above" matTooltipShowDelay="500" />
                </mat-form-field>
                <app-validation-errors-display class="form-span" field="local_networks" [validationResult]="validationResult">
                </app-validation-errors-display>
