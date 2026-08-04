@@ -13,6 +13,7 @@ DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.gitconfig\":/home/pi/.gitconfig:
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.vscode-remote-containers\":/home/pi/.vscode-remote-containers "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.vscode-server\":/home/pi/.vscode-server "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} -v \"${HOME}/.vscode-server-insiders\":/home/pi/.vscode-server-insiders "
+DOCKER_RUN_CMD="${DOCKER_RUN_CMD} --name wg-ui-dev-shell "
 DOCKER_RUN_CMD="${DOCKER_RUN_CMD} wg-ui-plus-dev bash "
 
 

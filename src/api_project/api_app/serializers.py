@@ -147,5 +147,5 @@ class TargetSerializer(serializers.ModelSerializer):
 class ServerConfigurationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServerConfiguration
-        fields = "__all__"
+        exclude = ("mcp_token",)
         depth = 1

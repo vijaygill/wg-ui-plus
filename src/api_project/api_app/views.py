@@ -16,6 +16,7 @@ from rest_framework.decorators import (
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION, IS_EMAIL_ENABLED
 
@@ -32,6 +33,7 @@ from .serializers import (
 from .server_helper import get_application_details
 from .wireguardhelper import WireGuardHelper
 from api_app import server_helper
+from .mcp_configuration import MCPConfigurationService, MCPTokenService
 
 
 class PeerViewSet(viewsets.ModelViewSet):
@@ -75,6 +77,55 @@ class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
         serializer.save()
         super().perform_update(serializer)
         cache.delete(CACHE_KEY_APP_LIVE_VERSION)
+
+
+class MCPConfigurationView(APIView):
+    """Session-authenticated MCP administration configuration endpoint."""
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        return Response(MCPConfigurationService.status(configuration))
+
+    def patch(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        if "mcp_enabled" not in request.data or not isinstance(request.data["mcp_enabled"], bool):
+            return Response({"mcp_enabled": ["A boolean value is required."]}, status=400)
+        configuration.mcp_enabled = request.data["mcp_enabled"]
+        if configuration.mcp_enabled and not configuration.mcp_token:
+            MCPTokenService.rotate(configuration)
+        configuration.save(update_fields=["mcp_enabled"])
+        return Response(MCPConfigurationService.status(configuration))
+
+
+class MCPTokenView(APIView):
+    """Authenticated token rotation and raw-token retrieval for clipboard copy."""
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        MCPTokenService.rotate(configuration)
+        return Response({**MCPConfigurationService.status(configuration), "token_rotated": True})
+
+    def get(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        if not configuration.mcp_token:
+            return Response({"detail": "MCP token is not configured."}, status=404)
+        response = Response({"mcp_token": configuration.mcp_token})
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+        return response
 
 
 @api_view(["GET"])

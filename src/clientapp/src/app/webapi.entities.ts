@@ -82,6 +82,16 @@ export interface ServerConfiguration {
     upstream_dns_ip_address: string;
     allow_check_updates: boolean;
     strict_allowed_ips_in_peer_config: boolean;
+    mcp_enabled: boolean;
+    mcp_token?: string;
+}
+
+export interface McpConfiguration {
+    mcp_enabled: boolean;
+    effective_enabled: boolean;
+    environment_override: boolean;
+    environment_enabled: boolean | null;
+    mcp_token: string | null;
 }
 
 export interface WireguardConfiguration {

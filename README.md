@@ -6,7 +6,7 @@ A Dockerised UI to run and manage a WireGuard VPN in the same container.
 Usage of this software is purely at your own risk. I am just sharing what I developed for myself and use at home.
 
 ## Background
-I had a WireGuard (tm) VPN running at home to allow me access various machines/network connexted devices while I am away from home.
+I had a WireGuard (tm) VPN running at home to allow me access various machines/network-connected devices while I am away from home.
 Sometimes I even let my friends access my machine-learning rig but I don't want them to snoop around in my home network.
 I was tired of managing IPTables rules to give fine-grained access to clients.
 So I thought I might develop something for myself to replace my current WireGuard (tm) based VPN where I was managing the IPTables rules by hand (for the post-up script used by WireGuard).
@@ -16,8 +16,9 @@ Use it and raise issues and/or PR's to make it better.
 ## Warning for existing users before performing upgrade
 Take a backup of your data before you perform upgrade (by downloading a new docker image).
 The application performs in-place migration of database to newer version (if needed).
+The application also automatically takes a backup of the database on every container start, so in-place migrations always run on a backup copy.
 Though I take utmost care in testing of upgrades, there is always a chance of things not going well.
-The database is just a SQLite file, so taking a backup is as easy as copying a file.
+The database is just a SQLite file (stored at /data/wg_ui_plus.db inside the container), so taking a backup is as easy as copying a file.
 
 ## Features
 * Easy management of clients (a.k.a Peers).
@@ -45,20 +46,27 @@ Functionality implemented so far
 - [x] Manage Peer-Groups - Add/Edit/Disable
   - [x] Add/Remove Targets to/from Peer-Groups, thus allowing/denying access.
 - [x] Live Dashboard
-  - [x] Show current status of Peers.
-  - [x] Show IPTables rules along with the counters for various chains.
+  - [x] Monitor Peers - show the current status of Peers (last handshake, transfer statistics etc.).
+  - [x] Monitor IPTables - show the IPTables rules along with the counters for various chains.
+- [x] VPN Layout - visualise how Targets, Peer-Groups and Peers are linked to each other.
 - [x] Authentication
+  - [x] Change password (from the "Change Password" tab on the "Server Configuration" page).
 - [x] Configuration of Client Peer
   - [x] Display QR-code for scanning using camera on the client device.
   - [x] Download and share ".conf" file with the client device.
   - [x] Ability to send configuration files for peers by email by single click.
+- [x] Server Configuration options
+  - [x] Strict AllowedIPs in Peer Config - instead of 0.0.0.0/0 in AllowedIPs, only the IP's of the targets a peer is allowed to access are listed in its configuration.
+  - [x] Allow checking for updates by contacting the GitHub releases page. The footer of the UI shows the running version and, if a newer release is available, a link to it.
+- [x] Automatic backup of the database on every container start.
+- [x] Dark/Light theme toggle and responsive UI for small screens.
 
 
 ## Requirements
 You need to have docker setup and running on your machine where the VPN needs to be run.
 
 ## Setup
-#### Note: Default username/password is admin/admin. You can change it later in "Server Configuration page".
+#### Note: Default username/password is admin/admin. You can change it later from the "Change Password" tab on the "Server Configuration" page.
 You can set up your own VPN in a few minutes by following the following steps:
 1. Gather the following information
    * IP address assigned to your router (refered to as External IP address in this document )
@@ -70,7 +78,7 @@ You can set up your own VPN in a few minutes by following the following steps:
    ```
 4. Point your browser to the address "http://internal_ip_address:8000".
 5. In the server configuration page
-   * In the server configuration page, use the external ip address for the value for the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
+   * On the Server Configuration page, use the external IP address for the value of the field "Host Name External". For long term setup, have a domain name set up pointing to your IP address (I use duckdns).
    ![image](./images/wg-ui-plus-server-config.png)
 
    * Change the upstream DNS server to suitable value. I have pihole on 192.168.0.5 in my setup. you can use 8.8.8.8 also.
@@ -88,9 +96,33 @@ You can set up your own VPN in a few minutes by following the following steps:
 
 Now you can start adding more targets and peer-groups and peers to configure the VPN in any way you need.
 
-Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled the target "Internet" for "Everyone", hence my mobile phone can access the internet also via the VPN. This could be stopped by removing the Target from EveryOne peer-group in Peer-Group edit page.
+Note: Every Peer is member of "EveryOne" Peer-Group. In this setup, I enabled the target "Internet" for "EveryOne", hence my mobile phone can access the internet also via the VPN. This could be stopped by removing the Target from EveryOne peer-group in Peer-Group edit page.
 
-From here, you can go on the make this setup as advanced as you want. Use "docker compose", or put it behind nginx reverse proxy, add SSL and so on.
+From here, you can go on to make this setup as advanced as you want. Use "docker compose" (an example compose file is available at [docker-compose-example.yml](./docker-compose-example.yml)), or put it behind nginx reverse proxy, add SSL and so on.
+
+## Configuration using environment variables
+The following environment variables can be passed to the docker container (via `-e` on the command line, or in the `environment:` section of a compose file) to configure the application on first start. They are applied every time the container starts, which makes automated/unattended setups easy.
+
+* `WG_NETWORK_ADDRESS` - Network address of the VPN. Default: `192.168.2.0/24`.
+* `WG_HOST_NAME_EXTERNAL` - External host name/DNS name that peers use to connect to the VPN from internet.
+* `WG_LOCAL_NETWORKS` - Comma-separated list of local networks (e.g. `192.168.0.0/24`) that should be kept safe from clients using the "Internet" target.
+* `WG_UPSTREAM_DNS_SERVER` - Upstream DNS server for the peers.
+* `WG_PORT_EXTERNAL` - Port exposed on your router, forwarded to the internal port. Default: `1196`.
+* `WG_PORT_INTERNAL` - Port on the host where WireGuard is listening. Default: `51820`.
+* `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` - When `true`, the AllowedIPs in peer configuration contain only the IP's of the targets a peer is allowed to access (instead of `0.0.0.0/0`).
+* `PUID` / `PGID` - User/Group id the container runs as. Default: `1000`.
+* `TZ` - Time zone used inside the container (e.g. `Europe/Dublin`).
+* `DJANGO_LOG_LEVEL` - Logging level of the application. Default: `WARN`.
+* `CORS_ALLOW_ALL_ORIGINS` - Set to `true` to allow cross-origin requests from any origin.
+* `CORS_ALLOWED_ORIGINS` - Comma-separated list of origins allowed to make cross-origin requests.
+* `CSRF_TRUSTED_ORIGINS` - Comma-separated list of trusted origins for CSRF.
+* `SECURE_REFERRER_POLICY` - Referrer-Policy sent by the server. Default: `same-origin`.
+* `MCP_SERVER_ENABLED` - Optional strict boolean override (`true`/`false`, `1`/`0`, `yes`/`no`) for the Streamable HTTP MCP endpoint. When set, it takes precedence over the database setting at startup. MCP is disabled by default.
+* `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_SSL`/`EMAIL_USE_TLS` - SMTP settings used to send tunnel configurations by email. See the "Sending tunnel information using email" section below.
+
+For MCP client setup, see [MCP.md](./MCP.md). Open WebUI should use
+`Authorization: Bearer <token>` for the `/mcp` endpoint; the legacy
+`Authorization: Token <token>` form remains supported.
 
 ## Further usage (configuration)
 Now you can start expanding your setup. But first let's get a few terms cleared in following text.
@@ -103,9 +135,9 @@ Now you can start expanding your setup. But first let's get a few terms cleared 
 
 Always remember: Targets are resources. Peers-groups are logical groups of Peers (clients) and are added/removed from targets (to grant/deny access). Peers are clients are added / removed from Peer-Groups (to grant/deny access).
 
-Now let's take an example of your NAS which has Samba server running (port 139 and port 445 are used) on say host 192.168.0.51. The IP addresses used in example are, well, just examples. You wll need to replace those with real IP addresses.
+Now let's take an example of your NAS which has Samba server running (port 139 and port 445 are used) on say host 192.168.0.51. The IP addresses used in example are, well, just examples. You will need to replace those with real IP addresses.
 
-1. Login into the WireGuard UI Plus app.
+1. Log in to the WireGuard UI Plus app.
 2. Go to Peer-Groups page (by clicking on "Peer-Groups" link under "Manage Data" section)
     1. Click on "New" button
     2. In the resulting page, enter following data
@@ -149,14 +181,14 @@ I tested it with GMail account (I created the password using App Passwords featu
 In my case
  * EMAIL_HOST=smtp.gmail.com
  * EMAIL_HOST_USER=my_gmail_address
- * EMAIL_HOST_PASSWORD=my_password_genrated_in_gmail_app_passwords
+ * EMAIL_HOST_PASSWORD=my_password_generated_in_gmail_app_passwords
  * EMAIL_PORT=587
  * EMAIL_USE_TLS=True
 
 ## Screenshots with some features shown
 * Dashboard showing currently connected peers
   ![image](./images/wg-ui-plus-monitor-peers.png)
-* Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "Everyone" group (by default, but can be changed).
+* Setup at my home where I added a Peer-Group "VIP Users" who can access LAN (192.168.0.0/24) and added two Peers to that group. Internet can be accessed by "EveryOne" group (by default, but can be changed).
   ![image](./images/wg-ui-plus-vpn-layout.png)
 * Monitor IPTables
   ![image](./images/wg-ui-plus-monitor-iptables.png)
