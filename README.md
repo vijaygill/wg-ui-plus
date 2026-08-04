@@ -51,7 +51,7 @@ Issues and pull requests are welcome.
 - [x] Server configuration:
   - [x] Strict `AllowedIPs` mode, which lists only the target IP addresses a peer may access instead of `0.0.0.0/0`.
   - [x] Optional update checks against the GitHub releases page. The footer displays the running version and a link when a newer release is available.
-- [x] Back up the SQLite database automatically on every container start.
+- [x] Back up the SQLite database automatically on every image/container upgrade.
 - [x] **Streamable HTTP MCP server support** (disabled by default; see [MCP support](#mcp-support)).
 
 ## Architecture
