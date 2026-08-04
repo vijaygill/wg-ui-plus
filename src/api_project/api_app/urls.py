@@ -70,5 +70,14 @@ urlpatterns = [
         views.send_peer_email,
         name="send_peer_email",
     ),
-    
+    path(
+        "api/v1/control/mcp/configuration",
+        views.MCPConfigurationView.as_view(),
+        name="mcp_configuration",
+    ),
+    path(
+        "api/v1/control/mcp/token",
+        views.MCPTokenView.as_view(),
+        name="mcp_token",
+    ),
 ]

@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "mcp_server",
     "corsheaders",
     "drf_standardized_errors",
     "api_app",
@@ -90,6 +91,14 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
+}
+
+DJANGO_MCP_AUTHENTICATION_CLASSES = [
+    "api_app.mcp_authentication.MCPTokenAuthentication",
+]
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    "name": "WireGuard UI Plus MCP Server",
+    "stateless": True,
 }
 
 CORS_ALLOW_ALL_ORIGINS = (

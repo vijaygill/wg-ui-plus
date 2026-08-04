@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators'
-import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from './webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -25,6 +25,8 @@ export class WebapiService {
     private urlIsUserLogIn = '/api/v1/auth/login';
     private urlIsUserLogOut = '/api/v1/auth/logout';
     private urlChangeUserPassword = '/api/v1/auth/change_password';
+    private urlMcpConfiguration = '/api/v1/control/mcp/configuration';
+    private urlMcpToken = '/api/v1/control/mcp/token';
 
     serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
 
@@ -148,6 +150,11 @@ export class WebapiService {
         }));
         return res;
     }
+
+    getMcpConfiguration(): Observable<McpConfiguration> { return this.http.get<McpConfiguration>(this.urlMcpConfiguration); }
+    updateMcpConfiguration(enabled: boolean): Observable<McpConfiguration> { return this.http.patch<McpConfiguration>(this.urlMcpConfiguration, { mcp_enabled: enabled }); }
+    generateMcpToken(): Observable<McpConfiguration> { return this.http.post<McpConfiguration>(this.urlMcpToken, {}); }
+    copyMcpToken(): Observable<{ mcp_token: string }> { return this.http.get<{ mcp_token: string }>(this.urlMcpToken); }
 
     getWireguardConfiguration(): Observable<WireguardConfiguration> {
         return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration)

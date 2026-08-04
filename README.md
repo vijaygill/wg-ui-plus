@@ -117,7 +117,12 @@ The following environment variables can be passed to the docker container (via `
 * `CORS_ALLOWED_ORIGINS` - Comma-separated list of origins allowed to make cross-origin requests.
 * `CSRF_TRUSTED_ORIGINS` - Comma-separated list of trusted origins for CSRF.
 * `SECURE_REFERRER_POLICY` - Referrer-Policy sent by the server. Default: `same-origin`.
+* `MCP_SERVER_ENABLED` - Optional strict boolean override (`true`/`false`, `1`/`0`, `yes`/`no`) for the Streamable HTTP MCP endpoint. When set, it takes precedence over the database setting at startup. MCP is disabled by default.
 * `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_SSL`/`EMAIL_USE_TLS` - SMTP settings used to send tunnel configurations by email. See the "Sending tunnel information using email" section below.
+
+For MCP client setup, see [MCP.md](./MCP.md). Open WebUI should use
+`Authorization: Bearer <token>` for the `/mcp` endpoint; the legacy
+`Authorization: Token <token>` form remains supported.
 
 ## Further usage (configuration)
 Now you can start expanding your setup. But first let's get a few terms cleared in following text.

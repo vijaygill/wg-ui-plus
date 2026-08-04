@@ -195,6 +195,8 @@ class ServerConfiguration(models.Model):
     peer_default_port = models.IntegerField()
     allow_check_updates = models.BooleanField(null=True, default=False)
     strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
+    mcp_enabled = models.BooleanField(default=False)
+    mcp_token = models.CharField(max_length=128, null=True, blank=True)
     last_changed_datetime = models.DateTimeField(
         auto_now=False,
     )

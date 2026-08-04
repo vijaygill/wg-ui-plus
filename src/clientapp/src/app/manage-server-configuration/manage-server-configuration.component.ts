@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ChangeUserPasswordInfo, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeUserPasswordInfo, McpConfiguration, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../app-shared.module';
@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { LoginService } from '../login.service';
 import { WebapiService } from '../webapi.service';
 import { NotificationService } from '../notification.service';
+import { ConfirmationDialogService } from '../confirmation-dialog.service';
 
 @Component({
   standalone: true,
@@ -35,13 +36,28 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   loginServiceSubscription !: Subscription;
   serverStatusSubscription !: Subscription;
   refreshDataSubscription !: Subscription;
+  mcpConfigurationSubscription !: Subscription;
+  mcpActionSubscription !: Subscription;
+  mcpConfirmationSubscription !: Subscription;
   saveConfigurationSubscription !: Subscription;
   changePasswordSubscription !: Subscription;
+  mcpConfiguration: McpConfiguration = {} as McpConfiguration;
+  mcpLoadError = '';
+  mcpConfigurationLoading = true;
+  mcpUpdating = false;
+  mcpTokenVisible = false;
+  revealedMcpToken: string | null = null;
+  private savedMcpEnabled = false;
+  private mcpTokenHideTimer: ReturnType<typeof setTimeout> | null = null;
+  private mcpTokenFocusTimer: ReturnType<typeof setTimeout> | null = null;
+  private destroyed = false;
+
+  @ViewChild('mcpTokenInput') private mcpTokenInput?: ElementRef<HTMLInputElement>;
 
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
-    private router: Router, private loginService: LoginService) { }
+    private router: Router, private loginService: LoginService, private confirmation: ConfirmationDialogService) { }
 
   ngOnInit(): void {
     this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
@@ -59,9 +75,39 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
       }
     });
     this.refreshData();
+    this.mcpConfigurationSubscription = this.webapiService.getMcpConfiguration().subscribe({
+      next: data => {
+        if (this.destroyed) {
+          return;
+        }
+        this.mcpConfiguration = data;
+        this.savedMcpEnabled = data.mcp_enabled;
+        this.resetRevealedMcpToken();
+        this.mcpConfigurationLoading = false;
+        this.mcpLoadError = '';
+      },
+      error: () => {
+        if (this.destroyed) {
+          return;
+        }
+        // MCP may not be available while an older database is being migrated or
+        // when the session expired. Keep the rest of this page usable.
+        this.mcpLoadError = 'MCP configuration could not be loaded. Refresh after signing in again.';
+        this.mcpConfigurationLoading = false;
+        this.resetRevealedMcpToken();
+        this.mcpConfiguration = {
+          mcp_enabled: false,
+          effective_enabled: false,
+          environment_override: false,
+          environment_enabled: null,
+          mcp_token: null
+        };
+      }
+    });
   }
 
   ngOnDestroy() {
+    this.destroyed = true;
     if (this.loginServiceSubscription) {
       this.loginServiceSubscription.unsubscribe();
     }
@@ -77,11 +123,25 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     if (this.changePasswordSubscription) {
       this.changePasswordSubscription.unsubscribe();
     }
+    if (this.mcpConfigurationSubscription) {
+      this.mcpConfigurationSubscription.unsubscribe();
+    }
+    if (this.mcpActionSubscription) {
+      this.mcpActionSubscription.unsubscribe();
+    }
+    if (this.mcpConfirmationSubscription) {
+      this.mcpConfirmationSubscription.unsubscribe();
+    }
+    this.mcpUpdating = false;
+    this.resetRevealedMcpToken();
   }
 
   refreshData(): void {
     // get the server configurations and use only first
     this.captureSnapshot();
+    if (this.refreshDataSubscription) {
+      this.refreshDataSubscription.unsubscribe();
+    }
     this.refreshDataSubscription = this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
       this.captureSnapshot();
@@ -158,6 +218,246 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.userSessionInfo.message = data.message;
       });
     }
+  }
+
+  updateMcpConfiguration(): void {
+    if (this.mcpConfigurationLoading || this.mcpLoadError || this.mcpUpdating) {
+      return;
+    }
+    this.mcpUpdating = true;
+    this.mcpActionSubscription = this.webapiService.updateMcpConfiguration(this.mcpConfiguration.mcp_enabled).subscribe({
+        next: data => {
+          if (this.destroyed) {
+            return;
+          }
+          this.mcpConfiguration = data;
+        this.savedMcpEnabled = data.mcp_enabled;
+        this.resetRevealedMcpToken();
+        this.mcpUpdating = false;
+        if (data.environment_override && data.effective_enabled !== data.mcp_enabled) {
+          this.notification.warn('MCP database setting saved, but MCP_SERVER_ENABLED controls the effective state.');
+        } else {
+          this.notification.success('MCP configuration saved.');
+        }
+      },
+      error: () => {
+        if (this.destroyed) {
+          return;
+        }
+        this.mcpConfiguration = { ...this.mcpConfiguration, mcp_enabled: this.savedMcpEnabled };
+        this.mcpUpdating = false;
+        this.notification.error('MCP configuration could not be saved. The previous setting was restored.');
+      }
+    });
+  }
+
+  generateMcpToken(): void {
+    if (this.mcpConfigurationLoading || this.mcpLoadError || this.mcpUpdating) {
+      return;
+    }
+    this.mcpUpdating = true;
+    this.mcpConfirmationSubscription = this.confirmation.confirm('Generate New MCP Token', 'Existing MCP clients will stop working until their token is updated. Continue?').subscribe(confirmed => {
+      if (this.destroyed) {
+        return;
+      }
+      if (!confirmed) {
+        this.mcpUpdating = false;
+        return;
+      }
+      this.mcpActionSubscription = this.webapiService.generateMcpToken().subscribe({
+        next: data => {
+          if (this.destroyed) {
+            return;
+          }
+          // The API intentionally returns the masked token after rotation. The
+          // copy action fetches the same newly rotated value from its protected
+          // endpoint, so the display never becomes a stale raw token.
+          this.mcpConfiguration = { ...this.mcpConfiguration, ...data };
+          this.resetRevealedMcpToken();
+          this.notification.success('New MCP token generated.');
+          this.mcpUpdating = false;
+        },
+        error: () => {
+          if (this.destroyed) {
+            return;
+          }
+          this.mcpUpdating = false;
+          this.notification.error('MCP token could not be generated.');
+        }
+      });
+    });
+  }
+
+  toggleMcpTokenVisibility(): void {
+    if (this.mcpConfigurationLoading || this.mcpLoadError || !this.mcpConfiguration.mcp_token || this.mcpUpdating) {
+      return;
+    }
+    if (this.mcpTokenVisible) {
+      this.resetRevealedMcpToken();
+      return;
+    }
+
+    this.mcpUpdating = true;
+    this.mcpActionSubscription = this.webapiService.copyMcpToken().subscribe({
+      next: data => {
+        if (this.destroyed) {
+          return;
+        }
+        const token = this.getRawMcpToken(data);
+        if (!token) {
+          this.mcpUpdating = false;
+          this.notification.error('MCP token could not be shown.');
+          return;
+        }
+        this.revealedMcpToken = token;
+        this.mcpTokenVisible = true;
+        this.scheduleMcpTokenHide();
+        this.mcpUpdating = false;
+      },
+      error: () => {
+        if (this.destroyed) {
+          return;
+        }
+        this.mcpUpdating = false;
+        this.notification.error('MCP token could not be shown.');
+      }
+    });
+  }
+
+  copyMcpToken(): void {
+    if (this.mcpConfigurationLoading || this.mcpLoadError || !this.mcpConfiguration.mcp_token || this.mcpUpdating) {
+      return;
+    }
+    this.mcpUpdating = true;
+    this.mcpActionSubscription = this.webapiService.copyMcpToken().subscribe({
+      next: data => {
+        if (this.destroyed) {
+          return;
+        }
+        const token = this.getRawMcpToken(data);
+        if (!token) {
+          if (!this.destroyed) {
+            this.mcpUpdating = false;
+            this.notification.error('MCP token could not be copied.');
+          }
+          return;
+        }
+        void this.copyTextToClipboard(token)
+          .then(copied => {
+            if (this.destroyed) {
+              return;
+            }
+            if (copied) {
+              this.notification.success('MCP token copied to clipboard.');
+            } else {
+              this.revealMcpTokenForManualCopy(token);
+            }
+          })
+          .finally(() => {
+            if (!this.destroyed) {
+              this.mcpUpdating = false;
+            }
+          });
+      },
+      error: () => {
+        if (this.destroyed) {
+          return;
+        }
+        this.mcpUpdating = false;
+        this.notification.error('MCP token could not be copied.');
+      }
+    });
+  }
+
+  private async copyTextToClipboard(text: string): Promise<boolean> {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Some browsers expose the API but reject it outside a trusted context.
+      }
+    }
+    return this.copyTextWithTextarea(text);
+  }
+
+  private getRawMcpToken(data: { mcp_token?: unknown }): string | null {
+    return typeof data?.mcp_token === 'string' && data.mcp_token.length > 0 ? data.mcp_token : null;
+  }
+
+  private copyTextWithTextarea(text: string): boolean {
+    if (typeof document === 'undefined' || !document.body || !document.execCommand) {
+      return false;
+    }
+
+    let textarea: HTMLTextAreaElement | null = null;
+    try {
+      textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.setAttribute('aria-hidden', 'true');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '-9999px';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      return document.execCommand('copy');
+    } catch {
+      return false;
+    } finally {
+      if (textarea) {
+        textarea.value = '';
+        textarea.remove();
+      }
+    }
+  }
+
+  private revealMcpTokenForManualCopy(token: string): void {
+    this.revealedMcpToken = token;
+    this.mcpTokenVisible = true;
+    this.scheduleMcpTokenHide();
+    this.notification.warn('Automatic copy was blocked by browser policy. The token is selected below; press Ctrl+C (or Cmd+C) to copy it.');
+    this.clearMcpTokenFocusTimer();
+    this.mcpTokenFocusTimer = setTimeout(() => {
+      this.mcpTokenFocusTimer = null;
+      if (this.destroyed || !this.mcpTokenVisible || !this.mcpTokenInput) {
+        return;
+      }
+      this.mcpTokenInput.nativeElement.focus();
+      this.mcpTokenInput.nativeElement.select();
+    });
+  }
+
+  private scheduleMcpTokenHide(): void {
+    this.clearMcpTokenHideTimer();
+    this.mcpTokenHideTimer = setTimeout(() => {
+      this.mcpTokenHideTimer = null;
+      if (!this.destroyed) {
+        this.resetRevealedMcpToken();
+      }
+    }, 60_000);
+  }
+
+  private clearMcpTokenHideTimer(): void {
+    if (this.mcpTokenHideTimer !== null) {
+      clearTimeout(this.mcpTokenHideTimer);
+      this.mcpTokenHideTimer = null;
+    }
+  }
+
+  private clearMcpTokenFocusTimer(): void {
+    if (this.mcpTokenFocusTimer !== null) {
+      clearTimeout(this.mcpTokenFocusTimer);
+      this.mcpTokenFocusTimer = null;
+    }
+  }
+
+  private resetRevealedMcpToken(): void {
+    this.clearMcpTokenHideTimer();
+    this.clearMcpTokenFocusTimer();
+    this.mcpTokenVisible = false;
+    this.revealedMcpToken = null;
   }
 
 }

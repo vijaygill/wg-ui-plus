@@ -46,7 +46,8 @@ RUN npm update -g npm \
 
 RUN pip install --break-system-packages --no-cache-dir --upgrade \
         qrcode[pil] colorlog Django djangorestframework django-cors-headers \
-        django-spa drf-standardized-errors django-dirtyfields requests cryptography
+        django-spa drf-standardized-errors django-dirtyfields requests cryptography \
+        django-mcp-server==0.5.6 mcp==1.9.4
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
@@ -76,6 +77,7 @@ RUN apk update \
     && pip install --no-cache-dir --break-system-packages --upgrade \
         qrcode[pil] colorlog Django djangorestframework django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields cryptography requests \
+        django-mcp-server==0.5.6 mcp==1.9.4 \
     && apk del gcc libressl-dev musl-dev libffi-dev \
     && rm -rf /var/cache/apk/*
 
