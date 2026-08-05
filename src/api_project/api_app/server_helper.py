@@ -3,10 +3,12 @@ import os
 import requests
 
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
 
 from api_app.wireguardhelper import WireGuardHelper
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
+from .mcp_configuration import MCPConfigurationService
 
 from .common import CACHE_KEY_APP_LIVE_VERSION, CACHE_TTL, APP_URL, IS_EMAIL_ENABLED
 
@@ -46,7 +48,10 @@ def get_application_details():
         pass
     try:
         sc = ServerConfiguration.objects.all()[0]
-        allow_check_updates = sc.allow_check_updates
+        try:
+            allow_check_updates = MCPConfigurationService.allow_check_updates(sc)
+        except ImproperlyConfigured:
+            raise
         latest_live_version = (
             "v0.0.0" if allow_check_updates else "Updates check diabled."
         )
@@ -59,6 +64,8 @@ def get_application_details():
                 response = requests.get(APP_URL)
                 latest_live_version = response.url.split("/").pop()
                 cache.add(CACHE_KEY_APP_LIVE_VERSION, latest_live_version, CACHE_TTL)
+    except ImproperlyConfigured:
+        raise
     except Exception:
         latest_live_version = "**Error**"
         pass

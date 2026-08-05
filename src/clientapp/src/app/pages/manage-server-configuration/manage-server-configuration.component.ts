@@ -59,7 +59,8 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     upstream_dns_ip_address: 'WG_UPSTREAM_DNS_SERVER',
     port_external: 'WG_PORT_EXTERNAL',
     port_internal: 'WG_PORT_INTERNAL',
-    strict_allowed_ips_in_peer_config: 'WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG'
+     strict_allowed_ips_in_peer_config: 'WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG',
+     allow_check_updates: 'WG_ALLOW_CHECK_UPDATES'
   };
 
   @ViewChild('mcpTokenInput') private mcpTokenInput?: ElementRef<HTMLInputElement>;
@@ -182,6 +183,10 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     return JSON.stringify(this.editableState) !== this.snapshot;
   }
 
+  get effectiveAllowCheckUpdates(): boolean {
+    return this.editItem.effective_allow_check_updates ?? this.editItem.allow_check_updates;
+  }
+
   environmentVariableFor(field: string): string | null {
     return this.editItem.environment_overrides?.[field] ?? null;
   }
@@ -257,7 +262,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.resetRevealedMcpToken();
         this.mcpUpdating = false;
         if (data.environment_override && data.effective_enabled !== data.mcp_enabled) {
-          this.notification.warn('MCP database setting saved, but MCP_SERVER_ENABLED controls the effective state.');
+           this.notification.warn('MCP database setting saved, but WG_MCP_SERVER_ENABLED controls the effective state.');
         } else {
           this.notification.success('MCP configuration saved.');
         }

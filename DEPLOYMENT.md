@@ -86,20 +86,22 @@ The most relevant settings are:
 | `WG_PORT_EXTERNAL` | Router-facing external UDP port written into peer endpoints; default `1196`. |
 | `WG_PORT_INTERNAL` | Container WireGuard port; default `51820`; changing it requires updating the container-side port mapping and related forwarding configuration. |
 | `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` | When true, generated configs use narrower relationship-based routes where calculated, with required VPN/peer routes and a possible `0.0.0.0/0` fallback. |
+| `WG_ALLOW_CHECK_UPDATES` | Boolean update-check setting. When supplied, it overrides the **Allow Check Updates** database setting; invalid values are rejected. |
 | `TZ` | Application time zone; default `UTC`. |
 | `DJANGO_LOG_LEVEL` | Log level; default `WARN`. |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins. Prefer this to allow-all CORS. |
 | `CORS_ALLOW_ALL_ORIGINS` | Allows requests from any origin when set to a recognized true value; avoid it for exposed deployments. |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins for CSRF protection. |
 | `SECURE_REFERRER_POLICY` | Referrer-Policy; default `same-origin`. |
-| `MCP_SERVER_ENABLED` | Explicitly enables or disables MCP at startup; see [MCP.md](./MCP.md). |
+| `WG_MCP_SERVER_ENABLED` | Explicitly enables or disables MCP at startup; see [MCP.md](./MCP.md). |
 | `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT` | SMTP settings for sending peer configurations. |
 | `EMAIL_USE_SSL` or `EMAIL_USE_TLS` | SMTP transport security; configure the mode required by the provider. |
 
 Values supplied through the environment can override corresponding UI settings
-at startup. In particular, an explicit `MCP_SERVER_ENABLED` value takes
-precedence over the database setting. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` is
-special: startup evaluates it every time, and when it is absent the value is
+at startup. Explicit `WG_ALLOW_CHECK_UPDATES` and `WG_MCP_SERVER_ENABLED` values
+take precedence over their database settings; when either variable is absent,
+the corresponding database setting is used. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG`
+is special: startup evaluates it every time, and when it is absent the value is
 treated as false, which can reset a database/UI value. Set it explicitly when
 that setting must persist in an unattended deployment. Never put SMTP passwords
 or MCP tokens in public files or source control.

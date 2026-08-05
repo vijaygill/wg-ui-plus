@@ -154,7 +154,7 @@ them.
   changes are generated from those relationships.
 - Runtime configuration is environment-driven where documented in `README.md`
   (WireGuard network/ports, DNS, host name, timezone, CORS/CSRF, logging,
-  email, and `MCP_SERVER_ENABLED`). MCP is disabled by default, but when the
+  email, and `WG_MCP_SERVER_ENABLED`). MCP is disabled by default, but when the
   environment variable is absent an existing database setting controls it.
   The endpoint accepts `Bearer` and legacy `Token` authorization and exposes
   curated tools described in `MCP.md`. Treat the MCP token as a high-privilege
