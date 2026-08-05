@@ -45,7 +45,7 @@ RUN npm update -g npm \
     && npm install -g @angular/cli
 
 RUN pip install --break-system-packages --no-cache-dir --upgrade \
-        qrcode[pil] colorlog Django djangorestframework django-cors-headers \
+        qrcode[pil] colorlog "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields requests cryptography \
         django-mcp-server==0.5.6 mcp==1.9.4
 
@@ -75,7 +75,7 @@ RUN apk update \
         iptraf-ng procps tcpdump sudo conntrack-tools \
         tzdata gcc libressl-dev musl-dev libffi-dev bind-tools \
     && pip install --no-cache-dir --break-system-packages --upgrade \
-        qrcode[pil] colorlog Django djangorestframework django-cors-headers \
+        qrcode[pil] colorlog "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields cryptography requests \
         django-mcp-server==0.5.6 mcp==1.9.4 \
     && apk del gcc libressl-dev musl-dev libffi-dev \
