@@ -113,7 +113,7 @@
                 <div class="form-span editor-row">
                   <mat-checkbox [(ngModel)]="mcpConfiguration.mcp_enabled" (change)="updateMcpConfiguration()"
                     [disabled]="mcpConfigurationLoading || !!mcpLoadError || mcpUpdating || mcpConfiguration.environment_override">
-                    Enable MCP Server (WG_MCP_SERVER_ENABLED)
+                    {{environmentVariableLabel('mcp_server_enabled', 'Enable MCP Server', mcpConfiguration.environment_override)}}
                   </mat-checkbox>
                 </div>
                 @if (mcpLoadError) {
