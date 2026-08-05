@@ -60,7 +60,8 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     port_external: 'WG_PORT_EXTERNAL',
     port_internal: 'WG_PORT_INTERNAL',
      strict_allowed_ips_in_peer_config: 'WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG',
-     allow_check_updates: 'WG_ALLOW_CHECK_UPDATES'
+     allow_check_updates: 'WG_ALLOW_CHECK_UPDATES',
+     mcp_server_enabled: 'WG_MCP_SERVER_ENABLED'
   };
 
   @ViewChild('mcpTokenInput') private mcpTokenInput?: ElementRef<HTMLInputElement>;
@@ -191,12 +192,13 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     return this.editItem.environment_overrides?.[field] ?? null;
   }
 
-  environmentVariableLabel(field: string, label: string): string {
+  environmentVariableLabel(field: string, label: string, environmentOverride?: boolean): string {
     const environmentVariable = this.environmentVariableNames[field];
     if (!environmentVariable) {
       return label;
     }
-    return `${label} (${this.environmentVariableFor(field) ? `${environmentVariable} is set` : `Managed by ${environmentVariable}`})`;
+    const isEnvironmentOverride = environmentOverride ?? !!this.environmentVariableFor(field);
+    return `${label} (${isEnvironmentOverride ? `${environmentVariable} is set` : `Managed by ${environmentVariable}`})`;
   }
 
   ok() {
