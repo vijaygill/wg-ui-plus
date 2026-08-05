@@ -12,9 +12,16 @@ from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIClient
 
 from .mcp_authentication import MCPTokenAuthentication
-from .mcp_configuration import MCPConfigurationService, MCPTokenService, parse_mcp_enabled
+from .mcp_configuration import (
+    ALLOW_CHECK_UPDATES_ENV,
+    MCPConfigurationService,
+    MCPTokenService,
+    parse_boolean_environment_value,
+    parse_mcp_enabled,
+)
 from .mcp_tools import MCPToolError, WireGuardMCPToolset
 from .models import Peer, PeerGroup, ServerConfiguration, Target
+from .server_helper import get_application_details
 
 
 class MCPConfigurationParsingTests(SimpleTestCase):
@@ -28,13 +35,42 @@ class MCPConfigurationParsingTests(SimpleTestCase):
         with self.assertRaises(ImproperlyConfigured):
             parse_mcp_enabled("maybe")
 
+    def test_update_check_boolean_values_use_the_same_parser(self):
+        self.assertTrue(parse_boolean_environment_value("YES", ALLOW_CHECK_UPDATES_ENV))
+        self.assertFalse(parse_boolean_environment_value("off", ALLOW_CHECK_UPDATES_ENV))
+        with self.assertRaises(ImproperlyConfigured):
+            parse_boolean_environment_value("maybe", ALLOW_CHECK_UPDATES_ENV)
+
+    @patch.dict(os.environ, {}, clear=True)
+    def test_update_checks_fall_back_to_database_state(self):
+        configuration = type("Configuration", (), {"allow_check_updates": True})()
+        self.assertTrue(MCPConfigurationService.allow_check_updates(configuration))
+
+    @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "false"}, clear=True)
+    def test_update_check_environment_overrides_database_state(self):
+        configuration = type("Configuration", (), {"allow_check_updates": True})()
+        self.assertFalse(MCPConfigurationService.allow_check_updates(configuration))
+
+    @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "invalid"}, clear=True)
+    def test_invalid_update_check_environment_value_is_rejected(self):
+        configuration = type("Configuration", (), {"allow_check_updates": True})()
+        with self.assertRaises(ImproperlyConfigured):
+            MCPConfigurationService.allow_check_updates(configuration)
+
+    @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "invalid"}, clear=True)
+    def test_application_details_rejects_invalid_update_check_environment_value(self):
+        configuration = type("Configuration", (), {"allow_check_updates": True})()
+        with patch("api_app.server_helper.ServerConfiguration.objects.all", return_value=[configuration]):
+            with self.assertRaises(ImproperlyConfigured):
+                get_application_details()
+
     @patch.dict(os.environ, {}, clear=True)
     def test_database_controls_state_when_environment_is_absent(self):
         with patch.object(MCPConfigurationService, "get_configuration") as get_configuration:
             get_configuration.return_value = type("Configuration", (), {"mcp_enabled": True})()
             self.assertTrue(MCPConfigurationService.is_enabled())
 
-    @patch.dict(os.environ, {"MCP_SERVER_ENABLED": "false"}, clear=True)
+    @patch.dict(os.environ, {"WG_MCP_SERVER_ENABLED": "false"}, clear=True)
     def test_environment_overrides_database_state(self):
         with patch.object(MCPConfigurationService, "get_configuration") as get_configuration:
             get_configuration.return_value = type("Configuration", (), {"mcp_enabled": True})()
@@ -68,7 +104,7 @@ class MCPDatabaseAndStartupMixin:
         self.assertIsNone(self.configuration.mcp_token)
         self.assertFalse(MCPConfigurationService.is_enabled())
 
-    @patch.dict(os.environ, {"MCP_SERVER_ENABLED": "yes"}, clear=True)
+    @patch.dict(os.environ, {"WG_MCP_SERVER_ENABLED": "yes"}, clear=True)
     def _test_startup_syncs_enabled_state_generates_token_and_does_not_log_it(self):
         with self.assertLogs("api_app.mcp_configuration", level="WARNING") as logs:
             changed = MCPConfigurationService.synchronize_startup()
@@ -79,7 +115,7 @@ class MCPDatabaseAndStartupMixin:
         self.assertNotIn(self.configuration.mcp_token, "\n".join(logs.output))
         self.assertIn("new token was generated", "\n".join(logs.output))
 
-    @patch.dict(os.environ, {"MCP_SERVER_ENABLED": "not-a-boolean"}, clear=True)
+    @patch.dict(os.environ, {"WG_MCP_SERVER_ENABLED": "not-a-boolean"}, clear=True)
     def _test_startup_rejects_invalid_environment_value(self):
         with self.assertRaises(ImproperlyConfigured):
             MCPConfigurationService.synchronize_startup()
@@ -156,6 +192,23 @@ class MCPAdministrationAndAuthenticationTests(MCPDatabaseAndStartupMixin, TestCa
         self.assertEqual("*****", response.data["mcp_token"])
         self.assertNotIn("secret-token", response.content.decode())
 
+    @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "false"}, clear=True)
+    def test_server_configuration_metadata_reports_update_check_override(self):
+        from .serializers import ServerConfigurationSerializer
+
+        data = ServerConfigurationSerializer(self.configuration).data
+        self.assertEqual("WG_ALLOW_CHECK_UPDATES", data["environment_overrides"]["allow_check_updates"])
+
+    @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "false"}, clear=True)
+    def test_server_configuration_reports_effective_update_check_value_separately(self):
+        from .serializers import ServerConfigurationSerializer
+
+        self.configuration.allow_check_updates = True
+        self.configuration.save(update_fields=["allow_check_updates"])
+        data = ServerConfigurationSerializer(self.configuration).data
+        self.assertTrue(data["allow_check_updates"])
+        self.assertFalse(data["effective_allow_check_updates"])
+
     def test_raw_token_copy_requires_authenticated_session(self):
         self.configuration.mcp_token = "secret-token"
         self.configuration.save(update_fields=["mcp_token"])
@@ -225,7 +278,7 @@ class MCPEndpointAndToolTests(MCPDatabaseAndStartupMixin, TestCase):
                 self.assertEqual(200, response.status_code)
 
     def test_disabled_mcp_endpoint_is_not_found(self):
-        with patch.dict(os.environ, {"MCP_SERVER_ENABLED": "false"}, clear=True):
+        with patch.dict(os.environ, {"WG_MCP_SERVER_ENABLED": "false"}, clear=True):
             response = self.mcp_request(self.initialize_request())
         self.assertEqual(404, response.status_code)
 

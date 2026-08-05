@@ -126,11 +126,12 @@ managed token; it is not a low-privilege per-user API boundary.
 
 ## How do I enable MCP?
 
-MCP is disabled by default. Set `MCP_SERVER_ENABLED=true` (also accepted: `1`,
-`yes`, `y`, `on`) at startup, or use the **MCP Server** tab when no environment
-override is present. The Streamable HTTP endpoint is `/mcp`; use `Authorization:
-Bearer <token>` (legacy `Token` is also accepted). See [MCP.md](./MCP.md) for
-commands, tools, token rotation, and limitations.
+MCP is disabled by default. Set `WG_MCP_SERVER_ENABLED=true` (also accepted:
+`1`, `yes`, `y`, `on`) at startup, or use the **MCP Server** tab when no
+environment override is present. `false`, `0`, `no`, `n`, and `off` disable it;
+other values are rejected. The Streamable HTTP endpoint is `/mcp`; use
+`Authorization: Bearer <token>` (legacy `Token` is also accepted). See
+[MCP.md](./MCP.md) for commands, tools, token rotation, and limitations.
 
 Anyone with the MCP token can use the endpoint, and the curated tools can return
 peer configuration and QR data. Protect it as a high-privilege credential. SSE,
@@ -146,9 +147,11 @@ where the provider requires one, and keep SMTP credentials out of source control
 ## Does it check for updates?
 
 The **Allow Check Updates** setting can check the GitHub releases page. When
-enabled, the footer can show the running version and a newer release link. No
-update is applied automatically; review releases and back up before replacing
-the image.
+`WG_ALLOW_CHECK_UPDATES` is supplied at startup, it overrides that database
+setting; when it is absent, the database setting is used. Invalid environment
+values are rejected. When enabled, the footer can show the running version and a
+newer release link. No update is applied automatically; review releases and back
+up before replacing the image.
 
 ## What happens during an image upgrade?
 
@@ -168,10 +171,10 @@ they may contain private keys and other credentials.
 ## Is it safe to expose the UI to the Internet?
 
 Not by itself. The example Compose file enables `CORS_ALLOW_ALL_ORIGINS=true`,
-uses placeholder paths, and has a host UDP `1195`/default-container UDP `51820` mapping that
-does not match the application's default `WG_PORT_EXTERNAL=1196`. Restrict CORS,
-use strong credentials, place the UI behind a TLS reverse proxy, limit network
-access, and expose only the WireGuard UDP port as needed. Read
+uses placeholder paths, and has a host UDP `1195`/default-container UDP `51820`
+mapping that does not match the application's default `WG_PORT_EXTERNAL=1196`.
+Restrict CORS, use strong credentials, place the UI behind a TLS reverse proxy,
+limit network access, and expose only the WireGuard UDP port as needed. Read
 [DEPLOYMENT.md](./DEPLOYMENT.md) before remote exposure.
 
 ## What credentials need special care?

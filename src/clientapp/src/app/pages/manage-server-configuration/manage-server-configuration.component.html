@@ -67,11 +67,13 @@
                <app-validation-errors-display class="form-span" field="upstream_dns_ip_address"
                  [validationResult]="validationResult">
                </app-validation-errors-display>
-               <div class="form-span editor-row">
-                 <mat-checkbox id="allowCheckUpdates" [(ngModel)]="editItem.allow_check_updates"
-                   matTooltip="Allow checking updates by contacting GitHub releases page. No data is sent to the server."
-                   matTooltipPosition="above" matTooltipShowDelay="500">
-                   Allow Check Updates
+                <div class="form-span editor-row">
+                  <mat-checkbox id="allowCheckUpdates" [ngModel]="effectiveAllowCheckUpdates"
+                     (ngModelChange)="editItem.allow_check_updates = $event"
+                    [disabled]="!!environmentVariableFor('allow_check_updates')"
+                    matTooltip="Allow checking updates by contacting GitHub releases page. No data is sent to the server."
+                    matTooltipPosition="above" matTooltipShowDelay="500">
+                    {{environmentVariableLabel('allow_check_updates', 'Allow Check Updates')}}
                  </mat-checkbox>
                </div>
                 <div class="form-span editor-row">
@@ -104,7 +106,47 @@
           </mat-card-content>
         </mat-card>
       </mat-tab>
-      <mat-tab label="Change Password">
+       <mat-tab label="MCP Server">
+         <mat-card>
+           <mat-card-content>
+             <div class="editor-form form-grid">
+                <div class="form-span editor-row">
+                  <mat-checkbox [(ngModel)]="mcpConfiguration.mcp_enabled" (change)="updateMcpConfiguration()"
+                    [disabled]="mcpConfigurationLoading || !!mcpLoadError || mcpUpdating || mcpConfiguration.environment_override">
+                    Enable MCP Server (WG_MCP_SERVER_ENABLED)
+                  </mat-checkbox>
+                </div>
+                @if (mcpLoadError) {
+                  <div class="form-span editor-message">{{mcpLoadError}}</div>
+                }
+                @if (mcpConfiguration.environment_override) {
+                  <div class="form-span editor-message">
+                    WG_MCP_SERVER_ENABLED overrides the database setting. The effective state is {{mcpConfiguration.effective_enabled ? 'enabled' : 'disabled'}}.
+                  </div>
+                }
+                <mat-form-field class="form-span">
+                  <mat-label>MCP Token</mat-label>
+                   <input #mcpTokenInput matInput readonly [value]="mcpConfiguration.mcp_token ? (mcpTokenVisible ? revealedMcpToken : '*****') : 'Not generated'"
+                    [attr.aria-label]="mcpTokenVisible ? 'MCP token' : 'Masked MCP token'" />
+                  <button mat-icon-button matSuffix type="button" (click)="toggleMcpTokenVisibility()"
+                    [disabled]="!mcpConfiguration.mcp_token || mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"
+                    [attr.aria-label]="mcpTokenVisible ? 'Hide MCP token' : 'Show MCP token'"
+                    [matTooltip]="mcpTokenVisible ? 'Hide MCP token' : 'Show MCP token'">
+                    <mat-icon>{{mcpTokenVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
+                  </button>
+                </mat-form-field>
+                <div class="form-span editor-actions">
+                  <button mat-flat-button color="warn" type="button" (click)="generateMcpToken()"
+                    [disabled]="mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"><mat-icon>vpn_key</mat-icon> Generate New Token</button>
+                  <button mat-stroked-button type="button" (click)="copyMcpToken()"
+                    [disabled]="!mcpConfiguration.mcp_token || mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"><mat-icon>content_copy</mat-icon> Copy to Clipboard</button>
+                </div>
+                <div class="form-span editor-message">Connect to <code>/mcp</code> with <code>Authorization: Token &lt;token&gt;</code>.</div>
+             </div>
+           </mat-card-content>
+         </mat-card>
+       </mat-tab>
+       <mat-tab label="Change Password">
         <div class="editor-form form-grid change-password">
           <mat-form-field class="form-span">
             <mat-label>Current Password</mat-label>
@@ -128,47 +170,8 @@
               {{userSessionInfo.message}}
             </div>
           }
-        </div>
-      </mat-tab>
-      <mat-tab label="MCP Server">
-        <mat-card>
-          <mat-card-content>
-            <div class="editor-form form-grid">
-               <div class="form-span editor-row">
-                 <mat-checkbox [(ngModel)]="mcpConfiguration.mcp_enabled" (change)="updateMcpConfiguration()"
-                   [disabled]="mcpConfigurationLoading || !!mcpLoadError || mcpUpdating">Enable MCP Server</mat-checkbox>
-               </div>
-               @if (mcpLoadError) {
-                 <div class="form-span editor-message">{{mcpLoadError}}</div>
-               }
-               @if (mcpConfiguration.environment_override) {
-                 <div class="form-span editor-message">
-                   MCP_SERVER_ENABLED overrides the database setting at startup. The checkbox still edits the database
-                   value; the effective state is {{mcpConfiguration.effective_enabled ? 'enabled' : 'disabled'}} until the environment override changes.
-                 </div>
-               }
-               <mat-form-field class="form-span">
-                 <mat-label>MCP Token</mat-label>
-                  <input #mcpTokenInput matInput readonly [value]="mcpConfiguration.mcp_token ? (mcpTokenVisible ? revealedMcpToken : '*****') : 'Not generated'"
-                   [attr.aria-label]="mcpTokenVisible ? 'MCP token' : 'Masked MCP token'" />
-                 <button mat-icon-button matSuffix type="button" (click)="toggleMcpTokenVisibility()"
-                   [disabled]="!mcpConfiguration.mcp_token || mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"
-                   [attr.aria-label]="mcpTokenVisible ? 'Hide MCP token' : 'Show MCP token'"
-                   [matTooltip]="mcpTokenVisible ? 'Hide MCP token' : 'Show MCP token'">
-                   <mat-icon>{{mcpTokenVisible ? 'visibility_off' : 'visibility'}}</mat-icon>
-                 </button>
-               </mat-form-field>
-               <div class="form-span editor-actions">
-                 <button mat-flat-button color="warn" type="button" (click)="generateMcpToken()"
-                   [disabled]="mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"><mat-icon>vpn_key</mat-icon> Generate New Token</button>
-                 <button mat-stroked-button type="button" (click)="copyMcpToken()"
-                   [disabled]="!mcpConfiguration.mcp_token || mcpConfigurationLoading || !!mcpLoadError || mcpUpdating"><mat-icon>content_copy</mat-icon> Copy to Clipboard</button>
-               </div>
-               <div class="form-span editor-message">Connect to <code>/mcp</code> with <code>Authorization: Token &lt;token&gt;</code>.</div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </mat-tab>
-    </mat-tab-group>
+         </div>
+       </mat-tab>
+     </mat-tab-group>
   </ng-template>
 </app-authorized-view>

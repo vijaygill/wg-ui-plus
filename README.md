@@ -12,7 +12,6 @@ rules.
 
 ![VPN Layout showing peer, peer-group, and target relationships](./images/wg-ui-plus-vpn-layout.png)
 
-
 ## Why this project?
 
 WireGuard UI Plus is designed for home and small-network VPNs where different

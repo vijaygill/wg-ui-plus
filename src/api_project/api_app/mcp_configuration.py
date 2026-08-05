@@ -7,7 +7,8 @@ from django.core.exceptions import ImproperlyConfigured
 from .models import ServerConfiguration
 
 logger = logging.getLogger(__name__)
-MCP_SERVER_ENABLED_ENV = "MCP_SERVER_ENABLED"
+MCP_SERVER_ENABLED_ENV = "WG_MCP_SERVER_ENABLED"
+ALLOW_CHECK_UPDATES_ENV = "WG_ALLOW_CHECK_UPDATES"
 TRUE_VALUES = {"true", "1", "yes", "y", "on"}
 FALSE_VALUES = {"false", "0", "no", "n", "off"}
 MCP_SERVER_NAME = "WireGuard UI Plus MCP Server"
@@ -21,6 +22,17 @@ def parse_mcp_enabled(value):
         return False
     raise ImproperlyConfigured(
         f"{MCP_SERVER_ENABLED_ENV} must be a boolean (true/false, 1/0, yes/no)."
+    )
+
+
+def parse_boolean_environment_value(value, environment_name):
+    normalized = str(value).strip().lower()
+    if normalized in TRUE_VALUES:
+        return True
+    if normalized in FALSE_VALUES:
+        return False
+    raise ImproperlyConfigured(
+        f"{environment_name} must be a boolean (true/false, 1/0, yes/no)."
     )
 
 
@@ -46,6 +58,19 @@ class MCPConfigurationService:
         if MCP_SERVER_ENABLED_ENV not in os.environ:
             return None
         return parse_mcp_enabled(os.environ[MCP_SERVER_ENABLED_ENV])
+
+    @classmethod
+    def allow_check_updates_environment_value(cls):
+        if ALLOW_CHECK_UPDATES_ENV not in os.environ:
+            return None
+        return parse_boolean_environment_value(
+            os.environ[ALLOW_CHECK_UPDATES_ENV], ALLOW_CHECK_UPDATES_ENV
+        )
+
+    @classmethod
+    def allow_check_updates(cls, configuration):
+        environment_value = cls.allow_check_updates_environment_value()
+        return configuration.allow_check_updates if environment_value is None else environment_value
 
     @classmethod
     def is_enabled(cls):

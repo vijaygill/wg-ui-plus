@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from .common import PEER_GROUP_EVERYONE_NAME
 from .models import Peer, PeerGroup, ServerConfiguration, Target
+from .mcp_configuration import MCPConfigurationService
 from .wireguardhelper import WireGuardHelper
 
 logger = logging.getLogger(__name__)
@@ -147,11 +148,15 @@ class TargetSerializer(serializers.ModelSerializer):
 
 class ServerConfigurationSerializer(serializers.ModelSerializer):
     environment_overrides = serializers.SerializerMethodField()
+    effective_allow_check_updates = serializers.SerializerMethodField()
 
     class Meta:
         model = ServerConfiguration
         exclude = ("mcp_token",)
         depth = 1
+
+    def get_effective_allow_check_updates(self, instance):
+        return MCPConfigurationService.allow_check_updates(instance)
 
     def get_environment_overrides(self, instance):
         environment_variables = {
@@ -162,10 +167,11 @@ class ServerConfigurationSerializer(serializers.ModelSerializer):
             "port_external": "WG_PORT_EXTERNAL",
             "port_internal": "WG_PORT_INTERNAL",
             "strict_allowed_ips_in_peer_config": "WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG",
+            "allow_check_updates": "WG_ALLOW_CHECK_UPDATES",
         }
         overrides = {}
         for field, variable in environment_variables.items():
-            if field == "strict_allowed_ips_in_peer_config":
+            if field in {"strict_allowed_ips_in_peer_config", "allow_check_updates"}:
                 is_set = variable in os.environ
             else:
                 is_set = bool(os.environ.get(variable))
