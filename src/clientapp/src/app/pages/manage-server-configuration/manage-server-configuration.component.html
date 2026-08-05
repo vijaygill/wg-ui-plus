@@ -119,11 +119,6 @@
                 @if (mcpLoadError) {
                   <div class="form-span editor-message">{{mcpLoadError}}</div>
                 }
-                @if (mcpConfiguration.environment_override) {
-                  <div class="form-span editor-message">
-                    WG_MCP_SERVER_ENABLED overrides the database setting. The effective state is {{mcpConfiguration.effective_enabled ? 'enabled' : 'disabled'}}.
-                  </div>
-                }
                 <mat-form-field class="form-span">
                   <mat-label>MCP Token</mat-label>
                    <input #mcpTokenInput matInput readonly [value]="mcpConfiguration.mcp_token ? (mcpTokenVisible ? revealedMcpToken : '*****') : 'Not generated'"
