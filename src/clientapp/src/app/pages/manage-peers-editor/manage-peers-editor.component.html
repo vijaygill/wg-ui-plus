@@ -1,92 +1,103 @@
-<div class="editor-layout">
-  <div class="editor-form form-grid">
-    <mat-form-field>
-      <mat-label>Name</mat-label>
-      <input matInput id="peerName" [(ngModel)]="editItem.name"
-        matTooltip="Name of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
-        matTooltipPosition="above" autofocus />
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Description</mat-label>
-      <input matInput id="peerDescription" [(ngModel)]="editItem.description"
-        matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
-        matTooltipPosition="above" />
-    </mat-form-field>
-    <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
-    </app-validation-errors-display>
-    <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
-    </app-validation-errors-display>
-    @if (editItem.ip_address) {
+<mat-tab-group>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon aria-hidden="true">vpn_key</mat-icon>
+      <span>Peer Configuration</span>
+    </ng-template>
+    <div class="form-grid">
       <mat-form-field>
-        <mat-label>IP Address</mat-label>
-        <input matInput id="peerIPAddress" [(ngModel)]="editItem.ip_address"
-          matTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
-          matTooltipPosition="above" matTooltipShowDelay="500" [readonly]="true" [disabled]="true" />
+        <mat-label>Name</mat-label>
+        <input matInput id="peerName" [(ngModel)]="editItem.name"
+          matTooltip="Name of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
+          matTooltipPosition="above" autofocus />
       </mat-form-field>
-    }
-    <mat-form-field>
-      <mat-label>e-Mail Address</mat-label>
-      <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
-        matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
-        matTooltipPosition="above" matTooltipShowDelay="500" />
-    </mat-form-field>
-    <div class="form-span editor-row">
-      <mat-checkbox id="peerDisabled" [(ngModel)]="editItem.disabled">Disabled</mat-checkbox>
-    </div>
-    <div class="form-span editor-picklist">
-      <label class="editor-label" for="peerGroups">Peer-Groups</label>
-      <app-dual-list id="peerGroups" [source]="editItem.peer_groups_lookup"
-        [selected]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
-        matTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
-        matTooltipPosition="above" matTooltipShowDelay="500">
-        <ng-template #itemTemplate let-item>
-          <div class="dual-list-item-content">
-            <div class="dual-list-item-name">{{ item.name }}</div>
-            <small>
-              {{ item.description }}
-            </small>
-          </div>
-        </ng-template>
-      </app-dual-list>
-      <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+      <mat-form-field>
+        <mat-label>Description</mat-label>
+        <input matInput id="peerDescription" [(ngModel)]="editItem.description"
+          matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
+          matTooltipPosition="above" />
+      </mat-form-field>
+      <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
       </app-validation-errors-display>
-    </div>
-    <div class="form-span editor-actions">
-      <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
-        <mat-icon>check</mat-icon>
-        Ok
-      </button>
-      <button mat-stroked-button type="button" (click)="cancel()">
-        <mat-icon>close</mat-icon>
-        Cancel
-      </button>
-      @if (editItem.id) {
-        <button mat-flat-button color="warn" type="button" (click)="delete($event)">
-          <mat-icon>block</mat-icon>
-          Delete
+      <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
+      </app-validation-errors-display>
+      @if (editItem.ip_address) {
+        <mat-form-field>
+          <mat-label>IP Address</mat-label>
+          <input matInput id="peerIPAddress" [(ngModel)]="editItem.ip_address"
+            matTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
+            matTooltipPosition="above" matTooltipShowDelay="500" [readonly]="true" [disabled]="true" />
+        </mat-form-field>
+      }
+      <mat-form-field>
+        <mat-label>e-Mail Address</mat-label>
+        <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
+          matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
+          matTooltipPosition="above" matTooltipShowDelay="500" />
+      </mat-form-field>
+      <div class="form-span editor-row">
+        <mat-checkbox id="peerDisabled" [(ngModel)]="editItem.disabled">Disabled</mat-checkbox>
+      </div>
+      <div class="form-span editor-picklist">
+        <label class="editor-label" for="peerGroups">Peer-Groups</label>
+        <app-dual-list id="peerGroups" [source]="editItem.peer_groups_lookup"
+          [selected]="editItem.peer_groups" sourceHeader="Available" targetHeader="Selected"
+          matTooltip="This Peer will have access to all the Targets of selected Peer-Groups."
+          matTooltipPosition="above" matTooltipShowDelay="500">
+          <ng-template #itemTemplate let-item>
+            <div class="dual-list-item-content">
+              <div class="dual-list-item-name">{{ item.name }}</div>
+              <small>
+                {{ item.description }}
+              </small>
+            </div>
+          </ng-template>
+        </app-dual-list>
+        <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+        </app-validation-errors-display>
+      </div>
+      <div class="form-span editor-actions">
+        <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
+          <mat-icon>check</mat-icon>
+          Ok
         </button>
+        <button mat-stroked-button type="button" (click)="cancel()">
+          <mat-icon>close</mat-icon>
+          Cancel
+        </button>
+        @if (editItem.id) {
+          <button mat-flat-button color="warn" type="button" (click)="delete($event)">
+            <mat-icon>block</mat-icon>
+            Delete
+          </button>
+        }
+        @if (editItem.configuration) {
+          <button mat-flat-button type="button" (click)="downloadConfigFile($event)">
+            <mat-icon>download</mat-icon>
+            Download .conf file
+          </button>
+        }
+        @if (editItem.id && editItem.email_address) {
+          <button mat-stroked-button type="button" (click)="sendConfigurationByEmail($event)">
+            <mat-icon>mail</mat-icon>
+            Send Config By Email
+          </button>
+        }
+      </div>
+      <div class="form-span editor-validation">
+        <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
+      </div>
+    </div>
+  </mat-tab>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon aria-hidden="true">qr_code_2</mat-icon>
+      <span>QR Code</span>
+    </ng-template>
+    <div class="qr-code-panel">
+      @if (editItem.configuration) {
+        <img [src]="getQrCode()" alt="Peer configuration QR code" />
       }
     </div>
-    <div class="form-span editor-validation">
-      <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
-    </div>
-  </div>
-
-  <div class="side-column">
-    @if (editItem.configuration) {
-      <img width="180px" [src]="getQrCode()" />
-    }
-    @if (editItem.configuration) {
-      <button mat-flat-button type="button" (click)="downloadConfigFile($event)">
-        <mat-icon>download</mat-icon>
-        Download .conf file
-      </button>
-    }
-    @if (editItem.id && editItem.email_address) {
-      <button mat-stroked-button type="button" (click)="sendConfigurationByEmail($event)">
-        <mat-icon>mail</mat-icon>
-        Send Config By Email
-      </button>
-    }
-  </div>
-</div>
+  </mat-tab>
+</mat-tab-group>
