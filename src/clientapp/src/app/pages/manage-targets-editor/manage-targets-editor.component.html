@@ -1,11 +1,11 @@
 <div class="editor-form form-grid">
-  <mat-form-field>
+  <mat-form-field class="form-span">
     <mat-label>Name</mat-label>
     <input matInput id="targetName" [(ngModel)]="editItem.name" [disabled]="!editItem.allow_modify_self"
       matTooltip="Network or a host allowed to be accessed via VPN." matTooltipPosition="above" matTooltipShowDelay="500"
       autofocus />
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field class="form-span">
     <mat-label>Description</mat-label>
     <input matInput id="targetDescription" [(ngModel)]="editItem.description"
       [disabled]="!editItem.allow_modify_self" matTooltip="Suitable description." matTooltipPosition="above" matTooltipShowDelay="500" />

@@ -5,13 +5,13 @@
       <span>Peer Configuration</span>
     </ng-template>
     <div class="form-grid">
-      <mat-form-field>
+      <mat-form-field class="form-span">
         <mat-label>Name</mat-label>
         <input matInput id="peerName" [(ngModel)]="editItem.name"
           matTooltip="Name of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
           matTooltipPosition="above" autofocus />
       </mat-form-field>
-      <mat-form-field>
+      <mat-form-field class="form-span">
         <mat-label>Description</mat-label>
         <input matInput id="peerDescription" [(ngModel)]="editItem.description"
           matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
@@ -21,20 +21,20 @@
       </app-validation-errors-display>
       <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
       </app-validation-errors-display>
+      <mat-form-field class="form-span">
+        <mat-label>e-Mail Address</mat-label>
+        <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
+          matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
+          matTooltipPosition="above" matTooltipShowDelay="500" />
+      </mat-form-field>
       @if (editItem.ip_address) {
-        <mat-form-field>
+        <mat-form-field class="form-span">
           <mat-label>IP Address</mat-label>
           <input matInput id="peerIPAddress" [(ngModel)]="editItem.ip_address"
             matTooltip="IP Address assigned to this Peer by the server. Shown here for informational purposes only."
             matTooltipPosition="above" matTooltipShowDelay="500" [readonly]="true" [disabled]="true" />
         </mat-form-field>
       }
-      <mat-form-field>
-        <mat-label>e-Mail Address</mat-label>
-        <input matInput id="peerEmailAddress" [(ngModel)]="editItem.email_address"
-          matTooltip="e-Mail Address for sending VPN/Tunnel configuration."
-          matTooltipPosition="above" matTooltipShowDelay="500" />
-      </mat-form-field>
       <div class="form-span editor-row">
         <mat-checkbox id="peerDisabled" [(ngModel)]="editItem.disabled">Disabled</mat-checkbox>
       </div>

@@ -1,11 +1,11 @@
 <div class="editor-form form-grid">
-  <mat-form-field>
+  <mat-form-field class="form-span">
     <mat-label>Name</mat-label>
     <input matInput id="peerGroupName" [(ngModel)]="editItem.name"
       [disabled]="!editItem.allow_modify_self" matTooltip="Name of the Peer-Group." matTooltipShowDelay="500"
       matTooltipPosition="above" autofocus />
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field class="form-span">
     <mat-label>Description</mat-label>
     <input matInput id="peerGroupDescription" [(ngModel)]="editItem.description"
       [disabled]="!editItem.allow_modify_self" matTooltip="Some helpful description." matTooltipShowDelay="500"
