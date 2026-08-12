@@ -6,7 +6,7 @@ import {
   HttpInterceptor,
   HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, catchError, tap, throwError } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { WebapiService } from './services/webapi.service';
 import { ServerStatus } from './webapi.entities';
 
@@ -40,6 +40,12 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
     return next.handle(request)
       .pipe(
         catchError((error: HttpErrorResponse) => {
+          // Email delivery has its own safe, categorized UI path. Do not promote
+          // its response into the persistent server-status banner or rewrite it.
+          if (this.isPeerEmailRequest(request)) {
+            return throwError(() => error);
+          }
+
           let message: string;
 
           if (error.status === 0) {
@@ -63,6 +69,15 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
           return throwError(() => new Error(message));
         })
       );
+  }
+
+  private isPeerEmailRequest(request: HttpRequest<unknown>): boolean {
+    const urlWithoutQuery = request.url.split(/[?#]/, 1)[0];
+    try {
+      return new URL(urlWithoutQuery, 'http://localhost').pathname === '/api/v1/data/peer/send_peer_email';
+    } catch {
+      return false;
+    }
   }
 }
 

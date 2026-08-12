@@ -25,6 +25,8 @@ export interface AppNotification {
 interface ShowOptions {
     /** Allows focused user feedback to replace a persistent status notification. */
     replacePersistent?: boolean;
+    /** Overrides the default transient notification duration for focused feedback. */
+    durationMs?: number;
 }
 
 /**
@@ -39,6 +41,7 @@ interface ShowOptions {
 export class NotificationService {
 
     private readonly durationMs = 4000;
+    private readonly emailFailureDurationMs = 15000;
     private readonly current$ = new BehaviorSubject<AppNotification | null>(null);
     private current: AppNotification | null = null;
     private statusNotification: AppNotification | null = null;
@@ -74,7 +77,7 @@ export class NotificationService {
         this.emailFailureVisible = true;
         this.show(
             { type: 'error', message, dismissible: true, source: 'user' },
-            { replacePersistent: true },
+            { replacePersistent: true, durationMs: this.emailFailureDurationMs },
         );
     }
 
@@ -98,7 +101,8 @@ export class NotificationService {
         this.current = notification;
         this.current$.next(notification);
         if (!notification.persistent) {
-            this.autoDismissTimer = setTimeout(() => this.clear(), this.durationMs);
+            const duration = options.durationMs ?? this.durationMs;
+            this.autoDismissTimer = setTimeout(() => this.clear(), duration);
         }
     }
 

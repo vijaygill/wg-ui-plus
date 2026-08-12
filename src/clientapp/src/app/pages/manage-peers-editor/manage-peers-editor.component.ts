@@ -9,6 +9,15 @@ import { ValidationErrorsDisplayComponent } from '../../controls/validation-erro
 import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 import { NotificationService } from '../../services/notification.service';
 
+const SAFE_EMAIL_DELIVERY_MESSAGES = new Set([
+  'Email authentication failed. Check the SMTP username/app password, then check the server logs for more details.',
+  'The email server could not be reached. Check the SMTP host/port and network, then check the server logs for more details.',
+  'Email security negotiation failed. Check the SMTP TLS/SSL settings and certificate, then check the server logs for more details.',
+  'Email delivery failed. Check the SMTP settings, then check the server logs for more details.',
+]);
+const SAFE_EMAIL_DELIVERY_FALLBACK =
+  'The e-mail could not be delivered. Check the server logs for more details.';
+
 @Component({
   standalone: true,
   selector: 'app-manage-peers-editor',
@@ -176,9 +185,10 @@ export class ManagePeersEditorComponent {
             },
             error: error => {
               const response = error as HttpErrorResponse;
-              const message = response?.error?.message
-                || response?.error?.detail
-                || 'The e-mail could not be delivered.';
+              const backendMessage = response?.error?.message;
+              const message = typeof backendMessage === 'string' && SAFE_EMAIL_DELIVERY_MESSAGES.has(backendMessage)
+                ? backendMessage
+                : SAFE_EMAIL_DELIVERY_FALLBACK;
               this.notification.showEmailDeliveryFailure(message);
             },
           });

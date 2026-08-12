@@ -4,6 +4,9 @@ import base64
 import binascii
 import logging
 import os
+import smtplib
+import socket
+import ssl
 from dataclasses import dataclass
 
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -15,6 +18,19 @@ logger = logging.getLogger(__name__)
 TRUE_VALUES = {"true", "1", "yes", "on"}
 FALSE_VALUES = {"false", "0", "no", "off"}
 SMTP_REQUIRED = ("EMAIL_HOST", "EMAIL_HOST_USER", "EMAIL_HOST_PASSWORD", "EMAIL_PORT")
+
+EMAIL_DELIVERY_GENERIC_MESSAGE = (
+    "Email delivery failed. Check the SMTP settings, then check the server logs for more details."
+)
+EMAIL_DELIVERY_AUTHENTICATION_MESSAGE = (
+    "Email authentication failed. Check the SMTP username/app password, then check the server logs for more details."
+)
+EMAIL_DELIVERY_CONNECTION_MESSAGE = (
+    "The email server could not be reached. Check the SMTP host/port and network, then check the server logs for more details."
+)
+EMAIL_DELIVERY_SECURITY_MESSAGE = (
+    "Email security negotiation failed. Check the SMTP TLS/SSL settings and certificate, then check the server logs for more details."
+)
 
 
 class EmailConfigurationError(Exception):
@@ -118,6 +134,25 @@ def _validated_configuration():
         raise EmailConfigurationError("SMTP email is unavailable or incorrectly configured.") from exc
 
 
+def _delivery_failure_message(exc):
+    """Map SMTP failures to safe UI messages without including provider details."""
+    if isinstance(exc, smtplib.SMTPAuthenticationError):
+        return "authentication", EMAIL_DELIVERY_AUTHENTICATION_MESSAGE
+    if isinstance(exc, (ssl.SSLError, ssl.CertificateError)):
+        return "security_negotiation", EMAIL_DELIVERY_SECURITY_MESSAGE
+    if isinstance(exc, (
+        smtplib.SMTPConnectError,
+        smtplib.SMTPServerDisconnected,
+        socket.timeout,
+        socket.gaierror,
+        socket.herror,
+        TimeoutError,
+        ConnectionError,
+    )) or (isinstance(exc, OSError) and not isinstance(exc, smtplib.SMTPException)):
+        return "connection", EMAIL_DELIVERY_CONNECTION_MESSAGE
+    return "delivery", EMAIL_DELIVERY_GENERIC_MESSAGE
+
+
 def send_configuration_email(subject, body, recipient, qr, configuration):
     """Send validated text and PNG attachments, translating backend errors safely."""
     smtp = _validated_configuration()
@@ -136,8 +171,19 @@ def send_configuration_email(subject, body, recipient, qr, configuration):
         email.attach("tunnel.png", qr_bytes, "image/png")
         email.send(fail_silently=False)
     except Exception as exc:
-        logger.exception("Peer configuration email delivery failed", extra={"smtp_host": smtp.host, "smtp_port": smtp.port})
-        raise EmailDeliveryError("The email could not be delivered.") from exc
+        category, message = _delivery_failure_message(exc)
+        # Expected delivery failures are chained for callers, but their traceback
+        # and exception text can contain provider responses. Log metadata only.
+        logger.error(
+            "Peer configuration email delivery failed",
+            extra={
+                "failure_category": category,
+                "exception_type": type(exc).__name__,
+                "smtp_host": smtp.host,
+                "smtp_port": smtp.port,
+            },
+        )
+        raise EmailDeliveryError(message) from exc
 
 
 def email_peer_configuration(peer):

@@ -1,6 +1,9 @@
 import base64
+import smtplib
+import socket
+import ssl
 from datetime import datetime, timezone
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
@@ -8,6 +11,11 @@ from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIClient
 
 from api_app.email_service import (
+    EMAIL_DELIVERY_AUTHENTICATION_MESSAGE,
+    EMAIL_DELIVERY_CONNECTION_MESSAGE,
+    EMAIL_DELIVERY_GENERIC_MESSAGE,
+    EMAIL_DELIVERY_SECURITY_MESSAGE,
+    EmailDeliveryError,
     EmailRecipientError,
     email_peer_configuration,
     get_email_status,
@@ -15,8 +23,14 @@ from api_app.email_service import (
     send_configuration_email,
     validate_recipient,
 )
-from api_app.mcp_tools import WireGuardMCPToolset
+from api_app.mcp_tools import MCPToolError, WireGuardMCPToolset
 from api_app.models import Peer, ServerConfiguration
+
+SMTP_ENVIRONMENT = {
+    "EMAIL_HOST": "smtp.gmail.com", "EMAIL_HOST_USER": "sender@gmail.com",
+    "EMAIL_HOST_PASSWORD": "secret", "EMAIL_PORT": "587",
+    "EMAIL_USE_TLS": "true", "EMAIL_USE_SSL": "false",
+}
 
 
 class SMTPConfigurationTests(SimpleTestCase):
@@ -88,11 +102,7 @@ class SMTPConfigurationTests(SimpleTestCase):
 
 
 class EmailDeliveryTests(SimpleTestCase):
-    @patch.dict("os.environ", {
-        "EMAIL_HOST": "smtp.gmail.com", "EMAIL_HOST_USER": "sender@gmail.com",
-        "EMAIL_HOST_PASSWORD": "secret", "EMAIL_PORT": "587",
-        "EMAIL_USE_TLS": "true", "EMAIL_USE_SSL": "false",
-    }, clear=True)
+    @patch.dict("os.environ", SMTP_ENVIRONMENT, clear=True)
     @patch("api_app.email_service.EmailMessage")
     def test_sender_attaches_configuration_and_qr(self, email_class):
         message = email_class.return_value
@@ -105,6 +115,46 @@ class EmailDeliveryTests(SimpleTestCase):
             ("tunnel.png", b"exact-png-content", "image/png"),
         ], [call.args for call in message.attach.call_args_list])
         message.send.assert_called_once_with(fail_silently=False)
+
+    def assert_safe_delivery_failure(self, backend_error, expected_message):
+        with self.assertLogs("api_app.email_service", level="ERROR") as logs:
+            with patch.dict("os.environ", SMTP_ENVIRONMENT, clear=True), \
+                    patch("api_app.email_service.EmailMessage") as email_class:
+                email_class.return_value.send.side_effect = backend_error
+                with self.assertRaises(EmailDeliveryError) as raised:
+                    send_configuration_email(
+                        "subject", "body", "peer@gmail.com",
+                        base64.b64encode(b"png"), "configuration",
+                    )
+        self.assertEqual(expected_message, str(raised.exception))
+        self.assertIs(backend_error, raised.exception.__cause__)
+        self.assertNotIn(str(backend_error), str(raised.exception))
+        self.assertNotIn(str(backend_error), logs.output[0])
+        self.assertEqual(type(backend_error).__name__, logs.records[0].exception_type)
+
+    def test_authentication_failure_has_safe_categorized_message(self):
+        self.assert_safe_delivery_failure(
+            smtplib.SMTPAuthenticationError(535, b"provider secret response"),
+            EMAIL_DELIVERY_AUTHENTICATION_MESSAGE,
+        )
+
+    def test_connection_failure_has_safe_categorized_message(self):
+        self.assert_safe_delivery_failure(
+            smtplib.SMTPConnectError(421, b"provider connection response"),
+            EMAIL_DELIVERY_CONNECTION_MESSAGE,
+        )
+
+    def test_network_timeout_has_connection_message(self):
+        self.assert_safe_delivery_failure(socket.timeout("private network detail"), EMAIL_DELIVERY_CONNECTION_MESSAGE)
+
+    def test_tls_failure_has_safe_security_message(self):
+        self.assert_safe_delivery_failure(ssl.SSLError("certificate provider detail"), EMAIL_DELIVERY_SECURITY_MESSAGE)
+
+    def test_generic_smtp_failure_has_safe_message(self):
+        self.assert_safe_delivery_failure(
+            smtplib.SMTPException("raw provider response"),
+            EMAIL_DELIVERY_GENERIC_MESSAGE,
+        )
 
 
 class PeerEmailEndpointTests(TestCase):
@@ -160,6 +210,14 @@ class PeerEmailEndpointTests(TestCase):
                                     {"peer_id": self.peer.id}, format="json")
         self.assertEqual(403, response.status_code)
 
+    @patch("api_app.views.email_peer_configuration")
+    def test_endpoint_returns_safe_classified_delivery_message(self, send):
+        send.side_effect = EmailDeliveryError(EMAIL_DELIVERY_AUTHENTICATION_MESSAGE)
+        response = self.client.post("/api/v1/data/peer/send_peer_email",
+                                    {"peer_id": self.peer.id}, format="json")
+        self.assertEqual(502, response.status_code)
+        self.assertEqual(EMAIL_DELIVERY_AUTHENTICATION_MESSAGE, response.data["message"])
+
     @patch("api_app.email_service.send_configuration_email")
     @patch("api_app.serializers.PeerWithQrSerializer")
     @patch.dict("os.environ", {
@@ -185,6 +243,14 @@ class PeerEmailEndpointTests(TestCase):
 
 
 class MCPEmailTests(PeerEmailEndpointTests):
+    @patch("api_app.mcp_tools.email_peer_configuration")
+    def test_mcp_delivery_failure_returns_safe_categorized_message(self, send):
+        send.side_effect = EmailDeliveryError(EMAIL_DELIVERY_AUTHENTICATION_MESSAGE)
+        with self.assertRaises(MCPToolError) as raised:
+            WireGuardMCPToolset().send_peer_configuration_email(self.peer.id)
+        self.assertEqual(EMAIL_DELIVERY_AUTHENTICATION_MESSAGE, str(raised.exception))
+        self.assertNotIn("provider authentication response", str(raised.exception))
+
     @patch("api_app.mcp_tools.email_peer_configuration")
     def test_mcp_uses_saved_peer_and_rejects_override_argument(self, send):
         result = WireGuardMCPToolset().send_peer_configuration_email(self.peer.id)
