@@ -36,8 +36,8 @@ RUN apt-get update -y \
         python3-pytest \
         git \
         sqlite3 wireguard wireguard-tools \
-        net-tools iproute2 iptables libcap2-bin libcap2 \
-        iptraf-ng procps tcpdump \
+        iproute2 iptables libcap2-bin libcap2 \
+        iptraf-ng net-tools procps tcpdump iputils-ping \
         sudo conntrack tzdata \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
