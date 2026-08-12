@@ -179,7 +179,7 @@ export class ManagePeersEditorComponent {
               const message = response?.error?.message
                 || response?.error?.detail
                 || 'The e-mail could not be delivered.';
-              this.notification.error(message);
+              this.notification.showEmailDeliveryFailure(message);
             },
           });
         }

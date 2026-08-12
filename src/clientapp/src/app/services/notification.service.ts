@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export type NotificationType = 'success' | 'error' | 'warn' | 'info';
+export type NotificationSource = 'status' | 'user';
 
 export interface NotificationAction {
     label: string;
@@ -15,8 +16,15 @@ export interface AppNotification {
     action?: NotificationAction;
     /** Persistent messages stay until cleared/replaced; transient ones auto-dismiss. */
     persistent?: boolean;
-    /** If true, a dismiss (X) button is shown. No current notification sets this. */
+    /** If true, a dismiss (X) button is shown. */
     dismissible?: boolean;
+    /** Identifies notifications owned by the server-status synchronizer. */
+    source?: NotificationSource;
+}
+
+interface ShowOptions {
+    /** Allows focused user feedback to replace a persistent status notification. */
+    replacePersistent?: boolean;
 }
 
 /**
@@ -33,6 +41,8 @@ export class NotificationService {
     private readonly durationMs = 4000;
     private readonly current$ = new BehaviorSubject<AppNotification | null>(null);
     private current: AppNotification | null = null;
+    private statusNotification: AppNotification | null = null;
+    private emailFailureVisible = false;
     private autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
 
     public readonly notification$: Observable<AppNotification | null> = this.current$.asObservable();
@@ -53,10 +63,35 @@ export class NotificationService {
         this.show({ type: 'info', message });
     }
 
-    public show(notification: AppNotification): void {
+    /**
+     * Shows an email failure even when a persistent status banner is active.
+     * The displaced status is retained and restored when this message ends.
+     */
+    public showEmailDeliveryFailure(message: string): void {
+        if (this.current?.persistent && this.current.source === 'status') {
+            this.statusNotification = this.current;
+        }
+        this.emailFailureVisible = true;
+        this.show(
+            { type: 'error', message, dismissible: true, source: 'user' },
+            { replacePersistent: true },
+        );
+    }
+
+    /** Shows or refreshes the latest notification owned by the status synchronizer. */
+    public showStatus(notification: AppNotification): void {
+        const statusNotification = { ...notification, source: 'status' as const };
+        this.statusNotification = statusNotification;
+        if (this.emailFailureVisible) {
+            return;
+        }
+        this.show(statusNotification);
+    }
+
+    public show(notification: AppNotification, options: ShowOptions = {}): void {
         // A transient (auto-dismissing) message must never replace a persistent
-        // one — important state stays visible until it is cleared or replaced.
-        if (this.current && this.current.persistent && !notification.persistent) {
+        // one unless the caller has explicitly opted into that focused behavior.
+        if (this.current && this.current.persistent && !notification.persistent && !options.replacePersistent) {
             return;
         }
         this.clearTimer();
@@ -67,8 +102,27 @@ export class NotificationService {
         }
     }
 
+    public isEmailDeliveryFailureVisible(): boolean {
+        return this.emailFailureVisible;
+    }
+
+    /** Clears a status banner without removing user feedback shown in its place. */
+    public clearStatus(): void {
+        this.statusNotification = null;
+        if (this.current?.source === 'status') {
+            this.clear();
+        }
+    }
+
     public clear(): void {
         this.clearTimer();
+        if (this.emailFailureVisible && this.current?.source === 'user') {
+            this.emailFailureVisible = false;
+            if (this.statusNotification) {
+                this.show(this.statusNotification);
+                return;
+            }
+        }
         this.current = null;
         this.current$.next(null);
     }
