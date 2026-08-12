@@ -24,6 +24,14 @@ associate targets with those groups.
 - Manage WireGuard clients (**peers**), peer groups, and resource **targets**.
 - Grant or revoke access through peer-group/target relationships.
 - Generate peer configurations, QR codes, `.conf` downloads, and optional e-mail.
+
+Peer configuration e-mail uses the address saved on the peer. The server generates
+the current WireGuard configuration and QR attachment; callers cannot supply a
+different recipient or attachment payload. For Gmail, use
+`EMAIL_HOST=smtp.gmail.com`, `EMAIL_HOST_USER`, an app password in
+`EMAIL_HOST_PASSWORD`, `EMAIL_PORT=587`, `EMAIL_USE_TLS=True`, and
+`EMAIL_USE_SSL=False`. An optional `EMAIL_DEFAULT_FROM_EMAIL` falls back to
+`EMAIL_HOST_USER`.
 - Configure full-tunnel or narrower relationship-based `AllowedIPs` behavior.
 - Apply generated WireGuard configuration and monitor peer status and iptables.
 - Visualize relationships in **VPN Layout**.

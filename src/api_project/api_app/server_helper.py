@@ -10,7 +10,8 @@ from api_app.wireguardhelper import WireGuardHelper
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .mcp_configuration import MCPConfigurationService
 
-from .common import CACHE_KEY_APP_LIVE_VERSION, CACHE_TTL, APP_URL, IS_EMAIL_ENABLED
+from .common import CACHE_KEY_APP_LIVE_VERSION, CACHE_TTL, APP_URL
+from .email_service import get_email_status
 
 
 def get_server_status():
@@ -72,7 +73,8 @@ def get_application_details():
 
     res["latest_live_version"] = latest_live_version
     res["allow_allow_check_updates"] = allow_check_updates
-    res["is_email_enabled"] = IS_EMAIL_ENABLED
+    res["email"] = get_email_status()
+    res["is_email_enabled"] = res["email"]["status"] == "configured"
     return res
 
 

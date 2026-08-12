@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from api_app.mcp_compat import rebuild_fastmcp_settings
+from api_app.email_service import parse_smtp_configuration
 
 
 rebuild_fastmcp_settings()
@@ -156,12 +157,14 @@ USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ.get("EMAIL_HOST", None)
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", None)
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", None)
-EMAIL_PORT = os.environ.get("EMAIL_PORT", None)
-EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL", None)
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", None)
+_SMTP_CONFIGURATION = parse_smtp_configuration(require_complete=False)
+EMAIL_HOST = _SMTP_CONFIGURATION.host if _SMTP_CONFIGURATION else ""
+EMAIL_HOST_USER = _SMTP_CONFIGURATION.username if _SMTP_CONFIGURATION else ""
+EMAIL_HOST_PASSWORD = _SMTP_CONFIGURATION.password if _SMTP_CONFIGURATION else ""
+EMAIL_PORT = _SMTP_CONFIGURATION.port if _SMTP_CONFIGURATION else 587
+EMAIL_USE_SSL = _SMTP_CONFIGURATION.use_ssl if _SMTP_CONFIGURATION else False
+EMAIL_USE_TLS = _SMTP_CONFIGURATION.use_tls if _SMTP_CONFIGURATION else False
+DEFAULT_FROM_EMAIL = _SMTP_CONFIGURATION.from_email if _SMTP_CONFIGURATION else EMAIL_HOST_USER
 
 
 LOGGING_DEFAULT_LEVEL = "WARN"

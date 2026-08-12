@@ -1,10 +1,5 @@
 """Shared orchestration for the HTTP views and MCP tools."""
 
-import base64
-
-from django.conf import settings
-from django.core.mail import EmailMessage
-
 from .models import Peer, PeerGroup, ServerConfiguration
 from .wireguardhelper import WireGuardHelper
 
@@ -41,16 +36,3 @@ def get_license():
     """Read the application license file."""
     with open("/app/LICENSE") as license_file:
         return {"license": license_file.read()}
-
-
-def send_configuration_email(subject, body, recipient, qr, configuration):
-    """Send a peer configuration and QR image as email attachments."""
-    email = EmailMessage(
-        subject=subject,
-        body=body,
-        from_email=settings.EMAIL_HOST_USER,
-        to=[recipient],
-    )
-    email.attach("tunnel.conf", configuration, "text/plain")
-    email.attach("tunnel.png", base64.b64decode(qr), "image/png")
-    email.send(fail_silently=False)

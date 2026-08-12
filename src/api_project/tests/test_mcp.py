@@ -11,17 +11,17 @@ from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIClient
 
-from .mcp_authentication import MCPTokenAuthentication
-from .mcp_configuration import (
+from api_app.mcp_authentication import MCPTokenAuthentication
+from api_app.mcp_configuration import (
     ALLOW_CHECK_UPDATES_ENV,
     MCPConfigurationService,
     MCPTokenService,
     parse_boolean_environment_value,
     parse_mcp_enabled,
 )
-from .mcp_tools import MCPToolError, WireGuardMCPToolset
-from .models import Peer, PeerGroup, ServerConfiguration, Target
-from .server_helper import get_application_details
+from api_app.mcp_tools import MCPToolError, WireGuardMCPToolset
+from api_app.models import Peer, PeerGroup, ServerConfiguration, Target
+from api_app.server_helper import get_application_details
 
 
 class MCPConfigurationParsingTests(SimpleTestCase):
@@ -194,14 +194,14 @@ class MCPAdministrationAndAuthenticationTests(MCPDatabaseAndStartupMixin, TestCa
 
     @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "false"}, clear=True)
     def test_server_configuration_metadata_reports_update_check_override(self):
-        from .serializers import ServerConfigurationSerializer
+        from api_app.serializers import ServerConfigurationSerializer
 
         data = ServerConfigurationSerializer(self.configuration).data
         self.assertEqual("WG_ALLOW_CHECK_UPDATES", data["environment_overrides"]["allow_check_updates"])
 
     @patch.dict(os.environ, {"WG_ALLOW_CHECK_UPDATES": "false"}, clear=True)
     def test_server_configuration_reports_effective_update_check_value_separately(self):
-        from .serializers import ServerConfigurationSerializer
+        from api_app.serializers import ServerConfigurationSerializer
 
         self.configuration.allow_check_updates = True
         self.configuration.save(update_fields=["allow_check_updates"])

@@ -33,6 +33,7 @@ RUN apt-get update -y \
         python3 \
         python3-pip \
         python-is-python3 \
+        python3-pytest \
         git \
         sqlite3 wireguard wireguard-tools \
         net-tools iproute2 iptables libcap2-bin libcap2 \
@@ -45,7 +46,7 @@ RUN npm update -g npm \
     && npm install -g @angular/cli
 
 RUN pip install --break-system-packages --no-cache-dir --upgrade \
-        qrcode[pil] colorlog "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
+        qrcode[pil] colorlog pytest-django "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields requests cryptography \
         django-mcp-server==0.5.6 mcp==1.9.4
 

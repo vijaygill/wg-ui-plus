@@ -18,7 +18,7 @@ export interface ValidationErrorMessage {
 })
 export class ValidationErrorsDisplayComponent {
   @Input() field!: string;
-  @Input() validationResult!: ServerValidationError;
+  @Input() validationResult?: ServerValidationError;
 
   errorList(): ValidationErrorMessage[] {
     let res: ValidationErrorMessage [] = [];

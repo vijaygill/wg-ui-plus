@@ -147,6 +147,7 @@ export interface ApplicationDetails {
     current_version: string;
     allow_allow_check_updates: boolean;
     is_email_enabled: boolean;
+    email?: { status: 'configured' | 'invalid' | 'unavailable'; message: string };
 }
 
 export interface IpTablesLog {

@@ -75,7 +75,7 @@ The script runs pytest doctests, writes JUnit output under `junit/`, and emits
 coverage reports. Focused tests can be run with pytest, for example:
 
 ```bash
-pytest api_app/test_mcp.py
+pytest tests/test_mcp.py
 ```
 
 Useful Django commands include:
