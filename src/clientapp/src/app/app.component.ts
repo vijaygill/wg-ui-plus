@@ -217,22 +217,24 @@ export class AppComponent implements OnInit, OnDestroy {
   /** Keeps the unified banner in sync with the server status (offline / regenerate). */
   private syncStatusBanner(): void {
     const key = this.computeStatusBannerKey();
-    if (key === this.lastStatusBannerKey) {
+    // Refresh the retained status notification while an email failure is
+    // displayed so dismissal restores the latest status, not stale content.
+    if (key === this.lastStatusBannerKey && !this.notification.isEmailDeliveryFailureVisible()) {
       return;
     }
     this.lastStatusBannerKey = key;
     if (key === null) {
-      this.notification.clear();
+      this.notification.clearStatus();
       return;
     }
     if (key === 'error') {
-      this.notification.show({
+      this.notification.showStatus({
         type: 'error',
         message: this.serverStatus?.message || 'Connection to the server was lost.',
         persistent: true,
       });
     } else if (key === 'warn:regenerate') {
-      this.notification.show({
+      this.notification.showStatus({
         type: 'warn',
         message: 'This will regenerate Server Configuration files and restart WireGuard.',
         action: { label: 'Apply Changes', callback: () => this.applyConfiguration() },
