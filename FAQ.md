@@ -139,10 +139,15 @@ OAuth2, shell access, and arbitrary filesystem tools are not provided.
 
 ## Can the application e-mail peer configurations?
 
-Yes, when SMTP is configured with `EMAIL_HOST`, `EMAIL_HOST_USER`,
-`EMAIL_HOST_PASSWORD`, `EMAIL_PORT`, and `EMAIL_USE_SSL` or `EMAIL_USE_TLS`. Add an
-e-mail address to a peer and use **Send Config By Email**. Use an app password
-where the provider requires one, and keep SMTP credentials out of source control.
+Yes. Configure all SMTP settings and exactly one transport mode. A Gmail example is
+`EMAIL_HOST=smtp.gmail.com`, `EMAIL_HOST_USER=your-account@gmail.com`,
+`EMAIL_HOST_PASSWORD=your-Gmail-app-password`, `EMAIL_PORT=587`,
+`EMAIL_USE_TLS=True`, and `EMAIL_USE_SSL=False`. The optional
+`EMAIL_DEFAULT_FROM_EMAIL` defaults to `EMAIL_HOST_USER`. Add an e-mail address to
+a peer and use **Send Config By Email**. The server loads the saved peer address
+and generates the current configuration and QR image itself; request clients cannot
+override the recipient or attachments. Invalid or incomplete SMTP settings are
+reported as unavailable.
 
 ## Does it check for updates?
 

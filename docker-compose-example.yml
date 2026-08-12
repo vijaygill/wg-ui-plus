@@ -27,12 +27,14 @@ services:
           - WG_UPSTREAM_DNS_SERVER=192.168.0.5 # change this to suit your setup
           - SECURE_REFERRER_POLICY=strict-origin
           - CORS_ALLOW_ALL_ORIGINS=true
-            #- EMAIL_HOST=
-            #- EMAIL_HOST_USER=
-            #- EMAIL_HOST_PASSWORD=
+            # Gmail SMTP: use an app password, not the account password.
+            #- EMAIL_HOST=smtp.gmail.com
+            #- EMAIL_HOST_USER=your-account@gmail.com
+            #- EMAIL_HOST_PASSWORD=your-gmail-app-password
             #- EMAIL_PORT=587
             #- EMAIL_USE_TLS=True
             #- EMAIL_USE_SSL=False
+            #- EMAIL_DEFAULT_FROM_EMAIL=your-account@gmail.com
       volumes:
           - /etc/localtime:/etc/localtime:ro
           - /etc/timezone:/etc/timezone:ro
@@ -51,4 +53,3 @@ networks:
     net-wireguard:
         name: net-wireguard
         driver: bridge
-

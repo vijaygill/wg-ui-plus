@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, ReplaySubject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators'
 import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
@@ -28,7 +28,8 @@ export class WebapiService {
     private urlMcpConfiguration = '/api/v1/control/mcp/configuration';
     private urlMcpToken = '/api/v1/control/mcp/token';
 
-    serverStatus: Subject<ServerStatus> = new Subject<ServerStatus>();
+    /** Replays the latest status so late subscribers do not miss capability data. */
+    serverStatus: ReplaySubject<ServerStatus> = new ReplaySubject<ServerStatus>(1);
 
     constructor(private http: HttpClient) { }
 
@@ -96,8 +97,8 @@ export class WebapiService {
         return res;
     }
 
-    sendConfigurationByEmail(item: Peer): Observable<Peer> {
-        var res = this.http.post<Peer>(this.urlPeerSendEmail, item);
+    sendConfigurationByEmail(item: Peer): Observable<any> {
+        var res = this.http.post<any>(this.urlPeerSendEmail, { peer_id: item.id });
         res = res.pipe(tap(() => {
             this.checkServerStatus();
         }));

@@ -1,12 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
-import { Peer, PeerGroup, ServerValidationError, } from '../../webapi.entities';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Peer, ServerValidationError } from '../../webapi.entities';
 import { WebapiService } from '../../services/webapi.service';
 import { AppSharedModule } from '../../app-shared.module';
 
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrorsDisplayComponent } from '../../controls/validation-errors-display/validation-errors-display.component';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 import { NotificationService } from '../../services/notification.service';
 
@@ -42,14 +41,20 @@ export class ManagePeersEditorComponent {
   /** Serialized snapshot of the editable fields as originally loaded. */
   private snapshot = '';
 
-  validationResult!: ServerValidationError;
+  validationResult?: ServerValidationError;
+  emailAvailable = false;
 
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
     private confirmationDialogService: ConfirmationDialogService) {
-
+    this.webapiService.serverStatus.subscribe(status => {
+      const emailStatus = status.application_details?.email;
+      this.emailAvailable = emailStatus
+        ? emailStatus.status === 'configured'
+        : status.application_details?.is_email_enabled === true;
+    });
   }
 
   getLookupData() {
@@ -161,29 +166,24 @@ export class ManagePeersEditorComponent {
   }
 
   sendConfigurationByEmail(event: Event): void {
-
-    this.confirmationDialogService.confirm('Confirm', 'Are you sure you want to send email to ' + this.editItem.name + '?')
+    this.validationResult = undefined;
+    this.confirmationDialogService.confirm('Confirm', 'Send the current configuration to ' + this.editItem.email_address + '?')
       .subscribe(dialogResult => {
         if (dialogResult) {
-
           this.webapiService.sendConfigurationByEmail(this.peer).subscribe({
             next: data => {
-              this.notification.success('e-Mail sent successully.');
+              this.notification.success('E-mail sent successfully.');
             },
             error: error => {
-              let response = error as HttpErrorResponse;
-              if (response) {
-                this.validationResult = response.error as ServerValidationError;
-              }
-            },
-            complete: () => {
-
+              const response = error as HttpErrorResponse;
+              const message = response?.error?.message
+                || response?.error?.detail
+                || 'The e-mail could not be delivered.';
+              this.notification.error(message);
             },
           });
-
         }
       });
-
   }
 
 }

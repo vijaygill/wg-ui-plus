@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from mcp_server import MCPToolset
 
-from .common import APP_NAME, IS_EMAIL_ENABLED
+from .common import APP_NAME
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .serializers import (
     PeerGroupSerializer,
@@ -21,7 +21,10 @@ from .shared_functions import (
     get_license as read_license,
     get_wireguard_configuration,
     restart_wireguard,
-    send_configuration_email,
+)
+from .email_service import (
+    EmailConfigurationError, EmailDeliveryError, EmailRecipientError,
+    email_peer_configuration,
 )
 
 
@@ -427,32 +430,21 @@ class WireGuardMCPToolset(MCPToolset):
         """
         return get_application_details()
 
-    def send_peer_configuration_email(self, peer_id: int, email_address: str = ""):
+    def send_peer_configuration_email(self, peer_id: int):
         """Email a peer's WireGuard configuration and QR image.
 
-        ``peer_id`` selects the peer; optional ``email_address`` overrides the
-        peer's stored address, otherwise that stored address is used. Returns
+        ``peer_id`` selects the peer and its stored email address is always used. Returns
         ``{"message": "Email sent successfully!"}`` after sending. This sensitive
         operation attaches the peer configuration (including credentials) and a
         QR PNG to an email, so verify the recipient and protect the message. It
         requires email to be enabled, reads the database, and performs an outbound
         email/network side effect; it does not modify the database or WireGuard.
         """
-        if not IS_EMAIL_ENABLED:
-            raise MCPToolError("Email is not enabled on the server.")
         peer = self._get(Peer, peer_id, "Peer")
-        configuration = PeerWithQrSerializer(peer).data
-        recipient = email_address or peer.email_address
-        if not recipient:
-            raise MCPToolError("An email address is required.")
         try:
-            send_configuration_email(
-                f"Tunnel configuration sent from {APP_NAME} for {peer.name}",
-                f"The WireGuard configuration for {peer.name} is attached. Keep it safe.",
-                recipient,
-                configuration["qr"],
-                configuration["configuration"],
-            )
+            email_peer_configuration(peer)
+        except (EmailRecipientError, EmailConfigurationError, EmailDeliveryError) as exc:
+            raise MCPToolError(str(exc)) from exc
         except Exception as exc:
-            raise MCPToolError("Sending peer configuration email failed.") from exc
+            raise MCPToolError("The email could not be delivered.") from exc
         return {"message": "Email sent successfully!"}

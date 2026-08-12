@@ -78,7 +78,8 @@
           </button>
         }
         @if (editItem.id && editItem.email_address) {
-          <button mat-stroked-button type="button" (click)="sendConfigurationByEmail($event)">
+          <button mat-stroked-button type="button" (click)="sendConfigurationByEmail($event)" [disabled]="!emailAvailable"
+            [matTooltip]="emailAvailable ? 'Send to the saved peer e-mail address.' : 'SMTP e-mail is unavailable.'">
             <mat-icon>mail</mat-icon>
             Send Config By Email
           </button>

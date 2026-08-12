@@ -120,7 +120,7 @@ without separately addressing that configuration:
 pytest --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 ```
 
-The main checked-in backend tests are `api_app/test_mcp.py`; there is also a
+The main checked-in backend tests are `tests/test_mcp.py`; there is also a
 minimal `src/test_sample-tests.py`. Run focused tests with pytest when useful.
 Use Django management commands from `/app/api_project`, for example:
 

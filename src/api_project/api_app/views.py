@@ -4,6 +4,7 @@ from django.contrib.auth.models import auth
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
+from rest_framework import serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import (
     api_view,
@@ -15,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION, IS_EMAIL_ENABLED
+from .common import APP_NAME, CACHE_KEY_APP_LIVE_VERSION
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .serializers import (
@@ -36,7 +37,10 @@ from .shared_functions import (
     get_license as read_license,
     get_wireguard_configuration,
     restart_wireguard,
-    send_configuration_email,
+)
+from .email_service import (
+    EmailConfigurationError, EmailDeliveryError, EmailRecipientError,
+    email_peer_configuration,
 )
 
 
@@ -70,6 +74,15 @@ class TargetViewSet(viewsets.ModelViewSet):
     queryset = Target.objects.all()
     serializer_class = TargetSerializer
     permission_classes = (IsAuthenticated,)
+
+
+class PeerEmailRequestSerializer(serializers.Serializer):
+    peer_id = serializers.IntegerField(min_value=1)
+
+    def to_internal_value(self, data):
+        if not hasattr(data, "keys") or set(data.keys()) != {"peer_id"}:
+            raise serializers.ValidationError({"detail": "Only peer_id is accepted."})
+        return super().to_internal_value(data)
 
 
 class ServerConfigurationViewSet(viewsets.ModelViewSet, UpdateModelMixin):
@@ -283,47 +296,22 @@ def get_server_status(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def send_peer_email(request):
+    request_serializer = PeerEmailRequestSerializer(data=request.data)
+    if not request_serializer.is_valid():
+        return Response(request_serializer.errors, status=400)
     try:
-        peer_name = request.data["name"]
-        tunnel_qr_file = "tunnel.png"
-        tunnel_conf_file = "tunnel.conf"
-        subject = f"Tunnel configuration sent from wg-ui-plus for {peer_name}"
-        body = f"""
-The attached files are sent from {APP_NAME} for the peer {peer_name}.
-Keep them safe.
-
-Notify the administrator if you think the files have been compromised.
-You will get new files generated and sent to you.
-
-Do not share these files with anyone.
-
-Do not use the files on multiple devices.
-Get separate set of files generated for each device.
-
-How to use {tunnel_qr_file}:
-    This file is useful for the devices which can scan QR code.
-    Install WireGuard client on the desired device.
-    While adding a new tunnel, if the client allows scanning QR code,
-    just point the camera to the attached QR image.
-
-How to use {tunnel_conf_file}:
-    This is used on the devices where the optiuon of scanning QR code is not available.
-    Install WireGuard client on the desired device.
-    While adding a new tunnel, add the tunnel by importing the file '{tunnel_conf_file}'.
-
-"""
-        if not IS_EMAIL_ENABLED:
-            raise Exception(("e-Mail is not enabled on the server."))
-
-        recipient_list = [request.data["email_address"]]
-        send_configuration_email(
-            subject,
-            body,
-            recipient_list[0],
-            request.data["qr"],
-            request.data["configuration"],
-        )
+        peer = Peer.objects.get(pk=request_serializer.validated_data["peer_id"])
+        email_peer_configuration(peer)
         return Response({"message": "Email sent successfully!"})
-    except Exception as e:
-        message = e.args[0] if e.args else ""
-        return Response({"message": "Sending Email failed." + message}, status=500)
+    except Peer.DoesNotExist:
+        return Response({"message": "Peer was not found."}, status=404)
+    except EmailRecipientError as exc:
+        return Response({"message": str(exc)}, status=400)
+    except EmailConfigurationError as exc:
+        return Response({"message": str(exc)}, status=503)
+    except EmailDeliveryError as exc:
+        return Response({"message": str(exc)}, status=502)
+    except Exception:
+        from logging import getLogger
+        getLogger(APP_NAME).exception("Unexpected peer email failure")
+        return Response({"message": "The email could not be delivered."}, status=500)
