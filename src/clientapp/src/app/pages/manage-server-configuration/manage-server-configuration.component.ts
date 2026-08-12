@@ -39,6 +39,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   refreshDataSubscription !: Subscription;
   mcpConfigurationSubscription !: Subscription;
   mcpActionSubscription !: Subscription;
+  testEmailSubscription !: Subscription;
   mcpConfirmationSubscription !: Subscription;
   saveConfigurationSubscription !: Subscription;
   changePasswordSubscription !: Subscription;
@@ -141,6 +142,9 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     if (this.mcpActionSubscription) {
       this.mcpActionSubscription.unsubscribe();
     }
+    if (this.testEmailSubscription) {
+      this.testEmailSubscription.unsubscribe();
+    }
     if (this.mcpConfirmationSubscription) {
       this.mcpConfirmationSubscription.unsubscribe();
     }
@@ -224,6 +228,28 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   cancel() {
     this.refreshData();
     this.notification.warn('Server configuration reloaded from database.');
+  }
+
+  get emailStatus() {
+    return this.serverStatus?.application_details?.email;
+  }
+
+  sendTestEmail(): void {
+    this.testEmailSubscription = this.webapiService.sendTestEmail().subscribe({
+      next: () => this.notification.success('Test e-mail sent successfully.'),
+      error: error => this.notification.showEmailDeliveryFailure(this.safeEmailMessage(error?.error?.message)),
+    });
+  }
+
+  private safeEmailMessage(message: unknown): string {
+    const safeMessages = new Set([
+      'Email authentication failed. Check the SMTP username/app password, then check the server logs for more details.',
+      'The email server could not be reached. Check the SMTP host/port and network, then check the server logs for more details.',
+      'Email security negotiation failed. Check the SMTP TLS/SSL settings and certificate, then check the server logs for more details.',
+      'Email delivery failed. Check the SMTP settings, then check the server logs for more details.',
+    ]);
+    return typeof message === 'string' && safeMessages.has(message)
+      ? message : 'The e-mail could not be delivered. Check the server logs for more details.';
   }
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;

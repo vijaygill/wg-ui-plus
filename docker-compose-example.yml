@@ -27,7 +27,13 @@ services:
           - WG_UPSTREAM_DNS_SERVER=192.168.0.5 # change this to suit your setup
           - SECURE_REFERRER_POLICY=strict-origin
           - CORS_ALLOW_ALL_ORIGINS=true
-            # Gmail SMTP: use an app password, not the account password.
+            # Local unauthenticated Postfix example:
+            #- EMAIL_HOST=mail.local
+            #- EMAIL_PORT=25
+            #- EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local
+            #- EMAIL_USE_TLS=False
+            #- EMAIL_USE_SSL=False
+            # Authenticated Gmail example (use an app password, not the account password):
             #- EMAIL_HOST=smtp.gmail.com
             #- EMAIL_HOST_USER=your-account@gmail.com
             #- EMAIL_HOST_PASSWORD=your-gmail-app-password

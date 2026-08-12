@@ -94,13 +94,18 @@ The most relevant settings are:
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins for CSRF protection. |
 | `SECURE_REFERRER_POLICY` | Referrer-Policy; default `same-origin`. |
 | `WG_MCP_SERVER_ENABLED` | Explicitly enables or disables MCP at startup; see [MCP.md](./MCP.md). |
-| `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT` | SMTP settings for sending peer configurations; `EMAIL_PORT` must be numeric. |
-| `EMAIL_USE_SSL`, `EMAIL_USE_TLS` | Boolean SMTP transport security settings. Use exactly one. |
-| `EMAIL_DEFAULT_FROM_EMAIL` | Optional dedicated sender address; defaults to `EMAIL_HOST_USER`. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_DEFAULT_FROM_EMAIL` | Required SMTP host, numeric port, and valid sender address. |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Optional SMTP credentials; provide both or neither. |
+| `EMAIL_USE_SSL`, `EMAIL_USE_TLS` | Optional boolean transport settings, both false by default; do not enable both. |
 
-For Gmail, use `EMAIL_HOST=smtp.gmail.com`, `EMAIL_PORT=587`,
-`EMAIL_USE_TLS=True`, and `EMAIL_USE_SSL=False`, together with the account username
-and an app password. Values supplied through the environment can override corresponding UI settings
+For local unauthenticated Postfix, use `EMAIL_HOST=mail.local`, `EMAIL_PORT=25`,
+`EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local`, and leave both security settings
+false. For Gmail, use `EMAIL_HOST=smtp.gmail.com`, `EMAIL_PORT=587`,
+`EMAIL_USE_TLS=True`, and `EMAIL_USE_SSL=False`, together with the account username,
+app password, and sender address. On the server configuration page, **Send Test
+Email** sends from the configured sender to itself and has no attachments. Recreate
+or restart the deployment after changing environment variables; a plain restart
+does not update a container's stored environment. Values supplied through the environment can override corresponding UI settings
 at startup. Explicit `WG_ALLOW_CHECK_UPDATES` and `WG_MCP_SERVER_ENABLED` values
 take precedence over their database settings; when either variable is absent,
 the corresponding database setting is used. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG`

@@ -40,7 +40,7 @@ from .shared_functions import (
 )
 from .email_service import (
     EmailConfigurationError, EmailDeliveryError, EmailRecipientError,
-    email_peer_configuration,
+    email_peer_configuration, send_test_email as deliver_test_email,
 )
 
 
@@ -82,6 +82,13 @@ class PeerEmailRequestSerializer(serializers.Serializer):
     def to_internal_value(self, data):
         if not hasattr(data, "keys") or set(data.keys()) != {"peer_id"}:
             raise serializers.ValidationError({"detail": "Only peer_id is accepted."})
+        return super().to_internal_value(data)
+
+
+class TestEmailRequestSerializer(serializers.Serializer):
+    def to_internal_value(self, data):
+        if not hasattr(data, "keys") or data:
+            raise serializers.ValidationError({"detail": "No request fields are accepted."})
         return super().to_internal_value(data)
 
 
@@ -314,4 +321,24 @@ def send_peer_email(request):
     except Exception:
         from logging import getLogger
         getLogger(APP_NAME).exception("Unexpected peer email failure")
-        return Response({"message": "The email could not be delivered."}, status=500)
+        return Response({"message": "The email could not be delivered. Check the server logs for more details."}, status=500)
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def send_test_email(request):
+    request_serializer = TestEmailRequestSerializer(data=request.data)
+    if not request_serializer.is_valid():
+        return Response(request_serializer.errors, status=400)
+    try:
+        deliver_test_email()
+        return Response({"message": "Test email sent successfully!"})
+    except EmailConfigurationError as exc:
+        return Response({"message": str(exc)}, status=503)
+    except EmailDeliveryError as exc:
+        return Response({"message": str(exc)}, status=502)
+    except Exception:
+        from logging import getLogger
+        getLogger(APP_NAME).exception("Unexpected test email failure")
+        return Response({"message": "The test email could not be delivered. Check the server logs for more details."}, status=500)

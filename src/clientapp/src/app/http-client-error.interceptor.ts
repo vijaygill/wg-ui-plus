@@ -42,7 +42,7 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
         catchError((error: HttpErrorResponse) => {
           // Email delivery has its own safe, categorized UI path. Do not promote
           // its response into the persistent server-status banner or rewrite it.
-          if (this.isPeerEmailRequest(request)) {
+          if (this.isEmailRequest(request)) {
             return throwError(() => error);
           }
 
@@ -71,10 +71,14 @@ export class HttpClientErrorInterceptor implements HttpInterceptor {
       );
   }
 
-  private isPeerEmailRequest(request: HttpRequest<unknown>): boolean {
+  private isEmailRequest(request: HttpRequest<unknown>): boolean {
     const urlWithoutQuery = request.url.split(/[?#]/, 1)[0];
     try {
-      return new URL(urlWithoutQuery, 'http://localhost').pathname === '/api/v1/data/peer/send_peer_email';
+      const path = new URL(urlWithoutQuery, 'http://localhost').pathname;
+      return request.method === 'POST' && (
+        path === '/api/v1/data/peer/send_peer_email' ||
+        path === '/api/v1/control/send_test_email'
+      );
     } catch {
       return false;
     }

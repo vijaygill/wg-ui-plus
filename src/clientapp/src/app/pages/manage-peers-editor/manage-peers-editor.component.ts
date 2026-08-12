@@ -52,6 +52,7 @@ export class ManagePeersEditorComponent {
 
   validationResult?: ServerValidationError;
   emailAvailable = false;
+  emailStatusMessage = 'SMTP email is not configured.';
 
   @Output() onFinish = new EventEmitter<boolean>();
 
@@ -63,6 +64,8 @@ export class ManagePeersEditorComponent {
       this.emailAvailable = emailStatus
         ? emailStatus.status === 'configured'
         : status.application_details?.is_email_enabled === true;
+      this.emailStatusMessage = emailStatus?.message ||
+        (this.emailAvailable ? 'SMTP email is configured.' : 'SMTP email is not configured.');
     });
   }
 

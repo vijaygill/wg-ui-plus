@@ -139,15 +139,18 @@ OAuth2, shell access, and arbitrary filesystem tools are not provided.
 
 ## Can the application e-mail peer configurations?
 
-Yes. Configure all SMTP settings and exactly one transport mode. A Gmail example is
-`EMAIL_HOST=smtp.gmail.com`, `EMAIL_HOST_USER=your-account@gmail.com`,
-`EMAIL_HOST_PASSWORD=your-Gmail-app-password`, `EMAIL_PORT=587`,
-`EMAIL_USE_TLS=True`, and `EMAIL_USE_SSL=False`. The optional
-`EMAIL_DEFAULT_FROM_EMAIL` defaults to `EMAIL_HOST_USER`. Add an e-mail address to
-a peer and use **Send Config By Email**. The server loads the saved peer address
-and generates the current configuration and QR image itself; request clients cannot
-override the recipient or attachments. Invalid or incomplete SMTP settings are
-reported as unavailable.
+Yes. The required minimum is `EMAIL_HOST`, `EMAIL_PORT`, and
+`EMAIL_DEFAULT_FROM_EMAIL`; username and password are optional but must be supplied
+together. `EMAIL_USE_TLS` and `EMAIL_USE_SSL` default to false and cannot both be
+enabled. For local Postfix, use `mail.local`, port `25`, and
+`wg-ui-plus@mail.local` with both security flags false. Gmail continues to use
+`EMAIL_HOST=smtp.gmail.com`, username, an app password, port `587`, TLS true, and
+SSL false. On the server configuration page, **Send Test Email** sends from the
+configured From address to itself, with no peer or QR attachments. Add an e-mail
+address to a peer and use **Send Config By Email**; the server loads the saved peer
+address and generates the current configuration and QR image itself. Recreate the
+container after changing environment variables. Invalid settings are explained by
+the safe status message and delivery failures advise checking server logs.
 
 ## Does it check for updates?
 

@@ -13,6 +13,7 @@ export class WebapiService {
     private urlPeerGroup = '/api/v1/data/peer_group/';
     private urlPeer = '/api/v1/data/peer/';
     private urlPeerSendEmail = '/api/v1/data/peer/send_peer_email';
+    private urlSendTestEmail = '/api/v1/control/send_test_email';
     private urlTarget = '/api/v1/data/target/';
     private urlServerConfiguration = '/api/v1/data/server_configuration/';
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
@@ -103,6 +104,10 @@ export class WebapiService {
             this.checkServerStatus();
         }));
         return res;
+    }
+
+    sendTestEmail(): Observable<{ message: string }> {
+        return this.http.post<{ message: string }>(this.urlSendTestEmail, {});
     }
 
     getTargetList(): Observable<Target[]> {

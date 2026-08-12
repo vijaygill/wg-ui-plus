@@ -98,6 +98,12 @@
                    <mat-icon>refresh</mat-icon>
                    Restart
                  </button>
+                 <button mat-stroked-button type="button" (click)="sendTestEmail()"
+                   [disabled]="emailStatus?.status !== 'configured'"
+                   [matTooltip]="emailStatus?.status === 'configured' ? 'Send from the configured address to that same address.' : (emailStatus?.message || 'SMTP email is not configured.')">
+                   <mat-icon>mail</mat-icon>
+                   Send Test Email
+                 </button>
                </div>
                <div class="form-span editor-validation">
                  <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>

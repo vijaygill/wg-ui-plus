@@ -94,26 +94,35 @@ starts; it is not entered in the peer form. Use the following steps.
    account password. Other providers require their own SMTP host, port, and
    authentication requirements.
 
-2. **Set the SMTP environment variables.** These four variables are required:
-   `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and `EMAIL_PORT`.
-   The transport settings `EMAIL_USE_TLS` and `EMAIL_USE_SSL` are also required
-   in practice: enable exactly one of them. `EMAIL_DEFAULT_FROM_EMAIL` is
-   optional and, when omitted, the sender defaults to `EMAIL_HOST_USER`.
+2. **Set the SMTP environment variables.** The minimum configuration requires
+   `EMAIL_HOST`, `EMAIL_PORT`, and `EMAIL_DEFAULT_FROM_EMAIL`. Username and
+   password are optional, but must be supplied together when used. TLS and SSL
+   are optional and default to false; they cannot both be enabled. This supports
+   an unauthenticated local Postfix server:
 
    Boolean values are case-insensitive and may be written as `true`, `1`,
    `yes`, or `on`, or as `false`, `0`, `no`, or `off`. TLS and SSL must not both
-   be enabled. For Gmail, use TLS on port 587 and SSL off:
+    be enabled. For local Postfix, use:
 
    ```text
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_HOST_USER=your-account@gmail.com
-   EMAIL_HOST_PASSWORD=your-gmail-app-password
-   EMAIL_PORT=587
-   EMAIL_USE_TLS=True
-   EMAIL_USE_SSL=False
-   # Optional; defaults to EMAIL_HOST_USER.
-   EMAIL_DEFAULT_FROM_EMAIL=your-account@gmail.com
-   ```
+    EMAIL_HOST=mail.local
+    EMAIL_PORT=25
+    EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local
+    EMAIL_USE_SSL=False
+    EMAIL_USE_TLS=False
+    ```
+
+    Authenticated Gmail/app-password SMTP remains supported:
+
+    ```text
+    EMAIL_HOST=smtp.gmail.com
+    EMAIL_HOST_USER=your-account@gmail.com
+    EMAIL_HOST_PASSWORD=your-gmail-app-password
+    EMAIL_PORT=587
+    EMAIL_USE_TLS=True
+    EMAIL_USE_SSL=False
+    EMAIL_DEFAULT_FROM_EMAIL=your-account@gmail.com
+    ```
 
 3. **Pass the values to Docker.** Prefer a protected env file for SMTP
    credentials. Create `./email.env` with the placeholder values below, make the
@@ -121,13 +130,11 @@ starts; it is not entered in the peer form. Use the following steps.
    control (for example, use `chmod 600 ./email.env`):
 
    ```text
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_HOST_USER=your-account@gmail.com
-   EMAIL_HOST_PASSWORD=your-gmail-app-password
-   EMAIL_PORT=587
-   EMAIL_USE_TLS=True
-   EMAIL_USE_SSL=False
-   EMAIL_DEFAULT_FROM_EMAIL=your-account@gmail.com
+    EMAIL_HOST=mail.local
+    EMAIL_PORT=25
+    EMAIL_USE_TLS=False
+    EMAIL_USE_SSL=False
+    EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local
    ```
 
    For a one-off `docker run`, add `--env-file ./email.env` to the **full
@@ -171,30 +178,35 @@ starts; it is not entered in the peer form. Use the following steps.
    container. For `docker run`, stop and remove the old container and create it
    again with the updated `--env-file`.
 
-5. **Save the recipient on the peer.** In the web UI, open the peer, enter its
+5. **Test SMTP from the server configuration page.** Open **Server Configuration**
+   and select **Send Test Email**. The authenticated action sends a simple message
+   from `EMAIL_DEFAULT_FROM_EMAIL` to that same address; it never accepts an
+   arbitrary test recipient and includes no peer or QR data.
+
+6. **Save the recipient on the peer.** In the web UI, open the peer, enter its
    e-mail address, and save the peer. The send action uses only this saved
    database address. It does not accept an alternate recipient address in the
    button action or request, so verify the address before sending.
 
-6. **Send the configuration.** With SMTP configured and a saved peer address,
+7. **Send the configuration.** With SMTP configured and a saved peer address,
    open the peer and select **Send Config By Email**. Confirm the action. At send
    time the server generates the current `.conf` and QR image and attaches both
    to the message; it does not use a configuration or QR attachment supplied by
    the caller.
 
-7. **Verify delivery.** A successful action means the SMTP backend accepted the
+8. **Verify delivery.** A successful action means the SMTP backend accepted the
    message for sending. It does not prove that the message reached the final
    inbox. Check the recipient's spam/quarantine folders and the provider's mail
    logs as well as the application notification.
 
 ### Email troubleshooting
 
-- If the button is unavailable or the status reports that SMTP is unavailable,
+- If the button is unavailable, read the displayed SMTP status explanation and
   check that all required variables are present in the container, that their
   names are exact, and that the container was recreated after they changed.
-- An invalid port, boolean value, sender address, or combination of TLS and SSL
-  causes the SMTP configuration to be rejected. Use a numeric port, one of the
-  accepted boolean forms above, and exactly one transport mode.
+- An invalid port, boolean value, sender address, partial username/password pair,
+  or combination of TLS and SSL causes the SMTP configuration to be rejected.
+  Use a numeric port, accepted boolean forms, and supply credentials together.
 - For Gmail authentication failures, confirm that two-step verification is
   enabled and that `EMAIL_HOST_PASSWORD` is an app password. Confirm the account
   username and sender address are valid, and that the container can reach

@@ -1,8 +1,8 @@
-EMAIL_HOST=
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
-EMAIL_PORT=
-EMAIL_USE_TLS=True
+EMAIL_HOST=mail.local
+EMAIL_PORT=25
 EMAIL_USE_SSL=False
-# Optional; defaults to EMAIL_HOST_USER.
-EMAIL_DEFAULT_FROM_EMAIL=
+EMAIL_USE_TLS=False
+EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local
+# Optional authenticated SMTP (supply both together):
+# EMAIL_HOST_USER=your-account@gmail.com
+# EMAIL_HOST_PASSWORD=your-gmail-app-password
