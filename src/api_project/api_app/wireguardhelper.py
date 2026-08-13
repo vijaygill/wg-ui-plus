@@ -108,9 +108,9 @@ PersistentKeepalive = 25
                 + allowed_ips_by_targets
             )
 
-            # # add upstream DNS server to allowed IP's.
-            # if serverConfiguration.upstream_dns_ip_address:
-            #     allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+            # add upstream DNS server to allowed IP's.
+            if serverConfiguration.upstream_dns_ip_address:
+                allowed_ips += [serverConfiguration.upstream_dns_ip_address]
 
             # add VPN server's ip address also.
             if serverConfiguration.network_address:
@@ -214,25 +214,29 @@ AllowedIPs = {{allowed_ips}}
             'echo "************************************************ "',
             'if [ -z "${LAN_INTERFACE}" ]; then echo "Could not determine default LAN interface"; exit 1; fi',
             "",
-            "# clear existing rules and setup defaults",
-            "iptables --flush",
-            "iptables --table nat --flush",
-            "iptables --delete-chain",
-            "",
+            "# clear only the chains and rules this script owns.",
+            "# Full-table flushes would also remove Docker's embedded DNS (127.0.0.11)",
+            "# rules from this container's netns and silently break container DNS resolution.",
+            "iptables -w5 --table filter --flush FORWARD",
+            "iptables -w5 --table nat --delete POSTROUTING --out-interface ${LAN_INTERFACE} --jump MASQUERADE --source ${WIREGUARD_LAN} 2>/dev/null || true",
             "",
             "# masquerade traffic related to wg0",
-            "iptables -t nat -I POSTROUTING -o ${LAN_INTERFACE} -j MASQUERADE -s $WIREGUARD_LAN",
+            "iptables -w5 -t nat -I POSTROUTING -o ${LAN_INTERFACE} -j MASQUERADE -s $WIREGUARD_LAN",
             "",
             "# Accept related or established traffic",
-            'iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment "Established and related packets."',
+            'iptables -w5 -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment "Established and related packets."',
             "",
         ]
 
         for dns_server in dns_servers:
             post_up += [
-                "# now make all DNS traffic flow to desired DNS server",
-                f"iptables -t nat -I PREROUTING -p udp --dport 53 -j DNAT --to {dns_server}:53",
-                f"iptables -t nat -I PREROUTING -p tcp --dport 53 -j DNAT --to {dns_server}:53",
+                "# now make all client DNS traffic flow to desired DNS server",
+                f"iptables -w5 --table nat --delete PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol udp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --protocol udp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol tcp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --protocol tcp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --insert PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol udp --destination-port 53 --jump DNAT --to-destination {dns_server}:53",
+                f"iptables -w5 --table nat --insert PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol tcp --destination-port 53 --jump DNAT --to-destination {dns_server}:53",
                 "",
             ]
 
@@ -350,9 +354,12 @@ AllowedIPs = {{allowed_ips}}
         # sort items
         target_infos = sorted(target_infos, key=lambda x: (x[1], x[7]))
 
-        # allow all DNS traffic
+        # allow all client DNS traffic (UDP and TCP)
         post_up.append(
-            'iptables --append FORWARD -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
+            'iptables -w5 --append FORWARD --in-interface ${WIREGUARD_INTERFACE} -p udp -m udp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic"'
+        )
+        post_up.append(
+            'iptables -w5 --append FORWARD --in-interface ${WIREGUARD_INTERFACE} -p tcp -m tcp --dport 53 -j ACCEPT -m comment --comment "ALLOW - All DNS traffic (TCP)"'
         )
 
         # now add FORWARD and ACCEPT rules for each chain - hosts only
@@ -377,17 +384,17 @@ AllowedIPs = {{allowed_ips}}
                     continue
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
                     continue
                 if target_port:
                     for port in target_port:
                         post_up.append(
-                            f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                            f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                         )
                 else:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -410,11 +417,11 @@ AllowedIPs = {{allowed_ips}}
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
+                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
                     )
                     continue
                 post_up.append(
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
         local_networks = []
@@ -424,7 +431,7 @@ AllowedIPs = {{allowed_ips}}
             ]
         targets_to_block = local_networks  # + [str(vpn_network_address)]
         post_up += [
-            f'iptables --append FORWARD --destination {target} -j DROP -m comment --comment "DROP - Everything going to local network - {target}"'
+            f'iptables -w5 --append FORWARD --destination {target} -j DROP -m comment --comment "DROP - Everything going to local network - {target}"'
             for target in targets_to_block
         ]
 
@@ -448,27 +455,40 @@ AllowedIPs = {{allowed_ips}}
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
                     post_up.append(
-                        f'iptables --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                     )
                     continue
                 post_up.append(
-                    f'iptables --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
                 )
 
         post_up.append(
-            'iptables -A FORWARD -j DROP -m comment --comment "DROP - everything else"'
+            'iptables -w5 -A FORWARD -j DROP -m comment --comment "DROP - everything else"'
         )
 
-        post_up += ["\n", "iptables -n -L -v --line-numbers;", "\n"]
+        post_up += ["\n", "iptables -w5 -n -L -v --line-numbers;", "\n"]
 
         post_up = "\n".join(post_up)
 
         post_down = [
-            "iptables --flush",
-            "iptables --table nat --flush",
-            "iptables --delete-chain",
+            "WIREGUARD_INTERFACE=wg0",
+            f"WIREGUARD_LAN={vpn_network_address}",
+            "LAN_INTERFACE=$(ip route show default | awk '/default/ {print $5; exit}')",
             "",
-            "iptables -n -L -v --line-numbers",
+            "# remove only the rules and chains this script manages; keep Docker's embedded DNS rules intact",
+            "iptables -w5 --table filter --flush FORWARD",
+            "iptables -w5 --table nat --delete POSTROUTING --out-interface ${LAN_INTERFACE} --jump MASQUERADE --source ${WIREGUARD_LAN} 2>/dev/null || true",
+        ]
+        for dns_server in dns_servers:
+            post_down += [
+                f"iptables -w5 --table nat --delete PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol udp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --protocol udp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --in-interface ${{WIREGUARD_INTERFACE}} --protocol tcp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+                f"iptables -w5 --table nat --delete PREROUTING --protocol tcp --destination-port 53 --jump DNAT --to-destination {dns_server}:53 2>/dev/null || true",
+            ]
+        post_down += [
+            "",
+            "iptables -w5 -n -L -v --line-numbers",
         ]
 
         post_down = "\n".join(post_down)
