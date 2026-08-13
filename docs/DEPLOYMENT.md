@@ -43,7 +43,7 @@ specific local development integration requires it.
 
 ## Docker Compose
 
-Use [docker-compose-example.yml](./docker-compose-example.yml) as a starting
+Use [docker-compose-example.yml](../docker-compose-example.yml) as a starting
 point, not as a production-ready configuration. Change the host paths, external
 host name, local networks, DNS server, and other environment values.
 
@@ -98,14 +98,13 @@ The most relevant settings are:
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Optional SMTP credentials; provide both or neither. |
 | `EMAIL_USE_SSL`, `EMAIL_USE_TLS` | Optional boolean transport settings, both false by default; do not enable both. |
 
-For local unauthenticated Postfix, use `EMAIL_HOST=mail.local`, `EMAIL_PORT=25`,
-`EMAIL_DEFAULT_FROM_EMAIL=wg-ui-plus@mail.local`, and leave both security settings
-false. For Gmail, use `EMAIL_HOST=smtp.gmail.com`, `EMAIL_PORT=587`,
-`EMAIL_USE_TLS=True`, and `EMAIL_USE_SSL=False`, together with the account username,
-app password, and sender address. On the server configuration page, **Send Test
-Email** sends from the configured sender to itself and has no attachments. Recreate
-or restart the deployment after changing environment variables; a plain restart
-does not update a container's stored environment. Values supplied through the environment can override corresponding UI settings
+Full SMTP setup instructions, provider examples (including a bare-minimum
+unauthenticated local Postfix relay), and troubleshooting are in
+[EMAIL-SETUP.md](./EMAIL-SETUP.md). Recreate or restart the deployment after
+changing environment variables; a plain restart does not update a container's
+stored environment.
+
+Values supplied through the environment can override corresponding UI settings
 at startup. Explicit `WG_ALLOW_CHECK_UPDATES` and `WG_MCP_SERVER_ENABLED` values
 take precedence over their database settings; when either variable is absent,
 the corresponding database setting is used. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG`
@@ -122,9 +121,9 @@ Server**, **Local Networks**, and the external/internal ports in **Server
 Configuration**, then select **Apply Changes**. Configure peers and access using
 [ACCESS_CONTROL.md](./ACCESS_CONTROL.md).
 
-![Server Configuration screen for setting the external host, ports, DNS, and local networks](./images/wg-ui-plus-server-config.png)
+![Server Configuration screen for setting the external host, ports, DNS, and local networks](../images/wg-ui-plus-server-config.png)
 
-![Apply Changes control for regenerating and applying the WireGuard configuration](./images/wg-ui-plus-apply-changes.png)
+![Apply Changes control for regenerating and applying the WireGuard configuration](../images/wg-ui-plus-apply-changes.png)
 
 ## Secure remote exposure
 

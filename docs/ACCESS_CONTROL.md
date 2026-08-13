@@ -55,7 +55,8 @@ Use **Disabled** to block the peer's permitted traffic after configuration is
 regenerated. The peer may still have configuration generated, so fully disabling
 a peer requires removing its configuration from client devices.
 A peer's configuration can be displayed as a QR code, downloaded with **Download
-.conf file**, or sent with **Send Config By Email** when SMTP is configured.
+.conf file**, or sent with **Send Config By Email** when SMTP is configured (see
+[EMAIL-SETUP.md](./EMAIL-SETUP.md)).
 
 The peer's group memberships determine the targets it can access. Assign only the
 groups needed by that client; membership in multiple groups combines their
@@ -107,14 +108,14 @@ other ports on that host merely because it is a member of the group.
 
 The peer-group editor connects selected peers to the targets they should be able
 
-![Peer-group editor for selecting peers and targets](./images/example-add-peergroup.PNG)
+![Peer-group editor for selecting peers and targets](../images/example-add-peergroup.PNG)
 
 Use this screen to define a role-based collection such as the NAS users in the
 worked example.
 
 The peer editor assigns an individual client to one or more peer groups.
 
-![Peer editor for assigning a client to peer groups](./images/example-add-peer.PNG)
+![Peer editor for assigning a client to peer groups](../images/example-add-peer.PNG)
 
 These memberships determine which enabled targets the client can access through
 the associated groups.
@@ -122,14 +123,14 @@ the associated groups.
 The target editor defines the host, network, or selected service ports reachable
 through the VPN.
 
-![Target editor for defining a reachable host, network, or service](./images/example-add-target.PNG)
+![Target editor for defining a reachable host, network, or service](../images/example-add-target.PNG)
 
 Use a narrow host-and-port target when the client needs only a specific service.
 
 VPN Layout provides a visual check of the resulting peer-to-group-to-target
 relationships.
 
-![VPN Layout showing peer, peer-group, and target relationships](./images/example-vpn-layout.PNG)
+![VPN Layout showing peer, peer-group, and target relationships](../images/example-vpn-layout.PNG)
 
 Review this layout after changing relationships and before applying significant
 access changes.

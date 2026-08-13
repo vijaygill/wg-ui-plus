@@ -10,7 +10,7 @@ It is intended primarily for home and small-network deployments.
 
 Install Docker, create persistent `config` and `data` directories, and run the
 image with `NET_ADMIN`, `SYS_MODULE`, the required IPv4 sysctls, `/lib/modules`,
-and the two persistent mounts. The concise command is in [README.md](./README.md);
+and the two persistent mounts. The concise command is in [README.md](../README.md);
 full Docker and Compose guidance is in [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 By default, the container listens on UDP `51820` internally and TCP `8000` for
@@ -60,7 +60,7 @@ Create a peer group, add the relevant peer, create a target such as
 relationship under **VPN Layout**, select **Apply Changes**, and distribute the
 peer's updated QR code or `.conf` file.
 
-![Peer QR code screen for adding a WireGuard client](./images/wg-ui-plus-peer-qr.png)
+![Peer QR code screen for adding a WireGuard client](../images/wg-ui-plus-peer-qr.png)
 
 ## How do targets represent networks and ports?
 
@@ -98,9 +98,9 @@ configuration, especially after key, endpoint, VPN address, or strict
 peer, peer group, and target relationships. These views help distinguish a client
 handshake problem from an access-rule problem.
 
-![Monitor Peers showing handshake and transfer status](./images/wg-ui-plus-monitor-peers.png)
+![Monitor Peers showing handshake and transfer status](../images/wg-ui-plus-monitor-peers.png)
 
-![Monitor IP-Tables showing generated chains and counters](./images/wg-ui-plus-monitor-iptables.png)
+![Monitor IP-Tables showing generated chains and counters](../images/wg-ui-plus-monitor-iptables.png)
 
 ## A peer cannot connect. What should I check?
 
@@ -139,18 +139,9 @@ OAuth2, shell access, and arbitrary filesystem tools are not provided.
 
 ## Can the application e-mail peer configurations?
 
-Yes. The required minimum is `EMAIL_HOST`, `EMAIL_PORT`, and
-`EMAIL_DEFAULT_FROM_EMAIL`; username and password are optional but must be supplied
-together. `EMAIL_USE_TLS` and `EMAIL_USE_SSL` default to false and cannot both be
-enabled. For local Postfix, use `mail.local`, port `25`, and
-`wg-ui-plus@mail.local` with both security flags false. Gmail continues to use
-`EMAIL_HOST=smtp.gmail.com`, username, an app password, port `587`, TLS true, and
-SSL false. On the server configuration page, **Send Test Email** sends from the
-configured From address to itself, with no peer or QR attachments. Add an e-mail
-address to a peer and use **Send Config By Email**; the server loads the saved peer
-address and generates the current configuration and QR image itself. Recreate the
-container after changing environment variables. Invalid settings are explained by
-the safe status message and delivery failures advise checking server logs.
+Yes. Configure SMTP through environment variables; the minimum is `EMAIL_HOST`,
+`EMAIL_PORT`, and `EMAIL_DEFAULT_FROM_EMAIL`. Full setup, provider examples,
+and troubleshooting are in [EMAIL-SETUP.md](./EMAIL-SETUP.md).
 
 ## Does it check for updates?
 

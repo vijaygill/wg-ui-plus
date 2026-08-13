@@ -157,7 +157,7 @@ them.
   email, and `WG_MCP_SERVER_ENABLED`). MCP is disabled by default, but when the
   environment variable is absent an existing database setting controls it.
   The endpoint accepts `Bearer` and legacy `Token` authorization and exposes
-  curated tools described in `MCP.md`. Treat the MCP token as a high-privilege
+  curated tools described in `docs/MCP.md`. Treat the MCP token as a high-privilege
   credential: it can access peer configuration/QR data and WireGuard/control
   operations, has no per-user authorization boundary, and must not be exposed
   casually. Keep credentials and tokens out of the repository and logs.
@@ -193,10 +193,9 @@ well as selected pull-request, release, and manual events. Keep Docker build
 inputs and image metadata in mind when changing those paths.
 
 Branch documentation is inconsistent: the active Docker workflow targets
-`develop` and `master`, while `devenv.md` describes `develop` as semi-stable and
-`main` as the release branch. Do not silently treat either description as
-universally authoritative; check the active workflow, current repository
-policy, and branch protection before making branch or release decisions.
+`develop` and `master`. Do not silently treat either description as universally
+authoritative; check the active workflow, current repository policy, and branch
+protection before making branch or release decisions.
 
 Use feature branches such as `feature/<short-name>` for normal work and
 `experimental/<short-name>` for disposable experiments. Preserve the
