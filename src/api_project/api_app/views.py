@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate as drf_authenticate
 from django.contrib.auth import logout as drf_logout
 from django.contrib.auth.models import auth
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework import serializers
@@ -39,8 +41,12 @@ from .shared_functions import (
     restart_wireguard,
 )
 from .email_service import (
+    EMAIL_PASSWORD_SENTINEL,
+    EMAIL_SETTINGS_FIELDS,
     EmailConfigurationError, EmailDeliveryError, EmailRecipientError,
-    email_peer_configuration, send_test_email as deliver_test_email,
+    check_smtp_connectivity, email_peer_configuration, email_settings_payload,
+    environment_overrides,
+    send_test_email as deliver_test_email,
 )
 
 
@@ -150,6 +156,148 @@ class MCPTokenView(APIView):
         response["Pragma"] = "no-cache"
         response["Expires"] = "0"
         return response
+
+
+class EmailConfigurationView(APIView):
+    """Authenticated SMTP/email settings administration endpoint."""
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        return Response(email_settings_payload(configuration))
+
+    def patch(self, request):
+        configuration = ServerConfiguration.objects.first()
+        if configuration is None:
+            return Response({"detail": "ServerConfiguration is not initialized."}, status=404)
+        payload = request.data
+        if not isinstance(payload, dict):
+            return Response({"detail": "A JSON object is required."}, status=400)
+
+        errors = {}
+        overrides = environment_overrides()
+        unknown_fields = [
+            field for field in payload if field not in EMAIL_SETTINGS_FIELDS
+        ]
+        if unknown_fields:
+            errors.setdefault("detail", []).append(
+                "Unknown fields: " + ", ".join(sorted(unknown_fields))
+            )
+
+        updates = {}
+        if "email_host" in payload:
+            value = payload["email_host"]
+            if not isinstance(value, str):
+                errors.setdefault("email_host", []).append("A string value is required.")
+            elif not value.strip():
+                errors.setdefault("email_host", []).append("A non-empty host name is required.")
+            elif value != configuration.email_host:
+                updates["email_host"] = value
+
+        if "email_port" in payload:
+            value = payload["email_port"]
+            if value is None or value == "":
+                # Null/empty clears the database value.
+                if configuration.email_port is not None:
+                    updates["email_port"] = None
+            elif isinstance(value, bool) or not isinstance(value, (int, str)):
+                errors.setdefault("email_port", []).append("An integer is required.")
+            else:
+                try:
+                    port = int(value)
+                except (TypeError, ValueError):
+                    errors.setdefault("email_port", []).append("An integer is required.")
+                else:
+                    if not 1 <= port <= 65535:
+                        errors.setdefault("email_port", []).append(
+                            "EMAIL_PORT must be between 1 and 65535."
+                        )
+                    elif configuration.email_port != port:
+                        updates["email_port"] = port
+
+        if "email_host_user" in payload:
+            value = payload["email_host_user"]
+            if not isinstance(value, str):
+                errors.setdefault("email_host_user", []).append("A string value is required.")
+            elif value != configuration.email_host_user:
+                updates["email_host_user"] = value
+
+        if "email_host_password" in payload:
+            value = payload["email_host_password"]
+            if value is not None and not isinstance(value, str):
+                errors.setdefault("email_host_password", []).append("A string value is required.")
+            elif value and value != EMAIL_PASSWORD_SENTINEL:
+                if value != configuration.email_host_password:
+                    updates["email_host_password"] = value
+
+        if "email_default_from_email" in payload:
+            value = payload["email_default_from_email"]
+            if not isinstance(value, str):
+                errors.setdefault("email_default_from_email", []).append("A string value is required.")
+            elif value != configuration.email_default_from_email:
+                try:
+                    validate_email(value)
+                except ValidationError:
+                    errors.setdefault("email_default_from_email", []).append(
+                        "A valid email address is required."
+                    )
+                else:
+                    updates["email_default_from_email"] = value
+
+        for field in ("email_use_tls", "email_use_ssl"):
+            if field in payload:
+                value = payload[field]
+                if not isinstance(value, bool):
+                    errors.setdefault(field, []).append("A boolean value is required.")
+                elif getattr(configuration, field) != value:
+                    updates[field] = value
+
+        # Environment-controlled fields may only be sent with a value that
+        # matches the stored database value (a no-op). Any real change attempt
+        # is rejected so partial environments cannot be silently overridden.
+        for field in list(updates):
+            variable = overrides.get(field)
+            if variable:
+                errors.setdefault(field, []).append(
+                    f"{variable} is set in the environment and cannot be changed here."
+                )
+                del updates[field]
+
+        use_tls = updates.get("email_use_tls", configuration.email_use_tls)
+        use_ssl = updates.get("email_use_ssl", configuration.email_use_ssl)
+        if use_tls and use_ssl:
+            errors.setdefault("email_use_tls", []).append(
+                "EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled."
+            )
+
+        # Keep the username/password pair consistent with
+        # parse_smtp_configuration whenever a username is being set or cleared
+        # and both sides of the pair are database-managed.
+        if (
+            "email_host_user" in updates
+            and "email_host_user" not in overrides
+            and "email_host_password" not in overrides
+        ):
+            new_user = updates.get("email_host_user", configuration.email_host_user) or ""
+            new_password = (
+                updates.get("email_host_password", configuration.email_host_password) or ""
+            )
+            if bool(str(new_user).strip()) != bool(str(new_password).strip()):
+                errors.setdefault("email_host_user", []).append(
+                    "EMAIL_HOST_USER and EMAIL_HOST_PASSWORD must be supplied together."
+                )
+
+        if errors:
+            return Response(errors, status=400)
+
+        if updates:
+            for field, value in updates.items():
+                setattr(configuration, field, value)
+            configuration.save(update_fields=list(updates.keys()))
+        return Response(email_settings_payload(configuration))
 
 
 @api_view(["GET"])
@@ -342,3 +490,22 @@ def send_test_email(request):
         from logging import getLogger
         getLogger(APP_NAME).exception("Unexpected test email failure")
         return Response({"message": "The test email could not be delivered. Check the server logs for more details."}, status=500)
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def test_email_connectivity(request):
+    request_serializer = TestEmailRequestSerializer(data=request.data)
+    if not request_serializer.is_valid():
+        return Response(request_serializer.errors, status=400)
+    try:
+        return Response(check_smtp_connectivity())
+    except EmailConfigurationError as exc:
+        return Response({"message": str(exc)}, status=503)
+    except EmailDeliveryError as exc:
+        return Response({"message": str(exc)}, status=502)
+    except Exception:
+        from logging import getLogger
+        getLogger(APP_NAME).exception("Unexpected SMTP connectivity check failure")
+        return Response({"message": "The SMTP server could not be checked. Check the server logs for more details."}, status=500)

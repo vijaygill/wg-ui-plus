@@ -126,6 +126,7 @@ class EmailDeliveryTests(SimpleTestCase):
         send_configuration_email("subject", "body", "peer@gmail.com", qr, "exact-conf-content")
         email_class.assert_called_once()
         self.assertEqual("peer@gmail.com", email_class.call_args.kwargs["to"][0])
+        self.assertIsNotNone(email_class.call_args.kwargs.get("connection"))
         self.assertEqual([
             ("tunnel.conf", "exact-conf-content", "text/plain"),
             ("tunnel.png", b"exact-png-content", "image/png"),
@@ -267,12 +268,12 @@ class PeerEmailEndpointTests(TestCase):
     def test_test_email_endpoint_delivers_configured_message_without_auth(self, email_class):
         response = self.client.post("/api/v1/control/send_test_email", {}, format="json")
         self.assertEqual(200, response.status_code)
-        email_class.assert_called_once_with(
-            subject="wg-ui-plus SMTP test email",
-            body="This is a test email from wg-ui-plus.",
-            from_email="wg-ui-plus@mail.local",
-            to=["wg-ui-plus@mail.local"],
-        )
+        email_class.assert_called_once()
+        self.assertEqual("wg-ui-plus SMTP test email", email_class.call_args.kwargs["subject"])
+        self.assertEqual("This is a test email from wg-ui-plus.", email_class.call_args.kwargs["body"])
+        self.assertEqual("wg-ui-plus@mail.local", email_class.call_args.kwargs["from_email"])
+        self.assertEqual(["wg-ui-plus@mail.local"], email_class.call_args.kwargs["to"])
+        self.assertIsNotNone(email_class.call_args.kwargs.get("connection"))
         email_class.return_value.attach.assert_not_called()
         email_class.return_value.send.assert_called_once_with(fail_silently=False)
 

@@ -152,7 +152,16 @@ class ServerConfigurationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ServerConfiguration
-        exclude = ("mcp_token",)
+        exclude = (
+            "mcp_token",
+            "email_host",
+            "email_port",
+            "email_host_user",
+            "email_host_password",
+            "email_default_from_email",
+            "email_use_tls",
+            "email_use_ssl",
+        )
         depth = 1
 
     def get_effective_allow_check_updates(self, instance):

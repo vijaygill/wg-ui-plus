@@ -87,8 +87,9 @@ deployment.
 
 The application can send a peer's current WireGuard configuration by SMTP. SMTP
 configuration is supplied through environment variables when the container
-starts; it is not entered in the peer form. Full setup instructions, provider
-examples, and troubleshooting are in
+starts, or through the **Server Configuration → Email** tab in the web UI
+(stored in the database; environment variables take precedence). Full setup
+instructions, provider examples, and troubleshooting are in
 [EMAIL-SETUP.md](./docs/EMAIL-SETUP.md).
 
 ## How Traffic Flows Through WireGuard UI Plus

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, ReplaySubject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators'
-import { ChangeUserPasswordInfo, ConnectedPeerInformation, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, EmailConfiguration, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -28,6 +28,8 @@ export class WebapiService {
     private urlChangeUserPassword = '/api/v1/auth/change_password';
     private urlMcpConfiguration = '/api/v1/control/mcp/configuration';
     private urlMcpToken = '/api/v1/control/mcp/token';
+    private urlEmailConfiguration = '/api/v1/control/email/configuration';
+    private urlEmailConnectivity = '/api/v1/control/email/test_connectivity';
 
     /** Replays the latest status so late subscribers do not miss capability data. */
     serverStatus: ReplaySubject<ServerStatus> = new ReplaySubject<ServerStatus>(1);
@@ -110,6 +112,10 @@ export class WebapiService {
         return this.http.post<{ message: string }>(this.urlSendTestEmail, {});
     }
 
+    testEmailConnectivity(): Observable<{ message: string }> {
+        return this.http.post<{ message: string }>(this.urlEmailConnectivity, {});
+    }
+
     getTargetList(): Observable<Target[]> {
         return this.http.get<Target[]>(this.urlTarget);
     }
@@ -161,6 +167,9 @@ export class WebapiService {
     updateMcpConfiguration(enabled: boolean): Observable<McpConfiguration> { return this.http.patch<McpConfiguration>(this.urlMcpConfiguration, { mcp_enabled: enabled }); }
     generateMcpToken(): Observable<McpConfiguration> { return this.http.post<McpConfiguration>(this.urlMcpToken, {}); }
     copyMcpToken(): Observable<{ mcp_token: string }> { return this.http.get<{ mcp_token: string }>(this.urlMcpToken); }
+
+    getEmailConfiguration(): Observable<EmailConfiguration> { return this.http.get<EmailConfiguration>(this.urlEmailConfiguration); }
+    updateEmailConfiguration(item: EmailConfiguration): Observable<EmailConfiguration> { return this.http.patch<EmailConfiguration>(this.urlEmailConfiguration, item); }
 
     getWireguardConfiguration(): Observable<WireguardConfiguration> {
         return this.http.get<WireguardConfiguration>(this.urlGetWireguardConfiguration)

@@ -197,6 +197,13 @@ class ServerConfiguration(models.Model):
     strict_allowed_ips_in_peer_config = models.BooleanField(null=True, default=False)
     mcp_enabled = models.BooleanField(default=False)
     mcp_token = models.CharField(max_length=128, null=True, blank=True)
+    email_host = models.CharField(max_length=255, null=True, blank=True)
+    email_port = models.IntegerField(null=True, blank=True)
+    email_host_user = models.CharField(max_length=255, null=True, blank=True)
+    email_host_password = models.CharField(max_length=255, null=True, blank=True)
+    email_default_from_email = models.CharField(max_length=255, null=True, blank=True)
+    email_use_tls = models.BooleanField(null=True, default=False)
+    email_use_ssl = models.BooleanField(null=True, default=False)
     last_changed_datetime = models.DateTimeField(
         auto_now=False,
     )

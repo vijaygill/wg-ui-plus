@@ -85,4 +85,14 @@ urlpatterns = [
         views.MCPTokenView.as_view(),
         name="mcp_token",
     ),
+    path(
+        "api/v1/control/email/configuration",
+        views.EmailConfigurationView.as_view(),
+        name="email_configuration",
+    ),
+    path(
+        "api/v1/control/email/test_connectivity",
+        views.test_email_connectivity,
+        name="test_email_connectivity",
+    ),
 ]

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ChangeUserPasswordInfo, McpConfiguration, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../../webapi.entities';
+import { ChangeUserPasswordInfo, EmailConfiguration, McpConfiguration, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -43,12 +43,22 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   mcpConfirmationSubscription !: Subscription;
   saveConfigurationSubscription !: Subscription;
   changePasswordSubscription !: Subscription;
+  emailConfigurationSubscription !: Subscription;
+  emailActionSubscription !: Subscription;
+  emailConnectivitySubscription !: Subscription;
   mcpConfiguration: McpConfiguration = {} as McpConfiguration;
   mcpLoadError = '';
   mcpConfigurationLoading = true;
   mcpUpdating = false;
   mcpTokenVisible = false;
   revealedMcpToken: string | null = null;
+  emailConfiguration: EmailConfiguration = {} as EmailConfiguration;
+  emailLoadError = '';
+  emailConfigurationLoading = true;
+  emailUpdating = false;
+  /** Per-field API validation errors (DRF format: { field: [message] }). */
+  emailValidationErrors: { [field: string]: string[] } = {};
+  private emailSnapshot = '';
   private savedMcpEnabled = false;
   private mcpTokenHideTimer: ReturnType<typeof setTimeout> | null = null;
   private mcpTokenFocusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -62,7 +72,14 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     port_internal: 'WG_PORT_INTERNAL',
      strict_allowed_ips_in_peer_config: 'WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG',
      allow_check_updates: 'WG_ALLOW_CHECK_UPDATES',
-     mcp_server_enabled: 'WG_MCP_SERVER_ENABLED'
+     mcp_server_enabled: 'WG_MCP_SERVER_ENABLED',
+     email_host: 'EMAIL_HOST',
+     email_port: 'EMAIL_PORT',
+     email_host_user: 'EMAIL_HOST_USER',
+     email_host_password: 'EMAIL_HOST_PASSWORD',
+     email_default_from_email: 'EMAIL_DEFAULT_FROM_EMAIL',
+     email_use_tls: 'EMAIL_USE_TLS',
+     email_use_ssl: 'EMAIL_USE_SSL'
   };
 
   @ViewChild('mcpTokenInput') private mcpTokenInput?: ElementRef<HTMLInputElement>;
@@ -117,6 +134,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         };
       }
     });
+    this.loadEmailConfiguration();
   }
 
   ngOnDestroy() {
@@ -147,6 +165,15 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     }
     if (this.mcpConfirmationSubscription) {
       this.mcpConfirmationSubscription.unsubscribe();
+    }
+    if (this.emailConfigurationSubscription) {
+      this.emailConfigurationSubscription.unsubscribe();
+    }
+    if (this.emailActionSubscription) {
+      this.emailActionSubscription.unsubscribe();
+    }
+    if (this.emailConnectivitySubscription) {
+      this.emailConnectivitySubscription.unsubscribe();
     }
     this.mcpUpdating = false;
     this.resetRevealedMcpToken();
@@ -247,9 +274,217 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
       'The email server could not be reached. Check the SMTP host/port and network, then check the server logs for more details.',
       'Email security negotiation failed. Check the SMTP TLS/SSL settings and certificate, then check the server logs for more details.',
       'Email delivery failed. Check the SMTP settings, then check the server logs for more details.',
+      'The test email could not be delivered. Check the server logs for more details.',
+      'SMTP email is not configured. Set EMAIL_HOST, EMAIL_PORT, and EMAIL_DEFAULT_FROM_EMAIL.',
+      'SMTP email is not configured. Set EMAIL_HOST and EMAIL_PORT.',
+      'The SMTP host name could not be resolved. Check EMAIL_HOST.',
+      'The SMTP server did not respond. Check the host and port, and that the port is reachable from the container (for Docker, check the port mapping).',
+      'The connection to the SMTP server was refused. Check the host, port, and firewall or Docker port mapping.',
+      'The SMTP server could not be checked. Check the server logs for more details.',
     ]);
     return typeof message === 'string' && safeMessages.has(message)
-      ? message : 'The e-mail could not be delivered. Check the server logs for more details.';
+      ? message : 'The email server operation failed. Check the server logs for more details.';
+  }
+
+  testEmailConnectivity(): void {
+    this.emailConnectivitySubscription = this.webapiService.testEmailConnectivity().subscribe({
+      next: result => this.notification.success(result?.message ?? 'SMTP server is reachable.'),
+      error: error => this.notification.showEmailDeliveryFailure(this.safeEmailMessage(error?.error?.message)),
+    });
+  }
+
+  /** Normalized representation of the editable email fields. */
+  private get editableEmailState(): any {
+    return {
+      email_host: this.emailConfiguration.email_host,
+      email_port: this.emailConfiguration.email_port,
+      email_host_user: this.emailConfiguration.email_host_user,
+      email_host_password: this.emailConfiguration.email_host_password ?? '',
+      email_default_from_email: this.emailConfiguration.email_default_from_email,
+      email_use_tls: this.emailConfiguration.email_use_tls,
+      email_use_ssl: this.emailConfiguration.email_use_ssl,
+    };
+  }
+
+  private captureEmailSnapshot(): void {
+    this.emailSnapshot = JSON.stringify(this.editableEmailState);
+  }
+
+  /** True when any editable email field differs from the originally loaded data. */
+  get emailHasChanges(): boolean {
+    return JSON.stringify(this.editableEmailState) !== this.emailSnapshot;
+  }
+
+  emailEnvironmentVariableFor(field: string): string | null {
+    return this.emailConfiguration?.environment_overrides?.[field] ?? null;
+  }
+
+  /** Single security-mode value derived from the two SMTP security booleans. */
+  get emailSecurityMode(): 'none' | 'tls' | 'ssl' {
+    if (this.emailConfiguration.email_use_tls) {
+      return 'tls';
+    }
+    if (this.emailConfiguration.email_use_ssl) {
+      return 'ssl';
+    }
+    return 'none';
+  }
+
+  set emailSecurityMode(mode: 'none' | 'tls' | 'ssl') {
+    this.emailConfiguration.email_use_tls = mode === 'tls';
+    this.emailConfiguration.email_use_ssl = mode === 'ssl';
+  }
+
+  /** Radio group label naming the governing environment variable(s), if any. */
+  emailSecurityEnvironmentLabel(): string {
+    const names: string[] = [];
+    const tls = this.emailEnvironmentVariableFor('email_use_tls');
+    const ssl = this.emailEnvironmentVariableFor('email_use_ssl');
+    if (tls) {
+      names.push(tls);
+    }
+    if (ssl) {
+      names.push(ssl);
+    }
+    if (names.length === 0) {
+      return 'SMTP Security';
+    }
+    const suffix = names.length === 1 ? 'is set' : 'are set';
+    return `SMTP Security (${names.join(' and ')} ${suffix})`;
+  }
+
+  /** Effective status from the email configuration payload (fresh, per-field merged). */
+  get emailEffectiveStatus(): { status: 'configured' | 'invalid' | 'unavailable'; message: string } | null {
+    return this.emailConfiguration.effective ?? null;
+  }
+
+  /** First validation error for a field ('' when the field is valid). */
+  emailFieldError(field: string): string {
+    const messages = this.emailValidationErrors[field];
+    return messages && messages.length > 0 ? messages[0] : '';
+  }
+
+  private emptyEmailConfiguration(): EmailConfiguration {
+    return {
+      email_host: '',
+      email_port: null,
+      email_host_user: '',
+      email_password_set: false,
+      email_default_from_email: '',
+      email_use_tls: false,
+      email_use_ssl: false,
+      email_host_password: '',
+      environment_overrides: {},
+      effective: { status: 'unavailable', message: '' },
+    };
+  }
+
+  private applyEmailConfiguration(data: EmailConfiguration): void {
+    this.emailConfiguration = { ...data, email_host_password: '' };
+    this.emailValidationErrors = {};
+    this.captureEmailSnapshot();
+  }
+
+  private loadEmailConfiguration(): void {
+    this.emailConfigurationLoading = true;
+    if (this.emailConfigurationSubscription) {
+      this.emailConfigurationSubscription.unsubscribe();
+    }
+    this.emailConfigurationSubscription = this.webapiService.getEmailConfiguration().subscribe({
+      next: data => {
+        if (this.destroyed) {
+          return;
+        }
+        this.applyEmailConfiguration(data);
+        this.emailConfigurationLoading = false;
+        this.emailLoadError = '';
+      },
+      error: () => {
+        if (this.destroyed) {
+          return;
+        }
+        this.emailLoadError = 'Email settings could not be loaded. Refresh after signing in again.';
+        this.emailConfigurationLoading = false;
+        this.emailConfiguration = this.emptyEmailConfiguration();
+      }
+    });
+  }
+
+  saveEmailConfiguration(): void {
+    if (this.emailConfigurationLoading || this.emailLoadError || this.emailUpdating || !this.emailHasChanges) {
+      return;
+    }
+    this.emailUpdating = true;
+    this.emailValidationErrors = {};
+
+    const port = this.emailConfiguration.email_port;
+    if (port !== null && (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535)) {
+      this.emailValidationErrors = {
+        email_port: ['EMAIL_PORT must be between 1 and 65535.'],
+      };
+      this.emailUpdating = false;
+      return;
+    }
+
+    // Only non-environment-controlled fields are sent, so a partial
+    // environment (e.g. EMAIL_USE_TLS set) cannot block saving the rest.
+    const overrides = this.emailConfiguration.environment_overrides ?? {};
+    const payload = {} as EmailConfiguration;
+    if (!overrides['email_host']) {
+      payload.email_host = this.emailConfiguration.email_host;
+    }
+    if (!overrides['email_port']) {
+      payload.email_port = this.emailConfiguration.email_port;
+    }
+    if (!overrides['email_host_user']) {
+      payload.email_host_user = this.emailConfiguration.email_host_user;
+    }
+    if (!overrides['email_host_password']) {
+      // Blank keeps the stored password; only a typed replacement is sent.
+      const password = this.emailConfiguration.email_host_password ?? '';
+      if (password) {
+        payload.email_host_password = password;
+      }
+    }
+    if (!overrides['email_default_from_email']) {
+      payload.email_default_from_email = this.emailConfiguration.email_default_from_email;
+    }
+    if (!overrides['email_use_tls']) {
+      payload.email_use_tls = this.emailConfiguration.email_use_tls;
+    }
+    if (!overrides['email_use_ssl']) {
+      payload.email_use_ssl = this.emailConfiguration.email_use_ssl;
+    }
+    this.emailActionSubscription = this.webapiService.updateEmailConfiguration(payload).subscribe({
+      next: data => {
+        if (this.destroyed) {
+          return;
+        }
+        this.applyEmailConfiguration(data);
+        this.emailUpdating = false;
+        this.notification.success('Email settings saved.');
+        this.webapiService.checkServerStatus();
+      },
+      error: error => {
+        if (this.destroyed) {
+          return;
+        }
+        this.emailUpdating = false;
+        const response = error as HttpErrorResponse;
+        if (response?.status === 400 && response.error && typeof response.error === 'object') {
+          // Per-field backend validation: keep Save enabled so edits are kept.
+          this.emailValidationErrors = response.error as { [field: string]: string[] };
+        } else {
+          this.emailValidationErrors = {};
+          this.notification.error('Email settings could not be saved.');
+        }
+      }
+    });
+  }
+
+  cancelEmailConfiguration(): void {
+    this.loadEmailConfiguration();
+    this.notification.warn('Email settings reloaded from database.');
   }
 
   wireguardConfiguration: WireguardConfiguration = {} as WireguardConfiguration;

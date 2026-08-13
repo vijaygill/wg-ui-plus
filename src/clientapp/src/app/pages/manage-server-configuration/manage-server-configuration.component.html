@@ -4,7 +4,11 @@
       subtitle="Configure the VPN on the server side and manage your password."></app-page-header>
 
     <mat-tab-group>
-      <mat-tab label="Server Configuration">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>tune</mat-icon>
+          <span class="tab-label">Server Configuration</span>
+        </ng-template>
         <mat-card>
           <mat-card-content>
             <div class="editor-form form-grid">
@@ -98,12 +102,6 @@
                    <mat-icon>refresh</mat-icon>
                    Restart
                  </button>
-                 <button mat-stroked-button type="button" (click)="sendTestEmail()"
-                   [disabled]="emailStatus?.status !== 'configured'"
-                   [matTooltip]="emailStatus?.status === 'configured' ? 'Send from the configured address to that same address.' : (emailStatus?.message || 'SMTP email is not configured.')">
-                   <mat-icon>mail</mat-icon>
-                   Send Test Email
-                 </button>
                </div>
                <div class="form-span editor-validation">
                  <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
@@ -112,7 +110,11 @@
           </mat-card-content>
         </mat-card>
       </mat-tab>
-       <mat-tab label="MCP Server">
+       <mat-tab>
+         <ng-template mat-tab-label>
+           <mat-icon>hub</mat-icon>
+           <span class="tab-label">MCP Server</span>
+         </ng-template>
          <mat-card>
            <mat-card-content>
              <div class="editor-form form-grid">
@@ -147,8 +149,123 @@
            </mat-card-content>
          </mat-card>
        </mat-tab>
-       <mat-tab label="Change Password">
-        <div class="editor-form form-grid change-password">
+       <mat-tab>
+         <ng-template mat-tab-label>
+           <mat-icon>mail</mat-icon>
+           <span class="tab-label">Email</span>
+         </ng-template>
+         <mat-card>
+           <mat-card-content>
+             <div class="editor-form form-grid">
+               <mat-form-field>
+                  <mat-label>{{environmentVariableLabel('email_host', 'SMTP Host', !!emailEnvironmentVariableFor('email_host'))}}</mat-label>
+                 <input matInput id="emailHost" [(ngModel)]="emailConfiguration.email_host"
+                   matTooltip="SMTP server host name or IP address." matTooltipPosition="above" matTooltipShowDelay="500"
+                   [disabled]="!!emailEnvironmentVariableFor('email_host')" />
+                 @if (emailFieldError('email_host')) {
+                   <mat-error>{{emailFieldError('email_host')}}</mat-error>
+                 }
+               </mat-form-field>
+               <mat-form-field>
+                 <mat-label>{{environmentVariableLabel('email_port', 'Port', !!emailEnvironmentVariableFor('email_port'))}}</mat-label>
+                 <input matInput id="emailPort" type="number" [min]="1" [max]="65535"
+                   [(ngModel)]="emailConfiguration.email_port"
+                   matTooltip="SMTP server port (1-65535)." matTooltipPosition="above" matTooltipShowDelay="500"
+                   [disabled]="!!emailEnvironmentVariableFor('email_port')" />
+                 @if (emailFieldError('email_port')) {
+                   <mat-error>{{emailFieldError('email_port')}}</mat-error>
+                 }
+               </mat-form-field>
+               <mat-form-field>
+                 <mat-label>{{environmentVariableLabel('email_host_user', 'Username', !!emailEnvironmentVariableFor('email_host_user'))}}</mat-label>
+                 <input matInput id="emailHostUser" [(ngModel)]="emailConfiguration.email_host_user"
+                   matTooltip="Optional SMTP username. Must be supplied together with the password." matTooltipPosition="above" matTooltipShowDelay="500"
+                   [disabled]="!!emailEnvironmentVariableFor('email_host_user')" />
+                 @if (emailFieldError('email_host_user')) {
+                   <mat-error>{{emailFieldError('email_host_user')}}</mat-error>
+                 }
+               </mat-form-field>
+               <mat-form-field>
+                 <mat-label>{{environmentVariableLabel('email_host_password', 'Password', !!emailEnvironmentVariableFor('email_host_password'))}}</mat-label>
+                 <input matInput id="emailHostPassword" type="password" [(ngModel)]="emailConfiguration.email_host_password"
+                   [placeholder]="emailConfiguration.email_password_set ? 'Saved password (leave blank to keep)' : 'No password set'"
+                   matTooltip="Optional SMTP password. Stored on the server and never shown again." matTooltipPosition="above" matTooltipShowDelay="500"
+                   [disabled]="!!emailEnvironmentVariableFor('email_host_password')" />
+                 @if (emailFieldError('email_host_password')) {
+                   <mat-error>{{emailFieldError('email_host_password')}}</mat-error>
+                 }
+               </mat-form-field>
+               <mat-form-field class="form-span">
+                 <mat-label>{{environmentVariableLabel('email_default_from_email', 'From Email', !!emailEnvironmentVariableFor('email_default_from_email'))}}</mat-label>
+                 <input matInput id="emailDefaultFromEmail" [(ngModel)]="emailConfiguration.email_default_from_email"
+                   matTooltip="Email address used as the sender." matTooltipPosition="above" matTooltipShowDelay="500"
+                   [disabled]="!!emailEnvironmentVariableFor('email_default_from_email')" />
+                 @if (emailFieldError('email_default_from_email')) {
+                   <mat-error>{{emailFieldError('email_default_from_email')}}</mat-error>
+                 }
+               </mat-form-field>
+               <div class="form-span editor-row">
+                 <mat-radio-group class="email-security-radio-group" [(ngModel)]="emailSecurityMode"
+                   [disabled]="!!emailEnvironmentVariableFor('email_use_tls') || !!emailEnvironmentVariableFor('email_use_ssl')">
+                   <span class="email-security-label">{{emailSecurityEnvironmentLabel()}}</span>
+                   <mat-radio-button value="none"
+                     matTooltip="Connect without encryption." matTooltipPosition="above" matTooltipShowDelay="500">None</mat-radio-button>
+                   <mat-radio-button value="tls"
+                     matTooltip="Explicit encryption using STARTTLS. Recommended port 587." matTooltipPosition="above" matTooltipShowDelay="500">TLS (STARTTLS)</mat-radio-button>
+                   <mat-radio-button value="ssl"
+                     matTooltip="Implicit encryption from the first byte. Recommended port 465." matTooltipPosition="above" matTooltipShowDelay="500">SSL</mat-radio-button>
+                 </mat-radio-group>
+                 @if (emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')) {
+                   <div class="editor-message">{{emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')}}</div>
+                 }
+               </div>
+               @if (emailFieldError('detail')) {
+                 <div class="form-span editor-message">{{emailFieldError('detail')}}</div>
+               }
+                @if (emailLoadError) {
+                  <div class="form-span editor-message">{{emailLoadError}}</div>
+                }
+                <div class="form-span editor-actions">
+                  <button mat-flat-button color="primary" type="button" (click)="saveEmailConfiguration()"
+                    [disabled]="!emailHasChanges || emailUpdating || emailConfigurationLoading || !!emailLoadError">
+                    <mat-icon>check</mat-icon>
+                    Save
+                  </button>
+                  <button mat-stroked-button type="button" (click)="cancelEmailConfiguration()"
+                    [disabled]="emailUpdating || emailConfigurationLoading">
+                    <mat-icon>close</mat-icon>
+                    Cancel
+                  </button>
+                  <button mat-stroked-button type="button" (click)="sendTestEmail()"
+                    [disabled]="(emailEffectiveStatus?.status ?? emailStatus?.status) !== 'configured'"
+                    [matTooltip]="(emailEffectiveStatus?.status ?? emailStatus?.status) === 'configured' ? 'Send from the configured address to that same address.' : (emailEffectiveStatus?.message || emailStatus?.message || 'SMTP email is not configured.')">
+                    <mat-icon>mail</mat-icon>
+                    Send Test Email
+                  </button>
+                  <button mat-stroked-button type="button" (click)="testEmailConnectivity()"
+                    [disabled]="emailUpdating || emailConfigurationLoading"
+                    matTooltip="Check whether the SMTP server is reachable at the configured host and port.">
+                    <mat-icon>lan</mat-icon>
+                    Test Connectivity
+                  </button>
+                  @if (emailEffectiveStatus) {
+                    <span class="email-status-inline" [matTooltip]="emailEffectiveStatus.message"
+                      [attr.aria-label]="emailEffectiveStatus.message">
+                      <mat-icon>{{emailEffectiveStatus.status === 'configured' ? 'check_circle' : (emailEffectiveStatus.status === 'invalid' ? 'warning' : 'info')}}</mat-icon>
+                      <span>{{emailEffectiveStatus.status === 'configured' ? 'Configured' : (emailEffectiveStatus.status === 'invalid' ? 'Misconfigured' : 'Not configured')}}</span>
+                    </span>
+                  }
+                </div>
+             </div>
+           </mat-card-content>
+         </mat-card>
+       </mat-tab>
+        <mat-tab>
+         <ng-template mat-tab-label>
+           <mat-icon>lock</mat-icon>
+           <span class="tab-label">Change Password</span>
+         </ng-template>
+         <div class="editor-form form-grid change-password">
           <mat-form-field class="form-span">
             <mat-label>Current Password</mat-label>
             <input matInput type="password" [(ngModel)]="changeUserPasswordInfo.current_password" />

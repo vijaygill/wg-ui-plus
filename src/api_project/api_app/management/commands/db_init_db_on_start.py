@@ -19,6 +19,7 @@ from api_app.common import (
     WIREGUARD_CONFIG_PATH,
 )
 from api_app.models import Peer, PeerGroup, ServerConfiguration, Target
+from api_app.email_service import parse_boolean
 
 IP_ADDRESS_SERVER_DEFAULT = "192.168.2.0/24"
 SERVER_FQDN_DEFAULT = "myvpn.duckdns.org"
@@ -137,6 +138,56 @@ class Command(BaseCommand):
                     sc.strict_allowed_ips_in_peer_config = strict_allowed_ips_in_peer_config
                     is_dirty = True
                     self.stdout.write(self.style.SUCCESS("Updated strict_allowed_ips_in_peer_config"))
+
+                email_host = os.environ.get("EMAIL_HOST", None)
+                if email_host and sc.email_host != email_host:
+                    sc.email_host = email_host
+                    is_dirty = True
+                    self.stdout.write(self.style.SUCCESS("Updated email_host"))
+                email_port = os.environ.get("EMAIL_PORT", None)
+                if email_port:
+                    try:
+                        email_port_value = int(email_port)
+                    except ValueError:
+                        email_port_value = None
+                    if email_port_value is not None and sc.email_port != email_port_value:
+                        sc.email_port = email_port_value
+                        is_dirty = True
+                        self.stdout.write(self.style.SUCCESS("Updated email_port"))
+                email_host_user = os.environ.get("EMAIL_HOST_USER", None)
+                if email_host_user and sc.email_host_user != email_host_user:
+                    sc.email_host_user = email_host_user
+                    is_dirty = True
+                    self.stdout.write(self.style.SUCCESS("Updated email_host_user"))
+                email_host_password = os.environ.get("EMAIL_HOST_PASSWORD", None)
+                if email_host_password and sc.email_host_password != email_host_password:
+                    sc.email_host_password = email_host_password
+                    is_dirty = True
+                    self.stdout.write(self.style.SUCCESS("Updated email_host_password"))
+                email_default_from_email = os.environ.get("EMAIL_DEFAULT_FROM_EMAIL", None)
+                if email_default_from_email and sc.email_default_from_email != email_default_from_email:
+                    sc.email_default_from_email = email_default_from_email
+                    is_dirty = True
+                    self.stdout.write(self.style.SUCCESS("Updated email_default_from_email"))
+                # Presence semantics: an explicit "False" still syncs the field.
+                # parse_boolean accepts the same value set as email_service so
+                # "on"/"off" are recognized consistently.
+                if "EMAIL_USE_TLS" in os.environ:
+                    email_use_tls = parse_boolean(
+                        os.environ.get("EMAIL_USE_TLS", ""), "EMAIL_USE_TLS"
+                    )
+                    if sc.email_use_tls != email_use_tls:
+                        sc.email_use_tls = email_use_tls
+                        is_dirty = True
+                        self.stdout.write(self.style.SUCCESS("Updated email_use_tls"))
+                if "EMAIL_USE_SSL" in os.environ:
+                    email_use_ssl = parse_boolean(
+                        os.environ.get("EMAIL_USE_SSL", ""), "EMAIL_USE_SSL"
+                    )
+                    if sc.email_use_ssl != email_use_ssl:
+                        sc.email_use_ssl = email_use_ssl
+                        is_dirty = True
+                        self.stdout.write(self.style.SUCCESS("Updated email_use_ssl"))
 
                 if is_dirty:
                     sc.save()

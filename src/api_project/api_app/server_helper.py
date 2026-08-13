@@ -42,6 +42,7 @@ def get_application_details():
     res["current_version"] = "v0.0.0"
     res["current_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     allow_check_updates = False
+    email_status = None
     try:
         res["current_version"] = os.environ.get("APP_VERSION", "v0.0.0")
     except Exception:
@@ -49,6 +50,9 @@ def get_application_details():
         pass
     try:
         sc = ServerConfiguration.objects.all()[0]
+        # Compute the (database-aware) email status before any network call so
+        # a failing update check cannot degrade it to the env-only fallback.
+        email_status = get_email_status(sc)
         try:
             allow_check_updates = MCPConfigurationService.allow_check_updates(sc)
         except ImproperlyConfigured:
@@ -73,7 +77,7 @@ def get_application_details():
 
     res["latest_live_version"] = latest_live_version
     res["allow_allow_check_updates"] = allow_check_updates
-    res["email"] = get_email_status()
+    res["email"] = email_status if email_status is not None else get_email_status()
     res["is_email_enabled"] = res["email"]["status"] == "configured"
     return res
 

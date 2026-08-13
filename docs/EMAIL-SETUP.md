@@ -4,6 +4,23 @@ The application can send a peer's current WireGuard configuration by SMTP. SMTP
 configuration is supplied through environment variables when the container
 starts; it is not entered in the peer form.
 
+## Configuring SMTP in the web UI
+
+SMTP settings can also be configured in the web UI on **Server Configuration →
+Email**. Values entered there are stored in the database and take effect
+immediately, without a container restart.
+
+Environment variables remain the recommended deployment method and always take
+precedence over the database. Whenever an `EMAIL_*` environment variable is set,
+the matching control is disabled and its label shows which variable governs it.
+In particular, the **SMTP Security** radio group (None / TLS / SSL) is disabled
+as a whole when either `EMAIL_USE_TLS` or `EMAIL_USE_SSL` is present in the
+environment — even an explicit `EMAIL_USE_TLS=False` counts as set.
+
+The SMTP password is stored in the database but is never shown in the UI or
+returned by the API; the page only reports whether a password is saved. Leaving
+the password field blank (or unchanged) keeps the stored password.
+
 ## Bare-minimum local Postfix relay
 
 For an unauthenticated local Postfix relay, only three environment variables
@@ -131,6 +148,17 @@ Open **Server Configuration** and select **Send Test Email**. The authenticated
 action sends a simple message from `EMAIL_DEFAULT_FROM_EMAIL` to that same
 address; it never accepts an arbitrary test recipient and includes no peer or
 QR data.
+
+## Test SMTP connectivity from the server configuration page
+
+Select **Test Connectivity** on **Server Configuration → Email** to check
+whether the SMTP server is reachable. The action opens a TCP connection to the
+configured `EMAIL_HOST` and `EMAIL_PORT` and closes it immediately; it never
+sends a message and does not validate the username, password, or TLS/SSL
+settings. The result reports the resolved host and port, or a hint about the
+failure — for example an unresolvable host name, a timed-out or refused
+connection, or a port that is not mapped into the container. Use it to confirm
+that the container can reach the mail server before troubleshooting delivery.
 
 ## Save the recipient on the peer
 

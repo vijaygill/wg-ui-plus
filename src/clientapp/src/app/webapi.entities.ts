@@ -96,6 +96,20 @@ export interface McpConfiguration {
     mcp_token: string | null;
 }
 
+export interface EmailConfiguration {
+    email_host: string;
+    email_port: number | null;
+    email_host_user: string;
+    email_password_set: boolean;
+    email_default_from_email: string;
+    email_use_tls: boolean;
+    email_use_ssl: boolean;
+    /** Local working copy only: never sent by the API, never persisted client-side. */
+    email_host_password?: string;
+    environment_overrides?: { [field: string]: string };
+    effective?: { status: 'configured' | 'invalid' | 'unavailable'; message: string };
+}
+
 export interface WireguardConfiguration {
     server_configuration: string;
     peer_configurations: string[];
