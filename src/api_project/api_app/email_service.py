@@ -34,8 +34,9 @@ EMAIL_SETTINGS_FIELDS = {
     "email_use_ssl": "EMAIL_USE_SSL",
 }
 
-# Boolean fields follow presence semantics: an explicit environment value of
-# "False" still counts as environment-controlled.
+# Boolean fields follow value semantics: they are considered set only when the
+# environment value parses to "True"; an explicit "False" or an unset variable
+# leaves the field database-managed.
 EMAIL_SETTINGS_BOOLEAN_FIELDS = {"email_use_tls", "email_use_ssl"}
 
 # Sentinel value the UI sends back to keep the stored password unchanged.
@@ -149,15 +150,25 @@ def parse_smtp_configuration(environ=None, *, require_complete=True):
 def environment_overrides(environ=None):
     """Return {model field: env var} for every email field whose env var is set.
 
-    String/number fields count as set only when non-empty; boolean fields use
-    presence in the environment so an explicit ``EMAIL_USE_TLS=False`` still
-    marks the field as environment-controlled.
+    String/number fields count as set only when non-empty. Boolean fields count
+    as set only when their value parses to ``True``; an unset variable, an
+    explicit ``False``, or an unparseable value leaves the field
+    database-managed. This mirrors the UI messaging: a variable is considered
+    set only when it is set to ``true``.
     """
     environ = os.environ if environ is None else environ
     overrides = {}
     for field, variable in EMAIL_SETTINGS_FIELDS.items():
         if field in EMAIL_SETTINGS_BOOLEAN_FIELDS:
-            is_set = variable in environ
+            raw = environ.get(variable)
+            is_set = False
+            if raw is not None:
+                try:
+                    is_set = parse_boolean(raw, variable)
+                except ImproperlyConfigured:
+                    # Unparseable values do not govern; the effective status
+                    # is still derived from the merged environment.
+                    is_set = False
         else:
             is_set = bool(environ.get(variable))
         if is_set:
@@ -201,9 +212,10 @@ def _resolved_environment(configuration=None):
     The base values come from the ServerConfiguration row (when available) and
     only the EMAIL_* environment variables that are actually present are
     overlaid on top, so a partial environment (e.g. only ``EMAIL_USE_TLS``)
-    still fills the remaining fields from the database. Boolean fields use
-    presence in the environment, so an explicit ``EMAIL_USE_TLS=False``
-    overrides the database value.
+    still fills the remaining fields from the database. Boolean fields are
+    overlaid only when their value parses to ``True``, so an explicit
+    ``EMAIL_USE_TLS=False`` or an unset variable leaves the database value in
+    place.
     """
     overrides = environment_overrides()
     if configuration is None:

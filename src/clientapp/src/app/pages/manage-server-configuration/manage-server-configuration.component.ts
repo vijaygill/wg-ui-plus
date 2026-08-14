@@ -335,22 +335,46 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     this.emailConfiguration.email_use_ssl = mode === 'ssl';
   }
 
-  /** Radio group label naming the governing environment variable(s), if any. */
-  emailSecurityEnvironmentLabel(): string {
-    const names: string[] = [];
+  /** Radio option label naming the governing environment variable(s). */
+  emailSecurityOptionLabel(mode: 'none' | 'tls' | 'ssl'): string {
     const tls = this.emailEnvironmentVariableFor('email_use_tls');
     const ssl = this.emailEnvironmentVariableFor('email_use_ssl');
+    const tlsVariable = this.environmentVariableNames['email_use_tls'];
+    const sslVariable = this.environmentVariableNames['email_use_ssl'];
+    if (mode === 'tls') {
+      return `TLS (STARTTLS) (${tls ? `${tlsVariable} is set` : `Managed by ${tlsVariable}`})`;
+    }
+    if (mode === 'ssl') {
+      return `SSL (${ssl ? `${sslVariable} is set` : `Managed by ${sslVariable}`})`;
+    }
+    // None is only meaningful (and selectable) while neither variable is set.
+    return tls || ssl
+      ? 'None'
+      : `None (Managed by ${tlsVariable} and ${sslVariable})`;
+  }
+
+  /** Static help text explaining the SMTP security environment variables. */
+  get emailSecurityHelpText(): string {
+    return 'SMTP security is controlled by the EMAIL_USE_TLS and EMAIL_USE_SSL environment variables. ' +
+      'A variable is considered set only when its value is true; unset or false means it does not apply. ' +
+      'Only one can be true at a time: None means both are false or unset, TLS (STARTTLS) means EMAIL_USE_TLS=true, ' +
+      'SSL means EMAIL_USE_SSL=true.';
+  }
+
+  /** State-specific guidance shown when a security variable is set to true. */
+  get emailSecurityEnvironmentMessage(): string {
+    const tls = this.emailEnvironmentVariableFor('email_use_tls');
+    const ssl = this.emailEnvironmentVariableFor('email_use_ssl');
+    if (tls && ssl) {
+      return `${tls} and ${ssl} are set to true, so the security mode is managed by the environment and cannot be changed here. Set both to false or unset them to manage the security mode from this page.`;
+    }
     if (tls) {
-      names.push(tls);
+      return `${tls} is set to true, so the security mode is managed by the environment and cannot be changed here. Set it to false or unset it to manage the security mode from this page.`;
     }
     if (ssl) {
-      names.push(ssl);
+      return `${ssl} is set to true, so the security mode is managed by the environment and cannot be changed here. Set it to false or unset it to manage the security mode from this page.`;
     }
-    if (names.length === 0) {
-      return 'SMTP Security';
-    }
-    const suffix = names.length === 1 ? 'is set' : 'are set';
-    return `SMTP Security (${names.join(' and ')} ${suffix})`;
+    return '';
   }
 
   /** Effective status from the email configuration payload (fresh, per-field merged). */

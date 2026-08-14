@@ -82,11 +82,21 @@ class EmailEnvironmentOverridesTests(SimpleTestCase):
         with patch.dict("os.environ", {"EMAIL_HOST": "mail.local", "EMAIL_PORT": ""}, clear=True):
             self.assertEqual({"email_host": "EMAIL_HOST"}, environment_overrides())
 
-    def test_boolean_fields_use_presence_in_environment(self):
+    def test_boolean_fields_count_as_set_only_when_true(self):
         with patch.dict("os.environ", {"EMAIL_USE_TLS": "False"}, clear=True):
-            self.assertEqual({"email_use_tls": "EMAIL_USE_TLS"}, environment_overrides())
+            self.assertEqual({}, environment_overrides())
         with patch.dict("os.environ", {"EMAIL_USE_SSL": "false"}, clear=True):
+            self.assertEqual({}, environment_overrides())
+        with patch.dict("os.environ", {"EMAIL_USE_TLS": "True"}, clear=True):
+            self.assertEqual({"email_use_tls": "EMAIL_USE_TLS"}, environment_overrides())
+        with patch.dict("os.environ", {"EMAIL_USE_SSL": "1"}, clear=True):
             self.assertEqual({"email_use_ssl": "EMAIL_USE_SSL"}, environment_overrides())
+        with patch.dict("os.environ", {"EMAIL_USE_TLS": "on"}, clear=True):
+            self.assertEqual({"email_use_tls": "EMAIL_USE_TLS"}, environment_overrides())
+
+    def test_boolean_fields_with_unparseable_values_are_not_set(self):
+        with patch.dict("os.environ", {"EMAIL_USE_TLS": "maybe"}, clear=True):
+            self.assertEqual({}, environment_overrides())
 
     def test_missing_variables_produce_no_overrides(self):
         with patch.dict("os.environ", {}, clear=True):
@@ -121,8 +131,9 @@ class EmailEffectiveConfigurationTests(TestCase):
         status = get_email_status(configuration=self.configuration)
         self.assertEqual("configured", status["status"])
         merged = _resolved_environment(configuration=self.configuration)
-        # The present env var overrides only its own field; the rest is DB data.
-        self.assertEqual("False", merged["EMAIL_USE_TLS"])
+        # The "False" value no longer counts as set, so EMAIL_USE_TLS comes
+        # from the database; the rest is DB data too.
+        self.assertEqual("false", merged["EMAIL_USE_TLS"])
         self.assertEqual("db-mail.local", merged["EMAIL_HOST"])
         self.assertEqual("2525", merged["EMAIL_PORT"])
 
@@ -168,12 +179,12 @@ class EmailEffectiveConfigurationTests(TestCase):
         save_email_fields(self.configuration)
         payload = email_settings_payload(self.configuration)
         self.assertEqual(
-            {"email_use_tls": "EMAIL_USE_TLS", "email_use_ssl": "EMAIL_USE_SSL"},
+            {"email_use_ssl": "EMAIL_USE_SSL"},
             payload["environment_overrides"],
         )
         self.assertEqual("configured", payload["effective"]["status"])
         merged = _resolved_environment(configuration=self.configuration)
-        self.assertEqual("False", merged["EMAIL_USE_TLS"])
+        self.assertEqual("false", merged["EMAIL_USE_TLS"])
         self.assertEqual("true", merged["EMAIL_USE_SSL"])
 
     @patch.dict("os.environ", {"EMAIL_HOST": "env-mail.local"}, clear=True)
@@ -282,7 +293,7 @@ class EmailConfigurationEndpointTests(TestCase):
         self.assertEqual(400, response.status_code)
         self.assertIn("EMAIL_HOST", response.json()["email_host"][0])
 
-    @patch.dict("os.environ", {"EMAIL_USE_TLS": "False"}, clear=True)
+    @patch.dict("os.environ", {"EMAIL_USE_TLS": "True"}, clear=True)
     def test_patch_rejects_environment_controlled_boolean_field(self):
         response = self.client.patch("/api/v1/control/email/configuration", {
             "email_use_tls": True,
@@ -291,6 +302,15 @@ class EmailConfigurationEndpointTests(TestCase):
         self.assertIn("EMAIL_USE_TLS", response.json()["email_use_tls"][0])
 
     @patch.dict("os.environ", {"EMAIL_USE_TLS": "False"}, clear=True)
+    def test_patch_allows_changing_boolean_field_when_environment_value_is_false(self):
+        response = self.client.patch("/api/v1/control/email/configuration", {
+            "email_use_tls": True,
+        }, format="json")
+        self.assertEqual(200, response.status_code)
+        self.configuration.refresh_from_db()
+        self.assertTrue(self.configuration.email_use_tls)
+
+    @patch.dict("os.environ", {"EMAIL_USE_TLS": "True"}, clear=True)
     def test_patch_full_payload_matching_database_is_accepted_with_environment_override(self):
         save_email_fields(
             self.configuration,
@@ -428,6 +448,14 @@ class EmailStartupSeedingTests(TestCase):
         self.configuration.refresh_from_db()
         self.assertTrue(self.configuration.email_use_tls)
         self.assertFalse(self.configuration.email_use_ssl)
+
+    @patch.dict("os.environ", {"EMAIL_USE_TLS": "False"}, clear=True)
+    def test_startup_seeding_keeps_database_boolean_when_environment_is_false(self):
+        self.configuration.email_use_tls = True
+        self.configuration.save(update_fields=["email_use_tls"])
+        management.call_command("db_init_db_on_start", stdout=io.StringIO())
+        self.configuration.refresh_from_db()
+        self.assertTrue(self.configuration.email_use_tls)
 
 
 class EmailSendPathTests(TestCase):

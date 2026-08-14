@@ -3,6 +3,7 @@ import os
 import datetime
 import traceback
 
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
@@ -169,23 +170,29 @@ class Command(BaseCommand):
                     sc.email_default_from_email = email_default_from_email
                     is_dirty = True
                     self.stdout.write(self.style.SUCCESS("Updated email_default_from_email"))
-                # Presence semantics: an explicit "False" still syncs the field.
-                # parse_boolean accepts the same value set as email_service so
-                # "on"/"off" are recognized consistently.
-                if "EMAIL_USE_TLS" in os.environ:
-                    email_use_tls = parse_boolean(
-                        os.environ.get("EMAIL_USE_TLS", ""), "EMAIL_USE_TLS"
-                    )
-                    if sc.email_use_tls != email_use_tls:
-                        sc.email_use_tls = email_use_tls
+                # Value semantics: a boolean only governs when it is set to
+                # "true" (see email_service.environment_overrides). An explicit
+                # "False" or an unset variable leaves the field
+                # database-managed, so it is not synced here — otherwise a
+                # restart would silently revert user edits.
+                email_use_tls = os.environ.get("EMAIL_USE_TLS")
+                if email_use_tls is not None:
+                    try:
+                        email_use_tls_set = parse_boolean(email_use_tls, "EMAIL_USE_TLS")
+                    except ImproperlyConfigured:
+                        email_use_tls_set = False
+                    if email_use_tls_set and not sc.email_use_tls:
+                        sc.email_use_tls = True
                         is_dirty = True
                         self.stdout.write(self.style.SUCCESS("Updated email_use_tls"))
-                if "EMAIL_USE_SSL" in os.environ:
-                    email_use_ssl = parse_boolean(
-                        os.environ.get("EMAIL_USE_SSL", ""), "EMAIL_USE_SSL"
-                    )
-                    if sc.email_use_ssl != email_use_ssl:
-                        sc.email_use_ssl = email_use_ssl
+                email_use_ssl = os.environ.get("EMAIL_USE_SSL")
+                if email_use_ssl is not None:
+                    try:
+                        email_use_ssl_set = parse_boolean(email_use_ssl, "EMAIL_USE_SSL")
+                    except ImproperlyConfigured:
+                        email_use_ssl_set = False
+                    if email_use_ssl_set and not sc.email_use_ssl:
+                        sc.email_use_ssl = True
                         is_dirty = True
                         self.stdout.write(self.style.SUCCESS("Updated email_use_ssl"))
 

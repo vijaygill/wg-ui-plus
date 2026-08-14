@@ -204,21 +204,27 @@
                    <mat-error>{{emailFieldError('email_default_from_email')}}</mat-error>
                  }
                </mat-form-field>
-               <div class="form-span editor-row">
-                 <mat-radio-group class="email-security-radio-group" [(ngModel)]="emailSecurityMode"
-                   [disabled]="!!emailEnvironmentVariableFor('email_use_tls') || !!emailEnvironmentVariableFor('email_use_ssl')">
-                   <span class="email-security-label">{{emailSecurityEnvironmentLabel()}}</span>
-                   <mat-radio-button value="none"
-                     matTooltip="Connect without encryption." matTooltipPosition="above" matTooltipShowDelay="500">None</mat-radio-button>
-                   <mat-radio-button value="tls"
-                     matTooltip="Explicit encryption using STARTTLS. Recommended port 587." matTooltipPosition="above" matTooltipShowDelay="500">TLS (STARTTLS)</mat-radio-button>
-                   <mat-radio-button value="ssl"
-                     matTooltip="Implicit encryption from the first byte. Recommended port 465." matTooltipPosition="above" matTooltipShowDelay="500">SSL</mat-radio-button>
-                 </mat-radio-group>
-                 @if (emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')) {
-                   <div class="editor-message">{{emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')}}</div>
-                 }
-               </div>
+                <div class="form-span editor-row">
+                  <mat-radio-group class="email-security-radio-group" [(ngModel)]="emailSecurityMode"
+                    [disabled]="!!emailEnvironmentVariableFor('email_use_tls') || !!emailEnvironmentVariableFor('email_use_ssl')">
+                    <span class="email-security-label">SMTP Security</span>
+                    <mat-radio-button value="none"
+                      matTooltip="Connect without encryption." matTooltipPosition="above" matTooltipShowDelay="500">{{emailSecurityOptionLabel('none')}}</mat-radio-button>
+                    <mat-radio-button value="tls"
+                      matTooltip="Explicit encryption using STARTTLS. Recommended port 587." matTooltipPosition="above" matTooltipShowDelay="500">{{emailSecurityOptionLabel('tls')}}</mat-radio-button>
+                    <mat-radio-button value="ssl"
+                      matTooltip="Implicit encryption from the first byte. Recommended port 465." matTooltipPosition="above" matTooltipShowDelay="500">{{emailSecurityOptionLabel('ssl')}}</mat-radio-button>
+                  </mat-radio-group>
+                  <div class="email-security-help">
+                    <div class="email-security-help-text">{{emailSecurityHelpText}}</div>
+                    @if (emailSecurityEnvironmentMessage) {
+                      <div class="email-security-environment-message">{{emailSecurityEnvironmentMessage}}</div>
+                    }
+                  </div>
+                  @if (emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')) {
+                    <div class="editor-message">{{emailFieldError('email_use_tls') || emailFieldError('email_use_ssl')}}</div>
+                  }
+                </div>
                @if (emailFieldError('detail')) {
                  <div class="form-span editor-message">{{emailFieldError('detail')}}</div>
                }

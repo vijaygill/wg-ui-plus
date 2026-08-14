@@ -142,12 +142,11 @@ class EmailBooleanOnlyEnvironmentMergeTests(TestCase):
     @patch.dict("os.environ", {"EMAIL_USE_SSL": "False"}, clear=True)
     @patch("api_app.email_service.EmailBackend")
     @patch("api_app.email_service.EmailMessage")
-    def test_send_test_email_explicit_false_boolean_keeps_database_security_mode(
+    def test_send_test_email_false_boolean_environment_does_not_override_database_security_mode(
         self, email_class, backend_class
     ):
-        # EMAIL_USE_SSL is explicitly "False" in the environment: it counts as
-        # environment-controlled, but the effective value is still False so the
-        # database TLS value is honored and delivery proceeds with use_tls=True.
+        # EMAIL_USE_SSL="False" no longer counts as set, so the database TLS
+        # value is honored and delivery proceeds with use_tls=True.
         save_email_fields(self.configuration, email_use_tls=True)
         send_test_email()
         backend_class.assert_called_once_with(
@@ -159,6 +158,13 @@ class EmailBooleanOnlyEnvironmentMergeTests(TestCase):
             use_ssl=False,
             fail_silently=False,
         )
+
+    @patch.dict("os.environ", {"EMAIL_USE_TLS": "False"}, clear=True)
+    def test_false_boolean_environment_does_not_override_database_true(self):
+        save_email_fields(self.configuration, email_use_tls=True)
+        merged = _resolved_environment(configuration=self.configuration)
+        self.assertEqual("true", merged["EMAIL_USE_TLS"])
+        self.assertEqual("false", merged["EMAIL_USE_SSL"])
 
     @patch.dict("os.environ", {"EMAIL_USE_SSL": "true"}, clear=True)
     def test_conflicting_boolean_env_override_marks_effective_config_invalid(self):

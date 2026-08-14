@@ -34,6 +34,7 @@ RUN apt-get update -y \
         python3-pip \
         python-is-python3 \
         python3-pytest \
+        python3-pytest-cov \
         git \
         sqlite3 wireguard wireguard-tools \
         iproute2 iptables libcap2-bin libcap2 \

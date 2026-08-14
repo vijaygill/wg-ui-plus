@@ -50,3 +50,16 @@
 .tab-label {
     margin-left: 0.4rem;
 }
+
+.email-security-help {
+    padding-top: 0.25rem;
+    color: color-mix(in srgb, currentColor 72%, transparent);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    max-width: 42rem;
+}
+
+.email-security-environment-message {
+    padding-top: 0.35rem;
+    font-weight: 500;
+}
