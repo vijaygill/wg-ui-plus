@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, computed } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { Peer, ServerValidationError } from '../../webapi.entities';
 import { WebapiService } from '../../services/webapi.service';
 import { AppSharedModule } from '../../app-shared.module';
@@ -28,16 +28,15 @@ const SAFE_EMAIL_DELIVERY_FALLBACK =
 })
 export class ManagePeersEditorComponent {
   @Input()
-  get editItem(): Peer { return this.peer; }
+  get editItem(): Peer { return this.peerSignal(); }
   set editItem(value: Peer) {
-    this.peer = value;
+    this.peerSignal.set(value);
     this.captureSnapshot();
     if (value.id) {
       this.webapiService.getPeer(value.id).subscribe(data => {
-        this.peer = data;
+        this.peerSignal.set(data);
         this.getLookupData();
         this.captureSnapshot();
-        this.cdr.markForCheck();
       });
     }
     else {
@@ -46,12 +45,15 @@ export class ManagePeersEditorComponent {
     }
   }
 
-  peer: Peer = {} as Peer;
+  private peerSignal = signal<Peer>({} as Peer);
+
+  /** Preserves the former field name for all internal read sites. */
+  private get peer(): Peer { return this.peerSignal(); }
 
   /** Serialized snapshot of the editable fields as originally loaded. */
   private snapshot = '';
 
-  validationResult?: ServerValidationError;
+  validationResult = signal<ServerValidationError | undefined>(undefined);
 
   /** Whether SMTP e-mail is configured (drives the send-by-email button). */
   emailAvailable = computed(() => {
@@ -73,8 +75,7 @@ export class ManagePeersEditorComponent {
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService,
-    private cdr: ChangeDetectorRef) {
+    private confirmationDialogService: ConfirmationDialogService) {
   }
 
   getLookupData() {
@@ -83,8 +84,7 @@ export class ManagePeersEditorComponent {
         let lookupItems = this.peer.peer_groups ?
           lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
           : lookup;
-        this.peer.peer_groups_lookup = lookupItems;
-        this.cdr.markForCheck();
+        this.peerSignal.update(peer => ({ ...peer, peer_groups_lookup: lookupItems }));
       });
     }
   }
@@ -130,8 +130,7 @@ export class ManagePeersEditorComponent {
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.validationResult = response.error as ServerValidationError;
-            this.cdr.markForCheck();
+            this.validationResult.set(response.error as ServerValidationError);
           }
         },
         complete: () => {
@@ -159,8 +158,7 @@ export class ManagePeersEditorComponent {
               error: error => {
                 let response = error as HttpErrorResponse;
                 if (response) {
-                  this.validationResult = response.error as ServerValidationError;
-                  this.cdr.markForCheck();
+                  this.validationResult.set(response.error as ServerValidationError);
                 }
               },
               complete: () => {
@@ -189,7 +187,7 @@ export class ManagePeersEditorComponent {
   }
 
   sendConfigurationByEmail(event: Event): void {
-    this.validationResult = undefined;
+    this.validationResult.set(undefined);
     this.confirmationDialogService.confirm('Confirm', 'Send the current configuration to ' + this.editItem.email_address + '?')
       .subscribe(dialogResult => {
         if (dialogResult) {

@@ -1,4 +1,4 @@
-import { Component, ContentChild, Input, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppSharedModule } from '../../app-shared.module';
 import { Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { LoginService } from '../../services/login.service';
 export class CrudContainerComponent<T> {
   @Input() header!: string;
   @Input() subheader!: string;
-  isEditing: boolean = false;
+  isEditing = signal(false);
   item: T = {} as T;
 
   @ContentChild("list") listControl!: TemplateRef<any>;
@@ -27,18 +27,18 @@ export class CrudContainerComponent<T> {
   listControlContext = {
     onNewItem: (item: T) => {
       this.item = item;
-      this.isEditing = true;
+      this.isEditing.set(true);
     },
     onEdit: (item: T) => {
       this.item = item;
-      this.isEditing = true;
+      this.isEditing.set(true);
     }
   };
 
   editControlContext = {
     getEditItem: () => { return this.item; },
     onFinish: (item: T) => {
-      this.isEditing = false;
+      this.isEditing.set(false);
     }
   };
 }

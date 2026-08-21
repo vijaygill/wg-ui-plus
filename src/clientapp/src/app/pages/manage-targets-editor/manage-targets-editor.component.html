@@ -10,9 +10,9 @@
     <input matInput id="targetDescription" [(ngModel)]="editItem.description"
       [disabled]="!editItem.allow_modify_self" matTooltip="Suitable description." matTooltipPosition="above" matTooltipShowDelay="500" />
   </mat-form-field>
-  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult()">
   </app-validation-errors-display>
-  <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult()">
   </app-validation-errors-display>
   <mat-form-field class="form-span">
     <mat-label>IP Address/Network</mat-label>
@@ -22,7 +22,7 @@
       matTooltipPosition="above" />
     <mat-hint>Valid values XXX.XXX.XXX.XXX / XXX.XXX.XXX.XXX/MASK / XXX.XXX.XXX.XXX:PORT1,PORT2...</mat-hint>
   </mat-form-field>
-  <app-validation-errors-display class="form-span" field="ip_address" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="ip_address" [validationResult]="validationResult()">
   </app-validation-errors-display>
   <div class="form-span editor-row">
     <mat-checkbox id="targetDisabled" [(ngModel)]="editItem.disabled"
@@ -64,6 +64,6 @@
     }
   </div>
   <div class="form-span editor-validation">
-    <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
+    <app-validation-errors-display [validationResult]="validationResult()"></app-validation-errors-display>
   </div>
 </div>

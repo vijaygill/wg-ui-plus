@@ -11,10 +11,10 @@
       [disabled]="!editItem.allow_modify_self" matTooltip="Some helpful description." matTooltipShowDelay="500"
       matTooltipPosition="above" />
   </mat-form-field>
-  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
+  <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult()">
   </app-validation-errors-display>
   <app-validation-errors-display class="form-span" field="description"
-    [validationResult]="validationResult"></app-validation-errors-display>
+    [validationResult]="validationResult()"></app-validation-errors-display>
   <div class="form-span editor-row">
     <mat-checkbox id="peerGroupDisabled" [(ngModel)]="editItem.disabled"
       [disabled]="!editItem.allow_modify_self"
@@ -44,7 +44,7 @@
         </ng-template>
       </app-dual-list>
       <app-validation-errors-display field="peers"
-        [validationResult]="validationResult"></app-validation-errors-display>
+        [validationResult]="validationResult()"></app-validation-errors-display>
     </div>
   }
   <div class="form-span editor-picklist">
@@ -65,7 +65,7 @@
       </app-dual-list>
     }
     <app-validation-errors-display field="targets"
-      [validationResult]="validationResult"></app-validation-errors-display>
+      [validationResult]="validationResult()"></app-validation-errors-display>
   </div>
   <div class="form-span editor-actions">
     <button mat-flat-button color="primary" type="button" (click)="ok()" [disabled]="!hasChanges">
@@ -84,6 +84,6 @@
     }
   </div>
   <div class="form-span editor-validation">
-    <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
+    <app-validation-errors-display [validationResult]="validationResult()"></app-validation-errors-display>
   </div>
 </div>

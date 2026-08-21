@@ -17,9 +17,9 @@
           matTooltip="Some description of the device/computer you wish to connect with VPN." matTooltipShowDelay="500"
           matTooltipPosition="above" />
       </mat-form-field>
-      <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult">
+      <app-validation-errors-display class="form-span" field="name" [validationResult]="validationResult()">
       </app-validation-errors-display>
-      <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult">
+      <app-validation-errors-display class="form-span" field="description" [validationResult]="validationResult()">
       </app-validation-errors-display>
       <mat-form-field class="form-span">
         <mat-label>e-Mail Address</mat-label>
@@ -53,7 +53,7 @@
             </div>
           </ng-template>
         </app-dual-list>
-        <app-validation-errors-display field="peer_groups" [validationResult]="validationResult">
+        <app-validation-errors-display field="peer_groups" [validationResult]="validationResult()">
         </app-validation-errors-display>
       </div>
       <div class="form-span editor-actions">
@@ -86,7 +86,7 @@
         }
       </div>
       <div class="form-span editor-validation">
-        <app-validation-errors-display [validationResult]="validationResult"></app-validation-errors-display>
+        <app-validation-errors-display [validationResult]="validationResult()"></app-validation-errors-display>
       </div>
     </div>
   </mat-tab>

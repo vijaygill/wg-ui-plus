@@ -2,10 +2,10 @@
   <ng-template #childControl>
     <mat-card class="crud-card" appearance="outlined">
       <mat-card-content>
-        @if (!isEditing) {
+        @if (!isEditing()) {
           <ng-container *ngTemplateOutlet="listControl ;context: listControlContext"></ng-container>
         }
-        @if (isEditing) {
+        @if (isEditing()) {
           <ng-container *ngTemplateOutlet="editorControl;context: editControlContext"></ng-container>
         }
       </mat-card-content>

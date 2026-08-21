@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -18,16 +18,15 @@ import { WebapiService } from '../../services/webapi.service';
 })
 export class ManageTargetsEditorComponent {
   @Input()
-  get editItem(): Target { return this.target; }
+  get editItem(): Target { return this.targetSignal(); }
   set editItem(value: Target) {
-    this.target = value;
+    this.targetSignal.set(value);
     this.captureSnapshot();
     if (this.target.id) {
       this.webapiService.getTarget(value.id).subscribe(data => {
-        this.target = data;
+        this.targetSignal.set(data);
         this.getLookupData();
         this.captureSnapshot();
-        this.cdr.markForCheck();
       });
     }
     else {
@@ -36,26 +35,27 @@ export class ManageTargetsEditorComponent {
     }
   }
 
-  target: Target = {} as Target;
+  private targetSignal = signal<Target>({} as Target);
+
+  /** Preserves the former field name for all internal read sites. */
+  private get target(): Target { return this.targetSignal(); }
 
   /** Serialized snapshot of the editable fields as originally loaded. */
   private snapshot = '';
 
-  validationResult!: any;
+  validationResult = signal<any | undefined>(undefined);
 
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService,
-    private cdr: ChangeDetectorRef) { }
+    private confirmationDialogService: ConfirmationDialogService) { }
 
   getLookupData() {
     this.webapiService.getPeerGroupList().subscribe(lookup => {
       let lookupItems = this.target.peer_groups ?
         lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
         : lookup;
-      this.target.peer_groups_lookup = lookupItems;
-      this.cdr.markForCheck();
+      this.targetSignal.update(target => ({ ...target, peer_groups_lookup: lookupItems }));
     });
   }
 
@@ -92,8 +92,7 @@ export class ManageTargetsEditorComponent {
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
-            this.validationResult = response.error;
-            this.cdr.markForCheck();
+            this.validationResult.set(response.error);
           }
         },
         complete: () => {
@@ -117,8 +116,7 @@ export class ManageTargetsEditorComponent {
               error: error => {
                 let response = error as HttpErrorResponse;
                 if (response) {
-                  this.validationResult = response.error as ServerValidationError;
-                  this.cdr.markForCheck();
+                  this.validationResult.set(response.error as ServerValidationError);
                 }
               },
               complete: () => {
