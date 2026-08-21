@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 
 export type NotificationType = 'success' | 'error' | 'warn' | 'info';
 export type NotificationSource = 'status' | 'user';
@@ -42,13 +41,13 @@ export class NotificationService {
 
     private readonly durationMs = 4000;
     private readonly emailFailureDurationMs = 15000;
-    private readonly current$ = new BehaviorSubject<AppNotification | null>(null);
-    private current: AppNotification | null = null;
+    private currentSignal = signal<AppNotification | null>(null);
     private statusNotification: AppNotification | null = null;
     private emailFailureVisible = false;
     private autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
 
-    public readonly notification$: Observable<AppNotification | null> = this.current$.asObservable();
+    /** Currently displayed notification (null when none); reads are reactive. */
+    public readonly notification = this.currentSignal.asReadonly();
 
     public success(message: string): void {
         this.show({ type: 'success', message });
@@ -71,8 +70,9 @@ export class NotificationService {
      * The displaced status is retained and restored when this message ends.
      */
     public showEmailDeliveryFailure(message: string): void {
-        if (this.current?.persistent && this.current.source === 'status') {
-            this.statusNotification = this.current;
+        const current = this.currentSignal();
+        if (current?.persistent && current.source === 'status') {
+            this.statusNotification = current;
         }
         this.emailFailureVisible = true;
         this.show(
@@ -94,12 +94,11 @@ export class NotificationService {
     public show(notification: AppNotification, options: ShowOptions = {}): void {
         // A transient (auto-dismissing) message must never replace a persistent
         // one unless the caller has explicitly opted into that focused behavior.
-        if (this.current && this.current.persistent && !notification.persistent && !options.replacePersistent) {
+        if (this.currentSignal()?.persistent && !notification.persistent && !options.replacePersistent) {
             return;
         }
         this.clearTimer();
-        this.current = notification;
-        this.current$.next(notification);
+        this.currentSignal.set(notification);
         if (!notification.persistent) {
             const duration = options.durationMs ?? this.durationMs;
             this.autoDismissTimer = setTimeout(() => this.clear(), duration);
@@ -113,22 +112,21 @@ export class NotificationService {
     /** Clears a status banner without removing user feedback shown in its place. */
     public clearStatus(): void {
         this.statusNotification = null;
-        if (this.current?.source === 'status') {
+        if (this.currentSignal()?.source === 'status') {
             this.clear();
         }
     }
 
     public clear(): void {
         this.clearTimer();
-        if (this.emailFailureVisible && this.current?.source === 'user') {
+        if (this.emailFailureVisible && this.currentSignal()?.source === 'user') {
             this.emailFailureVisible = false;
             if (this.statusNotification) {
                 this.show(this.statusNotification);
                 return;
             }
         }
-        this.current = null;
-        this.current$.next(null);
+        this.currentSignal.set(null);
     }
 
     private clearTimer(): void {

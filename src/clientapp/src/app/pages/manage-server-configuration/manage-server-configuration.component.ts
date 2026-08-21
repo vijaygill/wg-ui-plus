@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, ChangeDetectorRef, effect } from '@angular/core';
 import { ChangeUserPasswordInfo, EmailConfiguration, McpConfiguration, ServerConfiguration, ServerStatus, ServerValidationError, UserSessionInfo, WireguardConfiguration } from '../../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
@@ -31,11 +31,9 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
 
   changeUserPasswordInfo: ChangeUserPasswordInfo = {} as ChangeUserPasswordInfo;
 
-  serverStatus !: ServerStatus;
+  /** Feedback message shown on the Change Password tab. */
+  passwordChangeMessage = '';
 
-  userSessionInfo!: UserSessionInfo;
-  loginServiceSubscription !: Subscription;
-  serverStatusSubscription !: Subscription;
   refreshDataSubscription !: Subscription;
   mcpConfigurationSubscription !: Subscription;
   mcpActionSubscription !: Subscription;
@@ -63,6 +61,44 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   private mcpTokenHideTimer: ReturnType<typeof setTimeout> | null = null;
   private mcpTokenFocusTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+
+  /** Previous server status seen by the reload effect (null until its first run). */
+  private previousStatus: ServerStatus | null = null;
+
+  /**
+   * Reloads the editable configuration whenever the server reports that the
+   * database changed (last_db_change_datetime advanced between polls). The
+   * seeded placeholder carries no timestamp, so the eager load in ngOnInit
+   * remains the initial fetch.
+   */
+  private readonly reloadOnDbChange = effect(() => {
+    const status = this.webapiService.serverStatus();
+    const previous = this.previousStatus;
+    this.previousStatus = status;
+    if (previous?.last_db_change_datetime
+      && status.last_db_change_datetime
+      && previous.last_db_change_datetime < status.last_db_change_datetime) {
+      this.refreshData();
+    }
+  });
+
+  /** Last session value seen by the redirect effect (null until its first run). */
+  private lastSeenSession: UserSessionInfo | null = null;
+
+  /**
+   * Redirects to the login page whenever the session turns logged-out.
+   * The seeded placeholder is skipped so an authenticated user opening this
+   * page is not redirected before the authentication check lands.
+   */
+  private readonly sessionRedirect = effect(() => {
+    const session = this.loginService.userSessionInfo();
+    const seen = this.lastSeenSession;
+    this.lastSeenSession = session;
+    if (seen !== null && !session.is_logged_in) {
+      this.router.navigate(['/login']);
+    }
+  });
+
   private readonly environmentVariableNames: { [field: string]: string } = {
     network_address: 'WG_NETWORK_ADDRESS',
     host_name_external: 'WG_HOST_NAME_EXTERNAL',
@@ -87,23 +123,11 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
-    private router: Router, private loginService: LoginService, private confirmation: ConfirmationDialogService) { }
+    private router: Router, private loginService: LoginService, private confirmation: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
-      this.userSessionInfo = data;
-      this.userSessionInfo.message = "";
-      if (!this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/login']);
-      }
-    });
     this.loginService.checkIsUserAuthenticated();
-    this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
-      if (!this.serverStatus || (this.serverStatus && data && this.serverStatus.last_db_change_datetime < data.last_db_change_datetime)) {
-        this.refreshData();
-        this.serverStatus = data;
-      }
-    });
     this.refreshData();
     this.mcpConfigurationSubscription = this.webapiService.getMcpConfiguration().subscribe({
       next: data => {
@@ -115,6 +139,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.resetRevealedMcpToken();
         this.mcpConfigurationLoading = false;
         this.mcpLoadError = '';
+        this.cdr.markForCheck();
       },
       error: () => {
         if (this.destroyed) {
@@ -132,6 +157,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
           environment_enabled: null,
           mcp_token: null
         };
+        this.cdr.markForCheck();
       }
     });
     this.loadEmailConfiguration();
@@ -139,12 +165,6 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.destroyed = true;
-    if (this.loginServiceSubscription) {
-      this.loginServiceSubscription.unsubscribe();
-    }
-    if (this.serverStatusSubscription) {
-      this.serverStatusSubscription.unsubscribe();
-    }
     if (this.refreshDataSubscription) {
       this.refreshDataSubscription.unsubscribe();
     }
@@ -188,6 +208,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
     this.refreshDataSubscription = this.webapiService.getServerConfigurationList().subscribe(data => {
       this.editItem = data[0];
       this.captureSnapshot();
+      this.cdr.markForCheck();
     });
   }
 
@@ -238,11 +259,13 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         next: data => {
           this.notification.success('Server configuration saved.');
           this.validationResult = { type: '', errors: [] } as ServerValidationError;
+          this.cdr.markForCheck();
         },
         error: error => {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -258,7 +281,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
   }
 
   get emailStatus() {
-    return this.serverStatus?.application_details?.email;
+    return this.webapiService.serverStatus().application_details?.email;
   }
 
   sendTestEmail(): void {
@@ -422,6 +445,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.applyEmailConfiguration(data);
         this.emailConfigurationLoading = false;
         this.emailLoadError = '';
+        this.cdr.markForCheck();
       },
       error: () => {
         if (this.destroyed) {
@@ -430,6 +454,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.emailLoadError = 'Email settings could not be loaded. Refresh after signing in again.';
         this.emailConfigurationLoading = false;
         this.emailConfiguration = this.emptyEmailConfiguration();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -488,6 +513,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.emailUpdating = false;
         this.notification.success('Email settings saved.');
         this.webapiService.checkServerStatus();
+        this.cdr.markForCheck();
       },
       error: error => {
         if (this.destroyed) {
@@ -502,6 +528,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
           this.emailValidationErrors = {};
           this.notification.error('Email settings could not be saved.');
         }
+        this.cdr.markForCheck();
       }
     });
   }
@@ -525,11 +552,12 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
 
   changePassword(event: Event): void {
     if (this.changeUserPasswordInfo.new_password !== this.changeUserPasswordInfo.new_password_copy) {
-      this.userSessionInfo.message = "New Passwords don't match.";
+      this.passwordChangeMessage = "New Passwords don't match.";
     }
     else {
       this.changePasswordSubscription = this.webapiService.changeUserPassword(this.changeUserPasswordInfo).subscribe(data => {
-        this.userSessionInfo.message = data.message;
+        this.passwordChangeMessage = data.message;
+        this.cdr.markForCheck();
       });
     }
   }
@@ -553,6 +581,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         } else {
           this.notification.success('MCP configuration saved.');
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         if (this.destroyed) {
@@ -561,6 +590,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         this.mcpConfiguration = { ...this.mcpConfiguration, mcp_enabled: this.savedMcpEnabled };
         this.mcpUpdating = false;
         this.notification.error('MCP configuration could not be saved. The previous setting was restored.');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -576,6 +606,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
       }
       if (!confirmed) {
         this.mcpUpdating = false;
+        this.cdr.markForCheck();
         return;
       }
       this.mcpActionSubscription = this.webapiService.generateMcpToken().subscribe({
@@ -590,6 +621,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
           this.resetRevealedMcpToken();
           this.notification.success('New MCP token generated.');
           this.mcpUpdating = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           if (this.destroyed) {
@@ -597,6 +629,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
           }
           this.mcpUpdating = false;
           this.notification.error('MCP token could not be generated.');
+          this.cdr.markForCheck();
         }
       });
     });
@@ -621,12 +654,14 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         if (!token) {
           this.mcpUpdating = false;
           this.notification.error('MCP token could not be shown.');
+          this.cdr.markForCheck();
           return;
         }
         this.revealedMcpToken = token;
         this.mcpTokenVisible = true;
         this.scheduleMcpTokenHide();
         this.mcpUpdating = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         if (this.destroyed) {
@@ -634,6 +669,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         }
         this.mcpUpdating = false;
         this.notification.error('MCP token could not be shown.');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -653,6 +689,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
           if (!this.destroyed) {
             this.mcpUpdating = false;
             this.notification.error('MCP token could not be copied.');
+            this.cdr.markForCheck();
           }
           return;
         }
@@ -666,10 +703,12 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
             } else {
               this.revealMcpTokenForManualCopy(token);
             }
+            this.cdr.markForCheck();
           })
           .finally(() => {
             if (!this.destroyed) {
               this.mcpUpdating = false;
+              this.cdr.markForCheck();
             }
           });
       },
@@ -679,6 +718,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
         }
         this.mcpUpdating = false;
         this.notification.error('MCP token could not be copied.');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -749,6 +789,7 @@ export class ManageServerConfigurationComponent implements OnInit, OnDestroy {
       this.mcpTokenHideTimer = null;
       if (!this.destroyed) {
         this.resetRevealedMcpToken();
+        this.cdr.markForCheck();
       }
     }, 60_000);
   }

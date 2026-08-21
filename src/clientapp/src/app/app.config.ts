@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideClientHydration, withNoIncrementalHydration } from '@angular/platform-browser';
@@ -10,18 +10,20 @@ import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZonelessChangeDetection(),
     provideHttpClient(withXhr(), withXsrfConfiguration(
       {
         cookieName: 'csrftoken',
         headerName: 'X-CSRFToken',
       }
-    )),
+    ), withInterceptorsFromDi()),
     provideAnimationsAsync(),
-    provideRouter(routes), provideAnimationsAsync('noop'),
-    provideClientHydration(withNoIncrementalHydration()), provideHttpClient(withXhr(), withInterceptorsFromDi()),
+    provideRouter(routes),
+    provideClientHydration(withNoIncrementalHydration()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpClientErrorInterceptor,
       multi: true,
-    },]
+    },
+  ]
 };

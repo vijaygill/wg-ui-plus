@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, computed } from '@angular/core';
 import { Peer, ServerValidationError } from '../../webapi.entities';
 import { WebapiService } from '../../services/webapi.service';
 import { AppSharedModule } from '../../app-shared.module';
@@ -37,6 +37,7 @@ export class ManagePeersEditorComponent {
         this.peer = data;
         this.getLookupData();
         this.captureSnapshot();
+        this.cdr.markForCheck();
       });
     }
     else {
@@ -51,22 +52,29 @@ export class ManagePeersEditorComponent {
   private snapshot = '';
 
   validationResult?: ServerValidationError;
-  emailAvailable = false;
-  emailStatusMessage = 'SMTP email is not configured.';
+
+  /** Whether SMTP e-mail is configured (drives the send-by-email button). */
+  emailAvailable = computed(() => {
+    const status = this.webapiService.serverStatus();
+    const emailStatus = status.application_details?.email;
+    return emailStatus
+      ? emailStatus.status === 'configured'
+      : status.application_details?.is_email_enabled === true;
+  });
+
+  emailStatusMessage = computed(() => {
+    const status = this.webapiService.serverStatus();
+    const emailStatus = status.application_details?.email;
+    return emailStatus?.message ||
+      (this.emailAvailable() ? 'SMTP email is configured.' : 'SMTP email is not configured.');
+  });
 
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) {
-    this.webapiService.serverStatus.subscribe(status => {
-      const emailStatus = status.application_details?.email;
-      this.emailAvailable = emailStatus
-        ? emailStatus.status === 'configured'
-        : status.application_details?.is_email_enabled === true;
-      this.emailStatusMessage = emailStatus?.message ||
-        (this.emailAvailable ? 'SMTP email is configured.' : 'SMTP email is not configured.');
-    });
+    private confirmationDialogService: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) {
   }
 
   getLookupData() {
@@ -76,6 +84,7 @@ export class ManagePeersEditorComponent {
           lookup.filter(x => !this.peer.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
           : lookup;
         this.peer.peer_groups_lookup = lookupItems;
+        this.cdr.markForCheck();
       });
     }
   }
@@ -122,6 +131,7 @@ export class ManagePeersEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error as ServerValidationError;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -150,6 +160,7 @@ export class ManagePeersEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.cdr.markForCheck();
                 }
               },
               complete: () => {

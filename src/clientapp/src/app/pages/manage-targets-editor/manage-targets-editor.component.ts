@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -27,6 +27,7 @@ export class ManageTargetsEditorComponent {
         this.target = data;
         this.getLookupData();
         this.captureSnapshot();
+        this.cdr.markForCheck();
       });
     }
     else {
@@ -45,7 +46,8 @@ export class ManageTargetsEditorComponent {
   @Output() onFinish = new EventEmitter<boolean>();
 
   constructor(private webapiService: WebapiService,
-    private confirmationDialogService: ConfirmationDialogService) { }
+    private confirmationDialogService: ConfirmationDialogService,
+    private cdr: ChangeDetectorRef) { }
 
   getLookupData() {
     this.webapiService.getPeerGroupList().subscribe(lookup => {
@@ -53,6 +55,7 @@ export class ManageTargetsEditorComponent {
         lookup.filter(x => !this.target.peer_groups.some(y => y.id === x.id) && !x.is_everyone_group)
         : lookup;
       this.target.peer_groups_lookup = lookupItems;
+      this.cdr.markForCheck();
     });
   }
 
@@ -90,6 +93,7 @@ export class ManageTargetsEditorComponent {
           let response = error as HttpErrorResponse;
           if (response) {
             this.validationResult = response.error;
+            this.cdr.markForCheck();
           }
         },
         complete: () => {
@@ -114,6 +118,7 @@ export class ManageTargetsEditorComponent {
                 let response = error as HttpErrorResponse;
                 if (response) {
                   this.validationResult = response.error as ServerValidationError;
+                  this.cdr.markForCheck();
                 }
               },
               complete: () => {

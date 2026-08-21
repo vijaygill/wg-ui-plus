@@ -21,10 +21,10 @@
         <div class="login-actions">
           <button type="submit" mat-flat-button color="primary" class="login-button">Login</button>
         </div>
-        @if (userSessionInfo && userSessionInfo.message) {
+        @if (message()) {
           <div class="login-message">
             <mat-icon>info</mat-icon>
-            <span>{{userSessionInfo.message}}</span>
+            <span>{{message()}}</span>
           </div>
         }
       </form>

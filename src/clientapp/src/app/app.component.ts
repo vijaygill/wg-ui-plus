@@ -1,9 +1,8 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy, effect, signal } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
 import { NavDrawerComponent } from './controls/app-nav-drawer/app-nav-drawer.component';
 import { AppSharedModule } from './app-shared.module';
-import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, filter } from 'rxjs';
 import { WebapiService } from './services/webapi.service';
 import { LoginService } from './services/login.service';
@@ -24,31 +23,32 @@ import { ThemeService } from './services/theme.service';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'WireGuard UI Plus';
 
-  serverStatus: ServerStatus = {
-    need_regenerate_files: false,
-    application_details: { current_version: '', latest_live_version: '', },
-  } as ServerStatus;
-  userSessionInfo: UserSessionInfo = { is_logged_in: false, message: '' };
-
-  platformInformation: PlatformInformation = {} as PlatformInformation;
-
   /** Desktop only: whether the navigation drawer is collapsed to an icon rail. */
-  navCollapsed = false;
+  navCollapsed = signal(false);
 
   /** Small screen only: whether the overlay drawer is open. */
-  mobileNavOpen = false;
+  mobileNavOpen = signal(false);
+
+  /** Reactive view of the latest server status from WebapiService, for the template. */
+  readonly serverStatus = this.webapiService.serverStatus;
 
   /** The sidenav container, so the content margin can be re-synced on collapse. */
   @ViewChild(MatSidenavContainer) sidenavContainer?: MatSidenavContainer;
 
   timerSubscription !: Subscription;
-  serverStatusSubscription !: Subscription;
-  loginServiceSubscription !: Subscription;
-  platformInformationServiceSubscription !: Subscription;
   routerSubscription !: Subscription;
 
   /** Key of the status-derived banner currently shown, to avoid re-pushing on every poll. */
   lastStatusBannerKey: string | null = null;
+
+  /**
+   * Keeps the unified banner in sync with the server-status and session
+   * signals (offline / regenerate). Replaces the previous subscriptions'
+   * syncStatusBanner() calls; runs whenever either tracked signal changes.
+   */
+  private readonly statusBannerSync = effect(() => {
+    this.syncStatusBanner();
+  });
 
   constructor(private notification: NotificationService,
     private webapiService: WebapiService,
@@ -59,25 +59,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router) { }
 
   ngOnInit() {
-    this.platformInformationServiceSubscription = this.platformInformationService.platformInformation.subscribe(
-      (data) => {
-        this.platformInformation = data;
-      }
-    );
-
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.webapiService.checkServerStatus();
     });
 
-    this.serverStatusSubscription = this.webapiService.serverStatus.subscribe(data => {
-      this.serverStatus = data;
-      this.syncStatusBanner();
-    });
-
-    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
-      this.userSessionInfo = data;
-      this.syncStatusBanner();
-    });
     this.loginService.checkIsUserAuthenticated();
     this.webapiService.checkServerStatus();
     this.platformInformationService.checkPlatform();
@@ -86,7 +71,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.routerSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.mobileNavOpen = false;
+        this.mobileNavOpen.set(false);
       });
   }
 
@@ -94,22 +79,13 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.timerSubscription) {
       this.timerSubscription.unsubscribe();
     }
-    if (this.serverStatusSubscription) {
-      this.serverStatusSubscription.unsubscribe();
-    }
-    if (this.loginServiceSubscription) {
-      this.loginServiceSubscription.unsubscribe();
-    }
-    if (this.platformInformationServiceSubscription) {
-      this.platformInformationServiceSubscription.unsubscribe();
-    }
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
   }
 
   get isSmallScreen(): boolean {
-    return this.platformInformation.is_small_screen;
+    return this.platformInformationService.platformInformation().is_small_screen;
   }
 
   /** Persistent drawer on desktop, overlay drawer on small screens. */
@@ -118,17 +94,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   get sidenavOpened(): boolean {
-    return this.isSmallScreen ? this.mobileNavOpen : true;
+    return this.isSmallScreen ? this.mobileNavOpen() : true;
   }
 
   get navDrawerCollapsed(): boolean {
     // Collapse-to-rail only applies to the persistent (desktop) drawer.
-    return !this.isSmallScreen && this.navCollapsed;
+    return !this.isSmallScreen && this.navCollapsed();
   }
 
   /** Server status dot colour class. */
   get statusClass(): string {
-    const status = this.serverStatus?.status;
+    const status = this.webapiService.serverStatus().status;
     if (status === 'error') {
       return 'status-error';
     }
@@ -140,7 +116,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /** Human-readable label for the server status orb. */
   get statusLabel(): string {
-    const status = this.serverStatus?.status;
+    const status = this.webapiService.serverStatus().status;
     if (status === 'error') {
       return 'Offline';
     }
@@ -156,9 +132,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onToggleNav(): void {
     if (this.isSmallScreen) {
-      this.mobileNavOpen = !this.mobileNavOpen;
+      this.mobileNavOpen.update(open => !open);
     } else {
-      this.navCollapsed = !this.navCollapsed;
+      this.navCollapsed.update(collapsed => !collapsed);
       this.syncSidenavMargins();
     }
   }
@@ -194,8 +170,8 @@ export class AppComponent implements OnInit, OnDestroy {
     // reflects what that tap does — "Collapse" when the surface is currently
     // open/expanded, "Expand" when it is closed/collapsed.
     const collapsesOnTap = this.isSmallScreen
-      ? this.mobileNavOpen          // drawer open → tapping closes it
-      : !this.navCollapsed;         // rail expanded → tapping collapses it
+      ? this.mobileNavOpen()        // drawer open → tapping closes it
+      : !this.navCollapsed();       // rail expanded → tapping collapses it
     return collapsesOnTap ? 'Collapse navigation' : 'Expand navigation';
   }
 
@@ -205,10 +181,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /** Which status-driven banner (if any) should be showing right now. */
   private computeStatusBannerKey(): string | null {
-    if (this.serverStatus?.status === 'error') {
+    const status = this.webapiService.serverStatus();
+    const session = this.loginService.userSessionInfo();
+    if (status?.status === 'error') {
       return 'error';
     }
-    if (this.serverStatus?.need_regenerate_files && this.userSessionInfo.is_logged_in) {
+    if (status?.need_regenerate_files && session.is_logged_in) {
       return 'warn:regenerate';
     }
     return null;
@@ -230,7 +208,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (key === 'error') {
       this.notification.showStatus({
         type: 'error',
-        message: this.serverStatus?.message || 'Connection to the server was lost.',
+        message: this.webapiService.serverStatus()?.message || 'Connection to the server was lost.',
         persistent: true,
       });
     } else if (key === 'warn:regenerate') {

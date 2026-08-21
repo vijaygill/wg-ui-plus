@@ -289,9 +289,9 @@
               Change Password
             </button>
           </div>
-          @if (userSessionInfo && userSessionInfo.message) {
+          @if (passwordChangeMessage) {
             <div class="form-span editor-message">
-              {{userSessionInfo.message}}
+              {{passwordChangeMessage}}
             </div>
           }
          </div>

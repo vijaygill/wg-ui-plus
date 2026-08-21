@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, ContentChild, OnInit, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ContentChild, TemplateRef, ChangeDetectionStrategy, effect } from '@angular/core';
 import { AppSharedModule } from '../../app-shared.module';
 import { LoginService } from '../../services/login.service';
 import { Router } from '@angular/router';
 import { UserSessionInfo } from '../../webapi.entities';
-import { Subscription } from 'rxjs';
 
 @Component({
     standalone: true,
@@ -14,27 +13,31 @@ import { Subscription } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './authorized-view.component.scss'
 })
-export class AuthorizedViewComponent implements OnInit{
-  userSessionInfo!: UserSessionInfo;
-  loginServiceSubscription !: Subscription;
+export class AuthorizedViewComponent {
+
+  /** Reactive view of the current session info. */
+  readonly userSessionInfo = this.loginService.userSessionInfo;
+
+  /** Last session value seen by the redirect effect (null until its first run). */
+  private lastSeenSession: UserSessionInfo | null = null;
+
+  /**
+   * Redirects to the login page whenever the session turns logged-out.
+   * The seeded placeholder is skipped so an authenticated user opening a
+   * protected page is not redirected before the authentication check lands.
+   */
+  private readonly sessionRedirect = effect(() => {
+    const session = this.loginService.userSessionInfo();
+    const seen = this.lastSeenSession;
+    this.lastSeenSession = session;
+    if (seen !== null && !session.is_logged_in) {
+      this.router.navigate(['/login']);
+    }
+  });
 
   @ContentChild("childControl") childControl!: TemplateRef<any>;
 
-  constructor(private router: Router, private loginService: LoginService) { }
-
-  ngOnInit(): void {
-    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
-      this.userSessionInfo = data;
-      if (!this.userSessionInfo.is_logged_in) {
-        this.router.navigate(['/login']);
-      }
-    });
+  constructor(private router: Router, private loginService: LoginService) {
     this.loginService.checkIsUserAuthenticated();
-  }
-
-  ngOnDestroy() {
-    if (this.loginServiceSubscription) {
-      this.loginServiceSubscription.unsubscribe();
-    }
   }
 }

@@ -1,10 +1,8 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AppSharedModule } from '../../app-shared.module';
 import { NavMenuItem } from '../../nav-menu-item';
-import { UserSessionInfo } from '../../webapi.entities';
-import { Subscription } from 'rxjs';
 import { LoginService } from '../../services/login.service';
 
 /**
@@ -44,7 +42,7 @@ export interface NavDrawerMenuSection {
   changeDetection: ChangeDetectionStrategy.Eager,
   host: { '[class.nav-drawer-collapsed]': 'collapsed' },
 })
-export class NavDrawerComponent implements OnInit {
+export class NavDrawerComponent {
   private menuItemMonitorPeers: NavDrawerMenuItem = {
     label: 'Monitor Peers',
     route: '/server-monitor-peers',
@@ -109,11 +107,15 @@ export class NavDrawerComponent implements OnInit {
     tooltip: 'Add/Edit/Remove Targets. Link/Unlink Targets with Peer-Groups.',
   };
 
+  private readonly isLoggedIn = computed(() => this.loginService.userSessionInfo().is_logged_in);
+
   /** Sections rendered in the upper portion of the drawer. */
-  sections: NavDrawerMenuSection[] = [];
+  readonly sections = computed<NavDrawerMenuSection[]>(() =>
+    this.isLoggedIn() ? this.itemsAuthorized : this.itemsAnonymous);
 
   /** Items pinned at the bottom of the drawer (About + auth item). */
-  bottomItems: NavDrawerMenuItem[] = [];
+  readonly bottomItems = computed<NavDrawerMenuItem[]>(() =>
+    this.isLoggedIn() ? this.bottomAuthorized : this.bottomAnonymous);
 
   private itemsAuthorized: NavDrawerMenuSection[] = [
     {
@@ -159,24 +161,8 @@ export class NavDrawerComponent implements OnInit {
   /** When true, the drawer renders as an icon-only rail. */
   @Input() collapsed: boolean = false;
 
-  userSessionInfo!: UserSessionInfo;
-  loginServiceSubscription !: Subscription;
-
-  constructor(private loginService: LoginService) { }
-
-  ngOnInit(): void {
-    this.loginServiceSubscription = this.loginService.getUserSessionInfo().subscribe(data => {
-      this.userSessionInfo = data;
-      this.sections = this.userSessionInfo.is_logged_in ? this.itemsAuthorized : this.itemsAnonymous;
-      this.bottomItems = this.userSessionInfo.is_logged_in ? this.bottomAuthorized : this.bottomAnonymous;
-    });
+  constructor(private loginService: LoginService) {
     this.loginService.checkIsUserAuthenticated();
-  }
-
-  ngOnDestroy() {
-    if (this.loginServiceSubscription) {
-      this.loginServiceSubscription.unsubscribe();
-    }
   }
 
   onItemCommand(item: NavDrawerMenuItem): void {

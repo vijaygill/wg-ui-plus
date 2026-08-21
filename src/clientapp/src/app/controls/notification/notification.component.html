@@ -1,14 +1,14 @@
-@if (notification) {
-  <div class="notification-banner" [class]="'banner-' + notification.type">
+@if (notification(); as n) {
+  <div class="notification-banner" [class]="'banner-' + n.type">
     <mat-icon class="banner-icon" aria-hidden="true">{{ icon }}</mat-icon>
-    <span class="banner-text">{{ notification.message }}</span>
-    @if (notification.action) {
+    <span class="banner-text">{{ n.message }}</span>
+    @if (n.action) {
       <button mat-flat-button [color]="actionColor" (click)="onAction()">
         <mat-icon>refresh</mat-icon>
-        {{ notification.action.label }}
+        {{ n.action.label }}
       </button>
     }
-    @if (notification.dismissible) {
+    @if (n.dismissible) {
       <button mat-icon-button class="banner-dismiss" (click)="dismiss()"
         aria-label="Dismiss" matTooltip="Dismiss" matTooltipShowDelay="500">
         <mat-icon>close</mat-icon>

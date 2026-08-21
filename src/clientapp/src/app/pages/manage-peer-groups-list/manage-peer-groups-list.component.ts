@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -18,7 +18,7 @@ export class ManagePeerGroupsListComponent {
   peerGroups: PeerGroup[] = [];
   private currentSort: Sort = { active: 'name', direction: 'asc' };
 
-  constructor(private webapiService: WebapiService) { }
+  constructor(private webapiService: WebapiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.refreshData();
@@ -30,6 +30,7 @@ export class ManagePeerGroupsListComponent {
       // Preserve the default sort (by name, ascending) on first load,
       // matching the original sortField="name" behaviour.
       this.sortData(this.currentSort);
+      this.cdr.markForCheck();
     });
   }
 

@@ -15,7 +15,7 @@
     <span class="toolbar-spacer"></span>
 
     <div class="server-status" [class]="statusClass"
-      [matTooltip]="serverStatus.hostname ? 'Host: ' + serverStatus.hostname + (serverStatus.platform ? ' · ' + serverStatus.platform : '') : 'Server connection status'"
+      [matTooltip]="serverStatus().hostname ? 'Host: ' + serverStatus().hostname + (serverStatus().platform ? ' · ' + serverStatus().platform : '') : 'Server connection status'"
       matTooltipPosition="below">
       <span class="status-dot" aria-hidden="true"></span>
       <span class="status-text">{{ statusLabel }}</span>
@@ -50,21 +50,21 @@
     <span class="footer-item">
       (c) <a target="_blank" rel="noopener" href="https://github.com/vijaygill/wg-ui-plus">WireGuard UI Plus</a> 2024.
     </span>
-    @if (serverStatus.hostname) {
-      <span class="footer-item">Host: {{serverStatus.hostname}}</span>
+    @if (serverStatus().hostname) {
+      <span class="footer-item">Host: {{serverStatus().hostname}}</span>
     }
-    @if (serverStatus.platform) {
-      <span class="footer-item">Platform: {{serverStatus.platform}}</span>
+    @if (serverStatus().platform) {
+      <span class="footer-item">Platform: {{serverStatus().platform}}</span>
     }
-    @if (serverStatus.application_details.current_version) {
-      <span class="footer-item">Running: {{serverStatus.application_details.current_version}}</span>
+    @if (serverStatus().application_details.current_version) {
+      <span class="footer-item">Running: {{serverStatus().application_details.current_version}}</span>
     }
-    @if (serverStatus.application_details.allow_allow_check_updates &&
-      serverStatus.application_details.latest_live_version !== serverStatus.application_details.current_version) {
+    @if (serverStatus().application_details.allow_allow_check_updates &&
+      serverStatus().application_details.latest_live_version !== serverStatus().application_details.current_version) {
       <span class="footer-item">
         Available: <a target="_blank" rel="noopener"
           href="https://github.com/vijaygill/wg-ui-plus/releases">
-          {{serverStatus.application_details.latest_live_version}}</a>
+          {{serverStatus().application_details.latest_live_version}}</a>
       </span>
     }
   </footer>

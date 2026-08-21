@@ -1,6 +1,6 @@
 <div class="nav-drawer" [class.collapsed]="collapsed">
     <mat-nav-list class="nav-main">
-      @for (section of sections; track $index) {
+      @for (section of sections(); track $index) {
         @if (section.label && !collapsed) {
           <div mat-subheader class="nav-section-label">{{ section.label }}</div>
         }
@@ -31,7 +31,7 @@
     <div class="nav-bottom">
       <mat-divider></mat-divider>
       <mat-nav-list>
-        @for (item of bottomItems; track item.label) {
+        @for (item of bottomItems(); track item.label) {
           @if (item.route) {
             <a mat-list-item [routerLink]="item.route" [replaceUrl]="item.replaceUrl ?? false"
               routerLinkActive="active-nav-item" [matTooltip]="collapsed ? item.label : ''" matTooltipPosition="right"

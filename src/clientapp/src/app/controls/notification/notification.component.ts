@@ -1,9 +1,8 @@
-import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription } from 'rxjs';
-import { AppNotification, NotificationService } from '../../services/notification.service';
+import { NotificationService } from '../../services/notification.service';
 
 /**
  * Unified notification banner rendered at the top of the content area by
@@ -18,24 +17,16 @@ import { AppNotification, NotificationService } from '../../services/notificatio
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './notification.component.scss',
 })
-export class NotificationComponent implements OnDestroy {
+export class NotificationComponent {
 
-    notification: AppNotification | null = null;
-
-    private subscription: Subscription;
+    /** Reactive view of the notification service's current notification. */
+    readonly notification = this.notificationService.notification;
 
     constructor(private notificationService: NotificationService) {
-        this.subscription = this.notificationService.notification$.subscribe(
-            (notification) => this.notification = notification
-        );
-    }
-
-    ngOnDestroy(): void {
-        this.subscription.unsubscribe();
     }
 
     get icon(): string {
-        switch (this.notification?.type) {
+        switch (this.notification()?.type) {
             case 'success':
                 return 'check_circle';
             case 'error':
@@ -49,11 +40,12 @@ export class NotificationComponent implements OnDestroy {
     }
 
     get actionColor(): string {
-        return (this.notification?.type === 'success' || this.notification?.type === 'info') ? 'primary' : 'warn';
+        const type = this.notification()?.type;
+        return (type === 'success' || type === 'info') ? 'primary' : 'warn';
     }
 
     onAction(): void {
-        this.notification?.action?.callback();
+        this.notification()?.action?.callback();
     }
 
     dismiss(): void {

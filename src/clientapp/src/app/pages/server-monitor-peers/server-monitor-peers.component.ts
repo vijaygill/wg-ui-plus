@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -40,7 +40,8 @@ export class ServerMonitorPeersComponent implements OnInit {
   }
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) {
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -74,6 +75,7 @@ export class ServerMonitorPeersComponent implements OnInit {
       // Re-apply the current sort so the user's chosen ordering survives the
       // periodic refresh (default: sorted by peer name, as before).
       this.sortData(this.currentSort);
+      this.cdr.markForCheck();
     });
   }
 

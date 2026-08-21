@@ -1,8 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, ReplaySubject, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators'
 import { ChangeUserPasswordInfo, ConnectedPeerInformation, EmailConfiguration, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+
+/** Status exposed before the first server response arrives. */
+const INITIAL_SERVER_STATUS = {
+    need_regenerate_files: false,
+    application_details: { current_version: '', latest_live_version: '' },
+} as ServerStatus;
 
 @Injectable({
     providedIn: 'root'
@@ -31,8 +37,11 @@ export class WebapiService {
     private urlEmailConfiguration = '/api/v1/control/email/configuration';
     private urlEmailConnectivity = '/api/v1/control/email/test_connectivity';
 
-    /** Replays the latest status so late subscribers do not miss capability data. */
-    serverStatus: ReplaySubject<ServerStatus> = new ReplaySubject<ServerStatus>(1);
+    /** Latest known server status; signal writes schedule change detection. */
+    private serverStatusSignal = signal<ServerStatus>(INITIAL_SERVER_STATUS);
+
+    /** Read-only view of the latest server status (never undefined). */
+    readonly serverStatus = this.serverStatusSignal.asReadonly();
 
     constructor(private http: HttpClient) { }
 
@@ -251,12 +260,12 @@ export class WebapiService {
 
     checkServerStatus(): void {
         this.http.get<ServerStatus>(this.urlGetServerStatus).subscribe(data => {
-            this.serverStatus.next(data);
+            this.serverStatusSignal.set(data);
         });
     }
 
-    pushServerStatus(serverStatus: ServerStatus):void{
-        this.serverStatus.next(serverStatus);
+    pushServerStatus(serverStatus: ServerStatus): void {
+        this.serverStatusSignal.set(serverStatus);
     }
 
     checkIsUserAuthenticated(): Observable<UserSessionInfo> {

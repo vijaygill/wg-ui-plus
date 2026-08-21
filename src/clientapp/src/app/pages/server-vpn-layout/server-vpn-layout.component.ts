@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Subscription, interval } from 'rxjs';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 import { OrgChartNode } from '../../webapi.entities';
 
@@ -21,7 +21,8 @@ export class ServerVpnLayoutComponent implements OnInit {
   refreshDelay: number = 0;
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService) {
+    private periodicRefreshUiService: PeriodicRefreshUiService,
+    private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -36,6 +37,7 @@ export class ServerVpnLayoutComponent implements OnInit {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
       this.refreshDelay = val;
       this.loadData();
+      this.cdr.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -49,6 +51,7 @@ export class ServerVpnLayoutComponent implements OnInit {
   loadData() {
     this.webapiService.getTargetHierarchy().subscribe(data => {
       this.hierarchyData = data;
+      this.cdr.markForCheck();
     }
     );
   }

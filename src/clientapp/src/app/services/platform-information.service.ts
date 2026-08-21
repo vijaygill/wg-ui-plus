@@ -1,12 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
 import { PlatformInformation } from '../webapi.entities';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlatformInformationService {
-  platformInformation: Subject<PlatformInformation> = new Subject<PlatformInformation>();
+
+  private platformInformationSignal = signal<PlatformInformation>({ is_small_screen: false });
+
+  /** Current platform information; signal writes schedule change detection. */
+  readonly platformInformation = this.platformInformationSignal.asReadonly();
 
   constructor() {
     window.onresize = () => this.updatePlatformInformation();
@@ -21,7 +24,7 @@ export class PlatformInformationService {
     let info = {
       is_small_screen: this.isMobile() || window.innerWidth <= 900,
     } as PlatformInformation;
-    this.platformInformation.next(info);
+    this.platformInformationSignal.set(info);
   }
 
   private isMobile(): boolean {
