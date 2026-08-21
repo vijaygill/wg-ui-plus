@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -17,31 +17,30 @@ import { PeriodicRefreshUiService } from '../../services/periodic-refresh-ui.ser
     styleUrl: './server-monitor-peers.component.scss'
 })
 export class ServerMonitorPeersComponent implements OnInit {
-  connectedPeerData: ConnectedPeerInformation = { datetime: '', items: [], message: '' } as ConnectedPeerInformation;
+  connectedPeerData = signal<ConnectedPeerInformation>({ datetime: '', items: [], message: '' } as ConnectedPeerInformation);
   timerSubscription !: Subscription;
   loadDataSubscription !: Subscription;
   refreshDelay: number = 0;
   private currentSort: Sort = { active: 'peer_name', direction: 'asc' };
 
   get connectedCount(): number {
-    return this.connectedPeerData.items.filter(i => i.status === 'connected').length;
+    return this.connectedPeerData().items.filter(i => i.status === 'connected').length;
   }
 
   get offlineCount(): number {
-    return this.connectedPeerData.items.length - this.connectedCount;
+    return this.connectedPeerData().items.length - this.connectedCount;
   }
 
   get totalTx(): number {
-    return this.connectedPeerData.items.reduce((sum, i) => sum + (i.transfer_tx || 0), 0);
+    return this.connectedPeerData().items.reduce((sum, i) => sum + (i.transfer_tx || 0), 0);
   }
 
   get totalRx(): number {
-    return this.connectedPeerData.items.reduce((sum, i) => sum + (i.transfer_rx || 0), 0);
+    return this.connectedPeerData().items.reduce((sum, i) => sum + (i.transfer_rx || 0), 0);
   }
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService,
-    private cdr: ChangeDetectorRef) {
+    private periodicRefreshUiService: PeriodicRefreshUiService) {
   }
 
   ngOnInit(): void {
@@ -71,17 +70,16 @@ export class ServerMonitorPeersComponent implements OnInit {
 
   loadData() {
     this.loadDataSubscription = this.webapiService.getConnectedPeers().subscribe(data => {
-      this.connectedPeerData = data;
+      this.connectedPeerData.set(data);
       // Re-apply the current sort so the user's chosen ordering survives the
       // periodic refresh (default: sorted by peer name, as before).
       this.sortData(this.currentSort);
-      this.cdr.markForCheck();
     });
   }
 
   sortData(sort: Sort): void {
     this.currentSort = sort;
-    const items = this.connectedPeerData.items;
+    const items = this.connectedPeerData().items;
     if (!sort.active || sort.direction === '') {
       return;
     }
@@ -92,7 +90,7 @@ export class ServerMonitorPeersComponent implements OnInit {
       const cmp = aValue.localeCompare(bValue);
       return sort.direction === 'asc' ? cmp : -cmp;
     });
-    this.connectedPeerData.items = sorted;
+    this.connectedPeerData.update(d => ({ ...d, items: sorted }));
   }
 
 }

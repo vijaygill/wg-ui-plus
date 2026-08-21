@@ -21,8 +21,8 @@
   </div>
 </div>
 
-@if (connectedPeerData.message) {
-  <p class="table-caption">{{connectedPeerData.message}}</p>
+@if (connectedPeerData().message) {
+  <p class="table-caption">{{connectedPeerData().message}}</p>
 }
 
 <mat-card>
@@ -42,7 +42,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (connectedPeer of connectedPeerData.items; track connectedPeer.peer_name) {
+        @for (connectedPeer of connectedPeerData().items; track connectedPeer.peer_name) {
           <tr>
             <td>{{ connectedPeer.peer_name }}</td>
             <td>

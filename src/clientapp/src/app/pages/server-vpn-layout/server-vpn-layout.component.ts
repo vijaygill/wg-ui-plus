@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 import { OrgChartNode } from '../../webapi.entities';
@@ -17,12 +17,11 @@ import { PeriodicRefreshUiService } from '../../services/periodic-refresh-ui.ser
 })
 export class ServerVpnLayoutComponent implements OnInit {
   private timerSubscription !: Subscription;
-  hierarchyData!: OrgChartNode[];
-  refreshDelay: number = 0;
+  hierarchyData = signal<OrgChartNode[]>([]);
+  refreshDelay = signal<number>(0);
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService,
-    private cdr: ChangeDetectorRef) {
+    private periodicRefreshUiService: PeriodicRefreshUiService) {
   }
 
   ngOnInit(): void {
@@ -35,9 +34,8 @@ export class ServerVpnLayoutComponent implements OnInit {
 
   subscribeTimer(): void {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
-      this.refreshDelay = val;
+      this.refreshDelay.set(val);
       this.loadData();
-      this.cdr.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -50,8 +48,7 @@ export class ServerVpnLayoutComponent implements OnInit {
 
   loadData() {
     this.webapiService.getTargetHierarchy().subscribe(data => {
-      this.hierarchyData = data;
-      this.cdr.markForCheck();
+      this.hierarchyData.set(data);
     }
     );
   }

@@ -1,10 +1,10 @@
 <app-page-header title="VPN Layout"
-  subtitle="How Targets, Peer-Groups and Peers are linked. (Refreshed every {{refreshDelay}} seconds)">
+  subtitle="How Targets, Peer-Groups and Peers are linked. (Refreshed every {{refreshDelay()}} seconds)">
 </app-page-header>
 
 <mat-card>
   <mat-card-content>
-    <app-org-chart [value]="hierarchyData"></app-org-chart>
+    <app-org-chart [value]="hierarchyData()"></app-org-chart>
     <div class="layout-notes">
       <ul>
         <li>A Peer is a device which connects with VPN</li>

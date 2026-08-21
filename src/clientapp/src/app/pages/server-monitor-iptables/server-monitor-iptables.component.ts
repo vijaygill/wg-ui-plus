@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 import { IpTablesLog } from '../../webapi.entities';
@@ -17,13 +17,12 @@ import { PeriodicRefreshUiService } from '../../services/periodic-refresh-ui.ser
 })
 export class ServerMonitorIptablesComponent implements OnInit {
   private timerSubscription !: Subscription;
-  ipTablesLog: IpTablesLog = { output: '' } as IpTablesLog;
-  refreshDelay: number = 0;
+  ipTablesLog = signal<IpTablesLog>({ output: '' } as IpTablesLog);
+  refreshDelay = signal<number>(0);
 
 
   constructor(private webapiService: WebapiService,
-    private periodicRefreshUiService: PeriodicRefreshUiService,
-    private cdr: ChangeDetectorRef) {
+    private periodicRefreshUiService: PeriodicRefreshUiService) {
   }
 
   ngOnInit(): void {
@@ -36,9 +35,8 @@ export class ServerMonitorIptablesComponent implements OnInit {
 
   subscribeTimer(): void {
     this.timerSubscription = this.periodicRefreshUiService.onTimer.subscribe(val => {
-      this.refreshDelay = val;
+      this.refreshDelay.set(val);
       this.loadData();
-      this.cdr.markForCheck();
     });
     this.periodicRefreshUiService.performRefresh();
   }
@@ -51,8 +49,7 @@ export class ServerMonitorIptablesComponent implements OnInit {
 
   loadData() {
     this.webapiService.getIpTablesLog().subscribe(data => {
-      this.ipTablesLog = data;
-      this.cdr.markForCheck();
+      this.ipTablesLog.set(data);
     }
     );
   }
