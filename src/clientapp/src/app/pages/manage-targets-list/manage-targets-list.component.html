@@ -16,7 +16,7 @@
     </tr>
   </thead>
   <tbody>
-    @for (targetGroup of targets; track targetGroup.id) {
+    @for (targetGroup of targets(); track targetGroup.id) {
       <tr>
         <td>{{ targetGroup.name }}</td>
         <td>{{ targetGroup.ip_address }}</td>

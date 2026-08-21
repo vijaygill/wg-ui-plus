@@ -17,7 +17,7 @@
     </tr>
   </thead>
   <tbody>
-    @for (peerGroup of peerGroups; track peerGroup.id) {
+    @for (peerGroup of peerGroups(); track peerGroup.id) {
       <tr>
         <td>{{ peerGroup.name }}</td>
         <td>{{ peerGroup.description }}</td>

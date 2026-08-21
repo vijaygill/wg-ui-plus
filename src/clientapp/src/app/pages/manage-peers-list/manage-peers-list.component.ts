@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -15,10 +15,10 @@ import { WebapiService } from '../../services/webapi.service';
     styleUrl: './manage-peers-list.component.scss'
 })
 export class ManagePeersListComponent {
-  peers: Peer[] = [];
+  peers = signal<Peer[]>([]);
   private currentSort: Sort = { active: 'name', direction: 'asc' };
 
-  constructor(private webapiService: WebapiService, private cdr: ChangeDetectorRef) { }
+  constructor(private webapiService: WebapiService) { }
 
   ngOnInit() {
     this.refreshData();
@@ -26,11 +26,10 @@ export class ManagePeersListComponent {
 
   refreshData(): void {
     this.webapiService.getPeerList().subscribe(data => {
-      this.peers = data;
+      this.peers.set(data);
       // Preserve the default sort (by name, ascending) on first load,
       // matching the original sortField="name" behaviour.
       this.sortData(this.currentSort);
-      this.cdr.markForCheck();
     });
   }
 
@@ -58,12 +57,12 @@ export class ManagePeersListComponent {
     if (!sort.active || sort.direction === '') {
       return;
     }
-    const sorted = [...this.peers].sort((a, b) => {
+    const sorted = [...this.peers()].sort((a, b) => {
       const aValue = String((a as any)[sort.active] ?? '');
       const bValue = String((b as any)[sort.active] ?? '');
       const cmp = aValue.localeCompare(bValue);
       return sort.direction === 'asc' ? cmp : -cmp;
     });
-    this.peers = sorted;
+    this.peers.set(sorted);
   }
 }

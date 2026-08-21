@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
 import { Sort } from '@angular/material/sort';
@@ -15,10 +15,10 @@ import { WebapiService } from '../../services/webapi.service';
     styleUrl: './manage-targets-list.component.scss'
 })
 export class ManageTargetsListComponent {
-  targets: Target[] = [];
+  targets = signal<Target[]>([]);
   private currentSort: Sort = { active: 'name', direction: 'asc' };
 
-  constructor(private webapiService: WebapiService, private cdr: ChangeDetectorRef) { }
+  constructor(private webapiService: WebapiService) { }
 
   ngOnInit() {
     this.refreshData();
@@ -26,11 +26,10 @@ export class ManageTargetsListComponent {
 
   refreshData(): void {
     this.webapiService.getTargetList().subscribe(data => {
-      this.targets = data;
+      this.targets.set(data);
       // Preserve the default sort (by name, ascending) on first load,
       // matching the original sortField="name" behaviour.
       this.sortData(this.currentSort);
-      this.cdr.markForCheck();
     });
   }
 
@@ -60,12 +59,12 @@ export class ManageTargetsListComponent {
     if (!sort.active || sort.direction === '') {
       return;
     }
-    const sorted = [...this.targets].sort((a, b) => {
+    const sorted = [...this.targets()].sort((a, b) => {
       const aValue = String((a as any)[sort.active] ?? '');
       const bValue = String((b as any)[sort.active] ?? '');
       const cmp = aValue.localeCompare(bValue);
       return sort.direction === 'asc' ? cmp : -cmp;
     });
-    this.targets = sorted;
+    this.targets.set(sorted);
   }
 }

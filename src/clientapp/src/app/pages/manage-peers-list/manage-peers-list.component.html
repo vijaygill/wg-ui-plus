@@ -18,7 +18,7 @@
     </tr>
   </thead>
   <tbody>
-    @for (peer of peers; track peer.id) {
+    @for (peer of peers(); track peer.id) {
       <tr>
         <td>{{ peer.name }}</td>
         <td>{{ peer.description }}</td>
