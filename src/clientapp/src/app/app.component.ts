@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule, RouterOutlet, NavigationEnd } from '@angular/router';
 import { MatDrawerMode, MatSidenavContainer } from '@angular/material/sidenav';
-import { NavDrawerComponent } from './controls/app-nav-drawer/app-nav-drawer.component';
+import { AppNavDrawerComponent } from './controls/app-nav-drawer/app-nav-drawer.component';
 import { AppSharedModule } from './app-shared.module';
 import { PlatformInformation, ServerStatus, UserSessionInfo } from './webapi.entities';
 import { Subscription, filter } from 'rxjs';
@@ -16,7 +16,7 @@ import { ThemeService } from './services/theme.service';
 @Component({
     standalone: true,
     selector: 'app-root',
-    imports: [RouterModule, RouterOutlet, NavDrawerComponent, AppSharedModule, NotificationComponent],
+    imports: [RouterModule, RouterOutlet, AppNavDrawerComponent, AppSharedModule, NotificationComponent],
     templateUrl: './app.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './app.component.scss'

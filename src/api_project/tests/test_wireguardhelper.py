@@ -2,7 +2,7 @@ import types
 
 from django.test import SimpleTestCase
 
-from api_app.wireguardhelper import WireGuardHelper
+from api_app.wireguard_helper import WireGuardHelper
 
 
 def make_server_configuration(**overrides):

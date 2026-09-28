@@ -9,7 +9,7 @@ from rest_framework import serializers
 from .common import PEER_GROUP_EVERYONE_NAME
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .mcp_configuration import MCPConfigurationService
-from .wireguardhelper import WireGuardHelper
+from .wireguard_helper import WireGuardHelper
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +66,10 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
 
     def get_configuration(self, instance):
         wg = WireGuardHelper()
-        serverConfiguration = ServerConfiguration.objects.all()[0]
+        server_configuration = ServerConfiguration.objects.all()[0]
         peer = instance
         peer_groups = PeerGroup.objects.all()
-        s, c = wg.get_wireguard_configurations_for_peer(serverConfiguration, peer_groups, peer)
+        s, c = wg.get_wireguard_configurations_for_peer(server_configuration, peer_groups, peer)
         if c:
             c = c.strip()
         return c
@@ -125,15 +125,15 @@ class PeerGroupSerializer(serializers.ModelSerializer):
         return res
 
 
-class TargetHeirarchyPeerSerializer(serializers.ModelSerializer):
+class TargetHierarchyPeerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Peer
         fields = ("id", "name", "description", "disabled", "ip_address")
         read_only_fields = fields
 
 
-class TargetHeirarchyPeerGroupSerializer(serializers.ModelSerializer):
-    peers = TargetHeirarchyPeerSerializer(many=True, read_only=True)
+class TargetHierarchyPeerGroupSerializer(serializers.ModelSerializer):
+    peers = TargetHierarchyPeerSerializer(many=True, read_only=True)
 
     class Meta:
         model = PeerGroup
@@ -141,8 +141,8 @@ class TargetHeirarchyPeerGroupSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class TargetHeirarchySerializer(serializers.ModelSerializer):
-    peer_groups = TargetHeirarchyPeerGroupSerializer(many=True, read_only=True)
+class TargetHierarchySerializer(serializers.ModelSerializer):
+    peer_groups = TargetHierarchyPeerGroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = Target

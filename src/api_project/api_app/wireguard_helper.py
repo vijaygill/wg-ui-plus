@@ -34,7 +34,7 @@ class WireGuardHelper(object):
         return res
 
     @logged
-    def get_wireguard_configuration_for_server(self, serverConfiguration, peers):
+    def get_wireguard_configuration_for_server(self, server_configuration, peers):
         template = """
 # Settings for Server.
 [Interface]
@@ -48,8 +48,8 @@ PostDown = {{serverConfiguration.script_path_post_down}}
 """
         context = Context(
             {
-                "serverConfiguration": serverConfiguration,
-                "server_ip_address": serverConfiguration.ip_address,
+                "serverConfiguration": server_configuration,
+                "server_ip_address": server_configuration.ip_address,
             }
         )
         res = self.render_template(template, context)
@@ -57,7 +57,7 @@ PostDown = {{serverConfiguration.script_path_post_down}}
 
     @logged
     def get_wireguard_configurations_for_peer(
-        self, serverConfiguration, peer_groups, peer
+        self, server_configuration, peer_groups, peer
     ):
         # returns tuple of server-side and client-side configurations
         template = """
@@ -79,7 +79,7 @@ PersistentKeepalive = 25
 
         allowed_ips = [IP_ADDRESS_INTERNET]
 
-        if serverConfiguration.strict_allowed_ips_in_peer_config:
+        if server_configuration.strict_allowed_ips_in_peer_config:
             allowed_ips = []
 
             allowed_ips_everyone = []
@@ -109,12 +109,12 @@ PersistentKeepalive = 25
             )
 
             # add upstream DNS server to allowed IP's.
-            if serverConfiguration.upstream_dns_ip_address:
-                allowed_ips += [serverConfiguration.upstream_dns_ip_address]
+            if server_configuration.upstream_dns_ip_address:
+                allowed_ips += [server_configuration.upstream_dns_ip_address]
 
             # add VPN server's ip address also.
-            if serverConfiguration.network_address:
-                allowed_ips += [serverConfiguration.ip_address]
+            if server_configuration.network_address:
+                allowed_ips += [server_configuration.ip_address]
 
         # if 0.0.0.0/0 is in the list, no need to have anything else.
         if IP_ADDRESS_INTERNET in allowed_ips:
@@ -127,7 +127,7 @@ PersistentKeepalive = 25
             allowed_ips = [IP_ADDRESS_INTERNET]
 
         logger.debug(
-            f"serverConfiguration.strict_allowed_ips_in_peer_config: {serverConfiguration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
+            f"serverConfiguration.strict_allowed_ips_in_peer_config: {server_configuration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
         )
 
         allowed_ips = [is_network_address(x) for x in allowed_ips]
@@ -151,10 +151,10 @@ PublicKey = {{serverConfiguration.public_key}}
 Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
 AllowedIPs = {{allowed_ips}}
 """
-        peer_port = peer.port if peer.port else serverConfiguration.peer_default_port
+        peer_port = peer.port if peer.port else server_configuration.peer_default_port
         context = Context(
             {
-                "serverConfiguration": serverConfiguration,
+                "serverConfiguration": server_configuration,
                 "peer": peer,
                 "peer_port": peer_port,
                 "allowed_ips": allowed_ips,
@@ -166,10 +166,10 @@ AllowedIPs = {{allowed_ips}}
         return res
 
     @logged
-    def get_wireguard_configuration(self, serverConfiguration, peer_groups, peers):
+    def get_wireguard_configuration(self, server_configuration, peer_groups, peers):
 
         server_config = self.get_wireguard_configuration_for_server(
-            serverConfiguration, peers
+            server_configuration, peers
         )
 
         # now generate configs for peers
@@ -178,7 +178,7 @@ AllowedIPs = {{allowed_ips}}
         for peer in peers:
             peer_config_server_side, peer_config_client_side = (
                 self.get_wireguard_configurations_for_peer(
-                    serverConfiguration, peer_groups, peer
+                    server_configuration, peer_groups, peer
                 )
             )
             server_config += peer_config_server_side
@@ -195,11 +195,11 @@ AllowedIPs = {{allowed_ips}}
 
     @logged
     def get_wireguard_iptables_script(
-        self, serverConfiguration, targets, peer_groups, peers
+        self, server_configuration, targets, peer_groups, peers
     ):
-        dns_servers = [serverConfiguration.upstream_dns_ip_address]
+        dns_servers = [server_configuration.upstream_dns_ip_address]
         vpn_network_address = ipaddress.ip_interface(
-            serverConfiguration.network_address
+            server_configuration.network_address
         ).network
         internet__network_address = ipaddress.ip_interface(IP_ADDRESS_INTERNET).network
         # generate post-up script
@@ -378,7 +378,7 @@ AllowedIPs = {{allowed_ips}}
             if target_is_network_address:
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
-                if str(target_ip_address) == str(serverConfiguration.ip_address):
+                if str(target_ip_address) == str(server_configuration.ip_address):
                     # no need to add rule for peer => server
                     # as all packets have to go via server anyway
                     continue
@@ -425,9 +425,9 @@ AllowedIPs = {{allowed_ips}}
                 )
 
         local_networks = []
-        if serverConfiguration.local_networks:
+        if server_configuration.local_networks:
             local_networks = [
-                x for x in serverConfiguration.local_networks.split(",") if x
+                x for x in server_configuration.local_networks.split(",") if x
             ]
         targets_to_block = local_networks  # + [str(vpn_network_address)]
         post_up += [
@@ -497,39 +497,39 @@ AllowedIPs = {{allowed_ips}}
 
     @logged
     def generate_configuration_files(
-        self, serverConfiguration, targets, peer_groups, peers
+        self, server_configuration, targets, peer_groups, peers
     ):
         # first save wg0.conf
-        ensure_folder_exists_for_file(serverConfiguration.wireguard_config_path)
+        ensure_folder_exists_for_file(server_configuration.wireguard_config_path)
         configs = self.get_wireguard_configuration(
-            serverConfiguration=serverConfiguration,
+            server_configuration=server_configuration,
             peer_groups=peer_groups,
             peers=peers,
         )
-        with open(serverConfiguration.wireguard_config_path, "w") as f:
+        with open(server_configuration.wireguard_config_path, "w") as f:
             server_config = configs["server_configuration"]
             f.write(f"{server_config}\n")
 
         # save post-up/post-down scripts
-        ensure_folder_exists_for_file(serverConfiguration.script_path_post_up)
-        ensure_folder_exists_for_file(serverConfiguration.script_path_post_down)
+        ensure_folder_exists_for_file(server_configuration.script_path_post_up)
+        ensure_folder_exists_for_file(server_configuration.script_path_post_down)
         iptables_scripts_post_up, iptables_scripts_post_down = (
             self.get_wireguard_iptables_script(
-                serverConfiguration=serverConfiguration,
+                server_configuration=server_configuration,
                 targets=targets,
                 peer_groups=peer_groups,
                 peers=peers,
             )
         )
-        with open(serverConfiguration.script_path_post_up, "w") as f:
+        with open(server_configuration.script_path_post_up, "w") as f:
             f.write(f"{iptables_scripts_post_up}\n")
-        with open(serverConfiguration.script_path_post_down, "w") as f:
+        with open(server_configuration.script_path_post_down, "w") as f:
             f.write(f"{iptables_scripts_post_down}\n")
         output1 = self.execute_process(
-            f"sudo chmod +x {serverConfiguration.script_path_post_up}"
+            f"sudo chmod +x {server_configuration.script_path_post_up}"
         )
         output2 = self.execute_process(
-            f"sudo chmod +x {serverConfiguration.script_path_post_down}"
+            f"sudo chmod +x {server_configuration.script_path_post_down}"
         )
         res = {"status": "ok", "output": output1 + "\n" + output2}
         return res
@@ -550,15 +550,15 @@ AllowedIPs = {{allowed_ips}}
         return res
 
     @logged
-    def restart(self, serverConfiguration):
-        sc = serverConfiguration
+    def restart(self, server_configuration):
+        sc = server_configuration
         command = f"sudo wg-quick down {sc.wireguard_config_path};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {sc.wireguard_config_path};"
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res
 
     @logged
-    def get_connected_peers(self, peers, serverConfiguration):
+    def get_connected_peers(self, peers, server_configuration):
         regex = r"""
             (?P<interface> wg\d+) \s+
                         (?P<public_key> [^\s]+) \s+

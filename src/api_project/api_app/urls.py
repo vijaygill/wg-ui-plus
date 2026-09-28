@@ -3,14 +3,14 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .views import (PeerGroupViewSet, PeerViewSet, ServerConfigurationViewSet,
-                    TargetHeirarchyViewSet, TargetViewSet)
+                    TargetHierarchyViewSet, TargetViewSet)
 
 router = DefaultRouter()
 router.register(r"peer", PeerViewSet)
 router.register(r"peer_group", PeerGroupViewSet)
 router.register(r"target", TargetViewSet)
 router.register(r"server_configuration", ServerConfigurationViewSet)
-router.register(r"target_heirarchy", TargetHeirarchyViewSet, "target_heirarchy")
+router.register(r"target_hierarchy", TargetHierarchyViewSet, "target_hierarchy")
 
 urlpatterns = [
     path("api/v1/data/", include(router.urls)),

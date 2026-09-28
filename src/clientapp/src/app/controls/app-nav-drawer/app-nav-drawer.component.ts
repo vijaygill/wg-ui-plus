@@ -44,7 +44,7 @@ export interface NavDrawerMenuSection {
   changeDetection: ChangeDetectionStrategy.Eager,
   host: { '[class.nav-drawer-collapsed]': 'collapsed' },
 })
-export class NavDrawerComponent implements OnInit {
+export class AppNavDrawerComponent implements OnInit {
   private menuItemMonitorPeers: NavDrawerMenuItem = {
     label: 'Monitor Peers',
     route: '/server-monitor-peers',

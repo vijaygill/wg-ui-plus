@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
-import { IpTablesLog } from '../../webapi.entities';
+import { IptablesLog } from '../../webapi.entities';
 
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
@@ -17,7 +17,7 @@ import { PeriodicRefreshUiService } from '../../services/periodic-refresh-ui.ser
 })
 export class ServerMonitorIptablesComponent implements OnInit {
   private timerSubscription !: Subscription;
-  ipTablesLog: IpTablesLog = { output: '' } as IpTablesLog;
+  ipTablesLog: IptablesLog = { output: '' } as IptablesLog;
   refreshDelay: number = 0;
 
 
@@ -48,7 +48,7 @@ export class ServerMonitorIptablesComponent implements OnInit {
   }
 
   loadData() {
-    this.webapiService.getIpTablesLog().subscribe(data => {
+    this.webapiService.getIptablesLog().subscribe(data => {
       this.ipTablesLog = data;
     }
     );

@@ -11,7 +11,7 @@ from .serializers import (
     PeerGroupSerializer,
     PeerWithQrSerializer,
     ServerConfigurationSerializer,
-    TargetHeirarchySerializer,
+    TargetHierarchySerializer,
     TargetSerializer,
 )
 from .server_helper import generate_configuration_files, get_application_details, get_server_status
@@ -410,7 +410,7 @@ class WireGuardMCPToolset(MCPToolset):
         This is a read-only database operation; it does not generate credentials,
         contact targets, or change WireGuard/firewall state.
         """
-        return TargetHeirarchySerializer(Target.objects.all(), many=True).data
+        return TargetHierarchySerializer(Target.objects.all(), many=True).data
 
     def get_license(self):
         """Read and return the application license file.

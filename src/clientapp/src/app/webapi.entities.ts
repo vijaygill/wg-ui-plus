@@ -88,7 +88,7 @@ export interface ServerConfiguration {
     environment_overrides?: { [field: string]: string };
 }
 
-export interface McpConfiguration {
+export interface MCPConfiguration {
     mcp_enabled: boolean;
     effective_enabled: boolean;
     environment_override: boolean;
@@ -167,7 +167,7 @@ export interface ApplicationDetails {
     email?: { status: 'configured' | 'invalid' | 'unavailable'; message: string };
 }
 
-export interface IpTablesLog {
+export interface IptablesLog {
     status: string;
     datetime: string;
     output: string;

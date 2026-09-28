@@ -24,8 +24,8 @@ def collect_nested_keys(value):
     return keys
 
 
-class TargetHeirarchyViewSetPermissionTests(TestCase):
-    LIST_URL = "/api/v1/data/target_heirarchy/"
+class TargetHierarchyViewSetPermissionTests(TestCase):
+    LIST_URL = "/api/v1/data/target_hierarchy/"
 
     def setUp(self):
         self.user = get_user_model().objects.create_user("admin", password="password")
@@ -39,7 +39,7 @@ class TargetHeirarchyViewSetPermissionTests(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def _detail_url(self):
-        return f"/api/v1/data/target_heirarchy/{self.target.id}/"
+        return f"/api/v1/data/target_hierarchy/{self.target.id}/"
 
     def _valid_create_payload(self):
         return {
@@ -149,10 +149,10 @@ class TargetHeirarchyViewSetPermissionTests(TestCase):
         self.assertTrue(Target.objects.filter(pk=self.target.pk).exists())
 
 
-class TargetHeirarchyProjectionTests(TestCase):
+class TargetHierarchyProjectionTests(TestCase):
     """The hierarchy read surface must remain a non-sensitive projection (CR-14)."""
 
-    LIST_URL = "/api/v1/data/target_heirarchy/"
+    LIST_URL = "/api/v1/data/target_hierarchy/"
     SENSITIVE_KEYS = ("private_key", "public_key", "email_address")
 
     def setUp(self):

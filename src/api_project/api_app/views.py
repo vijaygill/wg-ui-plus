@@ -26,7 +26,7 @@ from .serializers import (
     PeerSerializer,
     PeerWithQrSerializer,
     ServerConfigurationSerializer,
-    TargetHeirarchySerializer,
+    TargetHierarchySerializer,
     TargetSerializer,
 )
 
@@ -65,9 +65,9 @@ class PeerViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
 
-class TargetHeirarchyViewSet(viewsets.ReadOnlyModelViewSet):
+class TargetHierarchyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Target.objects.all().prefetch_related("peer_groups__peers")
-    serializer_class = TargetHeirarchySerializer
+    serializer_class = TargetHierarchySerializer
     # Read-only projection; anonymous read allowed. Writes are not supported here;
     # Target CRUD lives on TargetViewSet.
     permission_classes = (IsAuthenticatedOrReadOnly,)

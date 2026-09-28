@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, ReplaySubject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators'
-import { ChangeUserPasswordInfo, ConnectedPeerInformation, EmailConfiguration, IpTablesLog, LicenseInfo, McpConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
+import { ChangeUserPasswordInfo, ConnectedPeerInformation, EmailConfiguration, IptablesLog, LicenseInfo, MCPConfiguration, OrgChartNode, Peer, PeerGroup, ServerConfiguration, ServerStatus, Target, UserCredentials, UserSessionInfo, WireguardConfiguration } from '../webapi.entities';
 
 @Injectable({
     providedIn: 'root'
@@ -19,15 +19,15 @@ export class WebapiService {
     private urlGetWireguardConfiguration = '/api/v1/data/control/wireguard_get_configuration';
     private urlControlWireguardRestart = '/api/v1/control/wireguard_restart';
     private urlControlGenerateConfigurationFiles = '/api/v1/control/wireguard_generate_configuration_files';
-    private urlPeerGroupHierarchy = '/api/v1/data/target_heirarchy/';
+    private urlTargetHierarchy = '/api/v1/data/target_hierarchy/';
     private urlGetConnectedPeers = '/api/v1/control/wireguard_get_connected_peers';
-    private urlGetIpTablesLog = '/api/v1/control/get_iptables_log';
+    private urlGetIptablesLog = '/api/v1/control/get_iptables_log';
     private urlGetServerStatus = '/api/v1/control/get_server_status';
     private urlIsUserLogIn = '/api/v1/auth/login';
     private urlIsUserLogOut = '/api/v1/auth/logout';
     private urlChangeUserPassword = '/api/v1/auth/change_password';
-    private urlMcpConfiguration = '/api/v1/control/mcp/configuration';
-    private urlMcpToken = '/api/v1/control/mcp/token';
+    private urlMCPConfiguration = '/api/v1/control/mcp/configuration';
+    private urlMCPToken = '/api/v1/control/mcp/token';
     private urlEmailConfiguration = '/api/v1/control/email/configuration';
     private urlEmailConnectivity = '/api/v1/control/email/test_connectivity';
 
@@ -163,10 +163,10 @@ export class WebapiService {
         return res;
     }
 
-    getMcpConfiguration(): Observable<McpConfiguration> { return this.http.get<McpConfiguration>(this.urlMcpConfiguration); }
-    updateMcpConfiguration(enabled: boolean): Observable<McpConfiguration> { return this.http.patch<McpConfiguration>(this.urlMcpConfiguration, { mcp_enabled: enabled }); }
-    generateMcpToken(): Observable<McpConfiguration> { return this.http.post<McpConfiguration>(this.urlMcpToken, {}); }
-    copyMcpToken(): Observable<{ mcp_token: string }> { return this.http.get<{ mcp_token: string }>(this.urlMcpToken); }
+    getMCPConfiguration(): Observable<MCPConfiguration> { return this.http.get<MCPConfiguration>(this.urlMCPConfiguration); }
+    updateMCPConfiguration(enabled: boolean): Observable<MCPConfiguration> { return this.http.patch<MCPConfiguration>(this.urlMCPConfiguration, { mcp_enabled: enabled }); }
+    generateMCPToken(): Observable<MCPConfiguration> { return this.http.post<MCPConfiguration>(this.urlMCPToken, {}); }
+    copyMCPToken(): Observable<{ mcp_token: string }> { return this.http.get<{ mcp_token: string }>(this.urlMCPToken); }
 
     getEmailConfiguration(): Observable<EmailConfiguration> { return this.http.get<EmailConfiguration>(this.urlEmailConfiguration); }
     updateEmailConfiguration(item: EmailConfiguration): Observable<EmailConfiguration> { return this.http.patch<EmailConfiguration>(this.urlEmailConfiguration, item); }
@@ -190,7 +190,7 @@ export class WebapiService {
     }
 
     getTargetHierarchy(): Observable<OrgChartNode[]> {
-        return this.http.get<Target[]>(this.urlPeerGroupHierarchy)
+        return this.http.get<Target[]>(this.urlTargetHierarchy)
             .pipe(map(targets => {
                 let items = targets.map(target => {
                     return {
@@ -245,8 +245,8 @@ export class WebapiService {
         return this.http.get<ConnectedPeerInformation>(this.urlGetConnectedPeers);
     }
 
-    getIpTablesLog(): Observable<IpTablesLog> {
-        return this.http.get<IpTablesLog>(this.urlGetIpTablesLog);
+    getIptablesLog(): Observable<IptablesLog> {
+        return this.http.get<IptablesLog>(this.urlGetIptablesLog);
     }
 
     checkServerStatus(): void {

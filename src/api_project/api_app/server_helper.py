@@ -5,7 +5,7 @@ import requests
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 
-from api_app.wireguardhelper import WireGuardHelper
+from api_app.wireguard_helper import WireGuardHelper
 
 from .models import Peer, PeerGroup, ServerConfiguration, Target
 from .mcp_configuration import MCPConfigurationService
@@ -90,7 +90,7 @@ def generate_configuration_files():
     peers = Peer.objects.all()
     targets = Target.objects.all()
     res = wg.generate_configuration_files(
-        serverConfiguration=sc, targets=targets, peer_groups=peer_groups, peers=peers
+        server_configuration=sc, targets=targets, peer_groups=peer_groups, peers=peers
     )
     sc.wireguard_config_change_datetime = dt
     sc.save()

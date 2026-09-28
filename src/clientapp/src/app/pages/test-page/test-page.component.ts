@@ -10,11 +10,11 @@ import { ConfirmationDialogService } from '../../services/confirmation-dialog.se
     standalone: true,
     selector: 'app-testpage',
     imports: [FormsModule, AppSharedModule],
-    templateUrl: './testpage.component.html',
+    templateUrl: './test-page.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrl: './testpage.component.scss'
+    styleUrl: './test-page.component.scss'
 })
-export class TestpageComponent {
+export class TestPageComponent {
 
     constructor(private notification: NotificationService,
         private confirmationDialogService: ConfirmationDialogService,

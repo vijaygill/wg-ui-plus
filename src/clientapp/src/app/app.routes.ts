@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { AboutComponent } from './pages/app-about/app-about.component';
 import { HomeComponent } from './pages/home/home.component';
-import { TestpageComponent } from './pages/testpage/testpage.component';
+import { TestPageComponent } from './pages/test-page/test-page.component';
 import { ManagePeersComponent } from './pages/manage-peers/manage-peers.component';
 import { ManagePeerGroupsComponent } from './pages/manage-peer-groups/manage-peer-groups.component';
 import { ManageTargetsComponent } from './pages/manage-targets/manage-targets.component';
@@ -25,6 +25,6 @@ export const routes: Routes = [
     { path: 'server-monitor-peers', component: ServerMonitorPeersComponent },
     { path: 'server-vpn-layout', component: ServerVpnLayoutComponent },
     { path: 'server-monitor-iptables', component: ServerMonitorIptablesComponent },
-    { path: 'test-page', component: TestpageComponent },
+    { path: 'test-page', component: TestPageComponent },
     { path: '**', redirectTo: 'login', pathMatch: 'full' },
 ];
