@@ -3,10 +3,12 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppSharedModule } from '../../app-shared.module';
 import { Sort } from '@angular/material/sort';
-import { ConnectedPeerInformation } from '../../webapi.entities';
+import { ConnectedPeerInformation, ConnectedPeerInformationItem } from '../../webapi.entities';
 import { Subscription } from 'rxjs';
 import { WebapiService } from '../../services/webapi.service';
 import { PeriodicRefreshUiService } from '../../services/periodic-refresh-ui.service';
+
+type PeerState = 'connected' | 'inactive' | 'disabled' | 'disconnected';
 
 @Component({
     standalone: true,
@@ -24,11 +26,19 @@ export class ServerMonitorPeersComponent implements OnInit {
   private currentSort: Sort = { active: 'peer_name', direction: 'asc' };
 
   get connectedCount(): number {
-    return this.connectedPeerData.items.filter(i => i.status === 'connected').length;
+    return this.connectedPeerData.items.filter(i => this.peerState(i) === 'connected').length;
+  }
+
+  get inactiveCount(): number {
+    return this.connectedPeerData.items.filter(i => this.peerState(i) === 'inactive').length;
+  }
+
+  get disabledCount(): number {
+    return this.connectedPeerData.items.filter(i => this.peerState(i) === 'disabled').length;
   }
 
   get offlineCount(): number {
-    return this.connectedPeerData.items.length - this.connectedCount;
+    return this.connectedPeerData.items.filter(i => this.peerState(i) === 'disconnected').length;
   }
 
   get totalTx(): number {
@@ -37,6 +47,20 @@ export class ServerMonitorPeersComponent implements OnInit {
 
   get totalRx(): number {
     return this.connectedPeerData.items.reduce((sum, i) => sum + (i.transfer_rx || 0), 0);
+  }
+
+  peerState(peer: ConnectedPeerInformationItem): PeerState {
+    const status = (peer.status ?? '').trim().toLowerCase();
+    if (peer.is_disabled === true || status === 'disabled') {
+      return 'disabled';
+    }
+    if (peer.is_inactive === true || status === 'inactive') {
+      return 'inactive';
+    }
+    if (peer.is_connected === true || status === 'connected') {
+      return 'connected';
+    }
+    return 'disconnected';
   }
 
   constructor(private webapiService: WebapiService,

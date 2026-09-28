@@ -140,15 +140,18 @@ export interface ConnectedPeerInformationItem {
     public_key: string;
     preshared_key: string;
     end_point: string;
-    end_point_ip: string;
+    end_point_ip?: string | null;
     end_point_port: string;
     allowed_ips: string;
     allowed_ips_ip: string;
     allowed_ips_mask: string;
-    latest_handshake: string;
-    transfer_rx: number;
-    transfer_tx: number;
+    latest_handshake: string | null;
+    transfer_rx: number | null;
+    transfer_tx: number | null;
     persistent_keepalive: number;
+    is_connected?: boolean;
+    is_inactive?: boolean;
+    is_disabled?: boolean | null;
 }
 
 export interface LicenseInfo {

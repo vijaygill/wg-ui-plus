@@ -53,6 +53,7 @@ RUN pip install --break-system-packages --no-cache-dir --upgrade \
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
+ENV TZ=Etc/UTC
 
 RUN groupadd -g $GID -o $UNAME \
     && useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME \
@@ -85,6 +86,7 @@ RUN apk update \
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-live
+ENV TZ=Etc/UTC
 
 RUN addgroup --gid "$GID" "$UNAME" \
     && adduser $UNAME --disabled-password --gecos "" --ingroup "$UNAME" --no-create-home --uid "$UID" \

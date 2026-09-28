@@ -586,6 +586,9 @@ AllowedIPs = {{allowed_ips}}
             peer_item["transfer_rx"] = None
             peer_item["transfer_tx"] = None
             peer_item["status"] = None
+            peer_item["is_connected"] = False
+            peer_item["is_inactive"] = False
+            peer_item["is_disabled"] = False
             peer_item["ping_time_ms"] = None
 
             peer_data = match.groupdict()
@@ -602,7 +605,6 @@ AllowedIPs = {{allowed_ips}}
                 last_handshake = None
                 is_disabled = peer.disabled
                 peer_item["peer_name"] = peer.name
-                peer_item["status"] = "Disabled" if is_disabled else peer_item["status"]
                 if not is_disabled:
                     is_connected = (
                         True
@@ -629,13 +631,16 @@ AllowedIPs = {{allowed_ips}}
                             peer_item["transfer_rx"] = int(peer_data["transfer_rx"])
                         if "transfer_tx" in peer_data.keys():
                             peer_item["transfer_tx"] = int(peer_data["transfer_tx"])
-                    peer_item["status"] = (
-                        "Inactive"
-                        if is_inactive
-                        else "Connected" if is_connected else peer_item["status"]
-                    )
                 peer_item["is_connected"] = is_connected
                 peer_item["is_inactive"] = is_inactive
+                peer_item["is_disabled"] = is_disabled
+            peer_item["status"] = (
+                "disabled"
+                if peer_item["is_disabled"]
+                else "inactive" if peer_item["is_inactive"]
+                else "connected" if peer_item["is_connected"]
+                else "disconnected"
+            )
             res["items"] += [peer_item]
         return res
 

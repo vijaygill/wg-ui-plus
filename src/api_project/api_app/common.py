@@ -11,7 +11,10 @@ IP_ADDRESS_INTERNET = "0.0.0.0/0"
 TARGET_INTERNET_NAME = "Internet"
 PEER_GROUP_EVERYONE_NAME = "EveryOne"
 
-MAX_LAST_HANDSHAKE_SECONDS = 120
+# WireGuard periodically rekeys each peer's handshake key (REKEY_AFTER_TIME).
+# A threshold of 600s (matching wg-easy) sits well above the rekey window so
+# healthy peers do not flap to "inactive" on every rekey cycle.
+MAX_LAST_HANDSHAKE_SECONDS = 600
 
 CACHE_KEY_APP_LIVE_VERSION = "CACHE_KEY_APP_LIVE_VERSION"
 CACHE_TTL = 60 * 60

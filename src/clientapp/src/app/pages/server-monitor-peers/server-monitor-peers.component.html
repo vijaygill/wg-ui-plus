@@ -8,8 +8,16 @@
     <span class="metric-label">Connected</span>
   </div>
   <div class="metric-tile">
+    <span class="metric-value">{{ inactiveCount | number }}</span>
+    <span class="metric-label">Inactive</span>
+  </div>
+  <div class="metric-tile">
+    <span class="metric-value">{{ disabledCount | number }}</span>
+    <span class="metric-label">Disabled</span>
+  </div>
+  <div class="metric-tile">
     <span class="metric-value">{{ offlineCount | number }}</span>
-    <span class="metric-label">Offline</span>
+    <span class="metric-label">Disconnected</span>
   </div>
   <div class="metric-tile">
     <span class="metric-value">{{ totalTx | number }}</span>
@@ -46,10 +54,19 @@
           <tr>
             <td>{{ connectedPeer.peer_name }}</td>
             <td>
-              @if (connectedPeer.status === 'connected') {
-                <span class="status-chip status-chip-ok">Connected</span>
-              } @else {
-                <span class="status-chip status-chip-off">Offline</span>
+              @switch (peerState(connectedPeer)) {
+                @case ('connected') {
+                  <span class="status-chip status-chip-ok">Connected</span>
+                }
+                @case ('inactive') {
+                  <span class="status-chip status-chip-warn">Inactive</span>
+                }
+                @case ('disabled') {
+                  <span class="status-chip status-chip-info">Disabled</span>
+                }
+                @default {
+                  <span class="status-chip status-chip-off">Disconnected</span>
+                }
               }
             </td>
             <td>{{ connectedPeer.end_point_ip }}</td>
