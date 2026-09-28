@@ -125,11 +125,28 @@ class PeerGroupSerializer(serializers.ModelSerializer):
         return res
 
 
+class TargetHeirarchyPeerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Peer
+        fields = ("id", "name", "description", "disabled", "ip_address")
+        read_only_fields = fields
+
+
+class TargetHeirarchyPeerGroupSerializer(serializers.ModelSerializer):
+    peers = TargetHeirarchyPeerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PeerGroup
+        fields = ("id", "name", "description", "disabled", "peers")
+        read_only_fields = fields
+
+
 class TargetHeirarchySerializer(serializers.ModelSerializer):
+    peer_groups = TargetHeirarchyPeerGroupSerializer(many=True, read_only=True)
+
     class Meta:
         model = Target
-        fields = "__all__"
-        depth = 2
+        fields = ("id", "name", "description", "disabled", "ip_address", "port", "peer_groups")
 
 
 class TargetSerializer(serializers.ModelSerializer):

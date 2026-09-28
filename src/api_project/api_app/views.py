@@ -14,7 +14,7 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.mixins import UpdateModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -65,9 +65,12 @@ class PeerViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
 
-class TargetHeirarchyViewSet(viewsets.ModelViewSet):
-    queryset = Target.objects.all()
+class TargetHeirarchyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Target.objects.all().prefetch_related("peer_groups__peers")
     serializer_class = TargetHeirarchySerializer
+    # Read-only projection; anonymous read allowed. Writes are not supported here;
+    # Target CRUD lives on TargetViewSet.
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class PeerGroupViewSet(viewsets.ModelViewSet):

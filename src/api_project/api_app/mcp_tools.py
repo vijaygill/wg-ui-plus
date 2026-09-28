@@ -402,8 +402,11 @@ class WireGuardMCPToolset(MCPToolset):
         """Return targets serialized with their related hierarchy.
 
         Returns the target serializer's list of dictionaries, including nested
-        related data at serializer depth two, which may contain sensitive peer
-        credential fields. Share the result only with an authorized recipient.
+        related peer group and peer data. The returned projection deliberately
+        omits peer credentials, email addresses, and access-control flags; peer
+        names and IP addresses are still included. Use
+        ``get_peer_configuration`` or ``get_peer_qr`` to retrieve credential
+        material.
         This is a read-only database operation; it does not generate credentials,
         contact targets, or change WireGuard/firewall state.
         """
