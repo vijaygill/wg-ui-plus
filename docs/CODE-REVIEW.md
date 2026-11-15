@@ -1,0 +1,279 @@
+# Code review — backend (Python) — 15 Nov 2026
+
+Baseline: `develop` @ `e620a03a83749d37f62fd448e29ecfb8057c4b8e`, clean working tree.
+Scope: all Python under `src/api_project` (≈6.5k lines) deep; `scripts/*.sh`, `Dockerfile`, CI lightly. No Angular/TypeScript.
+Method: five focused review passes plus independent re-reading of every cited line by the architect. Nothing was executed — `wg-ui-dev-shell` was not running, so no pytest, `manage.py`, or Angular build was run. Anything not confirmed from source is labelled `not verified`.
+
+**Open GitHub issues used as context (do not re-file these):**
+[#336](https://github.com/vijaygill/wg-ui-plus/issues/336) command injection in generated `post-up.sh` — **still open in this tree** (no `shlex` anywhere, `shell=True` at `wireguard_helper.py:541`).
+[#328](https://github.com/vijaygill/wg-ui-plus/issues/328) missing authorization on several endpoints — **partly closed** (`96f1d09` closed the `target_heirarchy` write path); the read paths in REV-04 / REV-05 are still open.
+[#329](https://github.com/vijaygill/wg-ui-plus/issues/329), [#315](https://github.com/vijaygill/wg-ui-plus/issues/315), [#297](https://github.com/vijaygill/wg-ui-plus/issues/297) — feature requests, out of scope here.
+
+## Diff style rules applied to every "Minimal fix" below
+
+One commit = one row. ≤ 25 changed lines (most are ≤ 10). Same file, same function where possible. No new modules, no new dependencies, no new helper classes, no reformatting, no import reshuffles, no docstring essays, no type-annotation sweeps, no comment noise. Match the surrounding naming and quoting style. If a row says a migration is expected, review the generated file — never hand-write one.
+
+## Main items — one row, one ticket
+
+| ID | Sev | Where | What is wrong | Minimal fix | ~Diff | Ref |
+|----|-----|-------|---------------|-------------|-------|-----|
+| REV-01 | Critical | `wireguard_helper.py:387,393,397,420,424,458,462` + `529,532,555` via `538` | Stored DB values are interpolated unquoted into the generated `post-up.sh`, which `wg-quick` runs as root. A peer/group/target name containing `"` or `$(...)` breaks out of `--comment "…"` and runs commands; the same applies to `Peer.ip_address` and to the `chmod +x {path}` / `wg-quick down/up {path}` lines. Payload persists in the DB and re-executes on every container start | Quote every interpolated value at the emit sites with a `shlex.quote` helper, in this one file. Keep `shell=True` for now (removing it is REV-01b, see smaller items) | ~30 | #336 |
+| REV-02 | Critical | `wireguard_helper.py:44-45`, `models.py:175,190-192` | `PostUp`/`PostDown` and `host_name_external` are written into `wg0.conf` with no CR/LF check, so a value containing `\nPostUp = <cmd>` adds a second `PostUp` key, which `wg-quick` runs through a shell. Shell-quoting the iptables script (REV-01) does **not** close this sink | Reject values containing CR or LF before rendering the ini block (one guard at the top of the server-config renderer) | ~10 | #336 (not covered by it) |
+| REV-03 | High | `serializers.py:25`, `serializers.py:64`, `serializers.py:172` | WireGuard private keys are returned by the REST API. `PeerSerializer` / `PeerWithQrSerializer` use `fields = "__all__"` so `Peer.private_key` (`models.py:114`) is in the peer list and retrieve payloads; `ServerConfigurationSerializer.Meta.exclude` omits `mcp_token` and the email fields but **not** `private_key`/`public_key`, so `GET /api/v1/data/server_configuration/` returns the server private key and PATCH can overwrite it | Exclude `private_key` on the two peer serializers and add `private_key`, `public_key` to the server serializer's `exclude`. Peer config is already generated on demand, so nothing needs the raw key in a list payload | 4 | — |
+| REV-04 | High | `views.py:341,349,445` | `wireguard_get_connected_peers`, `wireguard_get_iptables_log` and `get_server_status` set `@authentication_classes` but **no** `@permission_classes`, and `settings.py:95-100` sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's default `AllowAny` applies. Anonymous `GET /api/v1/control/wireguard_get_connected_peers` returns live per-peer state — peer names, allowed IPs, last-handshake times, byte counters | Add `@permission_classes([IsAuthenticated])` to the three views | 3 | #328 |
+| REV-05 | High | `views.py:73` | `TargetHierarchyViewSet` is `IsAuthenticatedOrReadOnly`, so anonymous `GET /api/v1/data/target_hierarchy/` still discloses the whole VPN topology: every target name/IP/port plus each peer group's peer names and WireGuard IPs (`serializers.py:128-149`). The write half of #328 is closed; this read half is not | Change to `IsAuthenticated` | 1 | #328 |
+| REV-06 | High | `mcp_tools.py:330-341`, `docs/MCP.md:28-32` | The MCP tool `get_wireguard_configuration` returns the full server configuration — which contains the server private key — plus every peer's client config with its private key, in one tool result. `docs/MCP.md` only warns that the token exposes "peer configuration or QR data", so the actual exposure is undocumented | Drop the `server_configuration` entry from what the tool returns (peer configs stay), and state the exposure in `docs/MCP.md`. If the server config is genuinely wanted, that is a deliberate policy call — say so in the ticket thread | 3 | — |
+| REV-07 | High | `settings.py:131`, `135`, `urls.py:40` | `DEBUG = True` is hardcoded, `ALLOWED_HOSTS = ["*"]`, and `/admin/` is routed. Any 500 in a live container returns Django's technical page with traceback and settings to any client | Derive `DEBUG` from an env var, default `False` | 2 | — |
+| REV-08 | High | `settings.py:24` | `SECRET_KEY` is hardcoded in a public repo with no env override, so every install shares one key — session and signed-cookie forgery across deployments | Read `SECRET_KEY` from the environment, keeping the current value as the dev fallback | 2 | — |
+| REV-09 | High | `db_init_db_on_start.py:136-140` | `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` unset evaluates to `False`, the comparison is then unequal, and the user's `True` is overwritten and saved on **every container start** — silently changing generated AllowedIPs. Fifteen lines below, the `EMAIL_USE_TLS` sync (`:178-186`) already shows the correct "only when the var is present" pattern | Only sync the field when the env var is actually present | 3 | — |
+| REV-10 | High | `scripts/run-app.sh:7` | `makemigrations` runs on every boot: it writes files into the running image, errors under `set -e` on a read-only rootfs, and after a rollback or drift leaves `django_migrations` rows whose parent no longer exists → `migrate` boot loop. The repeated `0008_/0010_/0012_alter_…_last_changed_datetime` migrations are this symptom. *Not executed — static reading* | Replace with `makemigrations --check --dry-run`, or drop the line and rely on checked-in migrations | 1 | interacts with REV-14, REV-15 |
+| REV-11 | High | `wireguard_helper.py:387,393,397,420,424,458,462` | The rule comment is `"{peer} => {group} => {target}"` and each field allows 255 characters, so the string can far exceed iptables' 256-byte comment limit. iptables rejects that rule, the generated script has no `set -e`, and the catch-all `DROP` at `:466` still installs — the peer's traffic is silently blackholed with no error in the UI | Truncate the comment text (~200 chars) in one small helper used by all seven templates | ~10 | — |
+| REV-12 | High | `wireguard_helper.py:84-88`, sort at `133-135` | The EveryOne group's target IPs are not `split(":")[0]`-stripped, unlike the two lists below them (`:91-102`). With `strict_allowed_ips_in_peer_config` on and a target such as `10.0.0.5:443`, `is_network_address()` returns `(False, None, None)`, so `allowed_ips.sort()` compares `None` with an `IPv4Network` and raises `TypeError` — config generation and every peer download 500. Confirmed by reading both call sites | Strip the port for the Everyone list the same way, and drop `None` results with a logged error before sorting | ~5 | — |
+| REV-13 | High | `wireguard_helper.py:538-550`, callers `534`, `557` | `execute_process` never checks `proc.returncode`, and on `TimeoutExpired` it only kills the process and returns `""`. Callers then return `{"status": "ok"}` unconditionally, so a failed `chmod`, a failed `wg-quick up`, or a 60-second hang is all reported to the UI as success | Include the return code in the result and treat non-zero as failure; re-`communicate()` after `kill()` | ~8 | — |
+| REV-14 | Medium | `models.py:90,107,111,149,175,190-192` | No validator on `PeerGroup.name`, `Peer.name`, `Peer.ip_address`, `Target.name`, `host_name_external` or the three script/config path fields. `Target.ip_address` (`models.py:152-157`) shows the intended pattern. `POST /api/v1/data/peer/ {"name":"a$(reboot)","ip_address":"999.1.1.1"}` is accepted today | Add a small `RegexValidator` on the name fields and an IP-format check on `Peer.ip_address`. Note in the PR: validators are part of field deconstruction, so `makemigrations` will produce one `AlterField` to commit | ~10 | #336 (edge layer) |
+| REV-15 | Medium | `models.py:173` | `network_address = models.CharField(..., validators=[is_network_address])` references the **`util.py` helper**, which returns a `(bool, ip, network)` tuple and never raises — so the validator can never reject anything and invalid network addresses reach `get_next_free_ip_address` and config generation. `validator_is_network_address` is defined at `models.py:15` and used nowhere; the other three `validators=` references (`156`, `182`, `188`) correctly use raising validators | Point the field at `validator_is_network_address`. One identifier change; expect one `AlterField` migration | 1 | see REV-10 |
+| REV-16 | Medium | `models.py:125,145` and `models.py:232,275` | Both `save()` overrides are declared `save(self, force_insert=False, force_update=False, **kwargs)` but call `super().save(force_insert=…, force_update=…)` — `**kwargs` is dropped, so `update_fields` is silently ignored. `mcp_configuration.py:47,92` and `mcp_enable.py:19` / `mcp_disable.py:16` all call `save(update_fields=[…])` and therefore write the whole loaded snapshot over any concurrent edit | Forward `**kwargs` to `super().save()` in both models | 2 | — |
+| REV-17 | Medium | `views.py:104-112` | `ServerConfigurationViewSet` is a full `ModelViewSet`: `DELETE /api/v1/data/server_configuration/1/` removes the only config row, after which every `ServerConfiguration.objects.all()[0]` (`views.py:328,344`, `models.py:126`, `shared_functions.py`) raises `IndexError` — app-wide 500 outage. `POST` can create a second row that `.first()` (`mcp_configuration.py:54`) resolves unpredictably. `perform_update` also calls `serializer.save()` and then `super().perform_update(serializer)`, saving twice with its IP-reallocation side effects | Restrict the viewset to list/retrieve/update mixins and delete the redundant `serializer.save()` | ~5 | — |
+| REV-18 | Medium | `views.py:316-329`, `urls.py:24,29` | `wireguard_generate_configuration_files` and `wireguard_restart` mutate state on **GET**. CSRF only guards unsafe methods, so a cross-site top-level `<form method=get>` navigation — session cookie is still sent under `SameSite=Lax` — makes a logged-in admin regenerate configs and bounce the VPN | Switch both to `@api_view(["POST"])` and update the two Angular call sites | 4 + 2 | — |
+| REV-19 | Medium | `email_service.py:317-326` | `EmailBackend` is constructed with no `timeout`, and settings define no `EMAIL_TIMEOUT`, so `smtplib.SMTP(timeout=None)`. An SMTP host that accepts TCP but never sends `220` (drop firewall rule) pins the Django request thread indefinitely. Trigger: `POST /api/v1/control/send_test_email`. The connectivity check at `:402` already uses `CONNECTIVITY_TIMEOUT_SECONDS` — the send path does not | Pass `timeout=` to `EmailBackend` from a module-level constant | 4 | — |
+| REV-20 | Medium | `mcp_authentication.py:39` | `secrets.compare_digest(key, configuration.mcp_token)` is given two `str`; `compare_digest` raises `TypeError` for non-ASCII strings. A header such as `Authorization: Bearer nai…` (a smart quote pasted from a document) passes the `UnicodeError` guard at `:33` and escapes as an unhandled 500 with traceback instead of a 401 | Compare UTF-8 encoded bytes, or catch `TypeError` and raise `AuthenticationFailed` | 2 | — |
+
+## Smaller items — same format, optional backlog
+
+| ID | Sev | Where | What is wrong | Minimal fix | ~Diff |
+|----|-----|-------|---------------|-------------|-------|
+| REV-21 | Medium | `views.py:374-376` | `cred["username"]` / `cred["password"]` raise `KeyError` on `POST /api/v1/auth/login` with `{}` or a non-dict body → unhandled 500 (with REV-07 unfixed, the response carries the traceback) | Read with `.get()`; return 400 when a field is missing | 5 |
+| REV-22 | Medium | `views.py:400-441` | `auth_change_password` returns HTTP 200 for every failure path ("Current password invalid.", mismatch) and a silent 200 no-op when `new_password` is blank; `django.contrib.auth.password_validation` is configured (`settings.py:84-93`) but never applied; `auth.login()` runs **before** `set_password()` with no `update_session_auth_hash`, so the session is invalidated on the next request although the response says `is_logged_in: true` | Return 400 on failures, run `validate_password`, and call `update_session_auth_hash` after the save | ~10 |
+| REV-23 | Medium | `serializers.py:34` | `PeerGroup.objects.filter(name=PEER_GROUP_EVERYONE_NAME)[0]` raises `IndexError` when the Everyone group is absent (the `if peer_group_everyone:` on the next line is therefore dead), and it re-queries once per row (N+1). No pagination class is configured either | Use `.first()` and hoist the lookup out of the per-row method | 3 |
+| REV-24 | Medium | `mcp_compat.py:13`, `settings.py:20`, `Dockerfile:52,83` | The shim imports `mcp.server.fastmcp` internals and calls `Settings.model_rebuild(...)` at settings-import time. `pydantic` is **not pinned anywhere** in the Dockerfile (it arrives transitively from `mcp==1.9.4`), so a rebuild that pulls a newer pydantic can break every Django command and the app boot with `ImportError`/`AttributeError` — even with MCP disabled | Wrap the import and rebuild in `try/except Exception` with a warning so MCP degrades; add an explicit `pydantic==` pin to both pip lines | ~5 + 2 |
+| REV-25 | Medium | `wireguard_helper.py:230-237` | DNAT rules are deleted by the *current* DNS value, so changing `upstream_dns_ip_address` leaves the previously inserted `PREROUTING` DNAT ahead of the new one — client DNS keeps going to the old server across regenerations | Delete all `PREROUTING` DNAT rules for the interface before inserting, instead of only the current value | ~8 |
+| REV-26 | Medium | `wireguard_helper.py:509,524,526` | `wg0.conf` (server private key) and the post-up/post-down scripts are written with a plain `open(..., "w")` → mode 0644 under the default umask, on the `/config` bind mount | `os.chmod(path, 0o600)` immediately after each write | 4 |
+| REV-27 | Medium | `wireguard_helper.py:554-555` | `restart()` chains `wg-quick down …; … wg-quick up …;` with `;`, so if `down` fails `up` runs anyway, and the combined output is returned as `ok`. The three identical `sudo conntrack -F` are copy-paste | Use `&&` between down and up; keep a single `conntrack -F … \|\| true` | 4 |
+| REV-28 | Medium | `scripts/run-app.sh:2,16` | `set -e` plus `sudo wg-quick up` means any VPN failure (bad config, no default route → the script's own `exit 1` at `wireguard_helper.py:215`) aborts startup and the web UI never starts | Append `\|\| echo "wg-quick up failed"` so `runserver` still runs | 2 |
+| REV-29 | Medium | `db_init_db_on_start.py:127-135` | An env `str` is compared against `port_external` / `port_internal` (`int`), so the values are always unequal: a spurious dirty-save and `last_changed_datetime` bump on every boot whenever `WG_PORT_EXTERNAL` is set (which feeds stale-config detection in `server_helper.py:26`); a non-numeric value raises inside `IntegerField.get_prep_value` → `CommandError` → `set -e` aborts boot | Convert the env values to `int` inside a `try` before comparing | ~6 |
+| REV-30 | Medium | `db_init_db_on_start.py:263-268` | Sample-peer seeding keys off "there are no peers at all", so deleting all peers and restarting re-creates "Mobile phone" and "Laptop" with fresh keys and re-adds them to EveryOne | Seed sample peers only in the run that first creates the `ServerConfiguration` row | 4 |
+| REV-31 | Medium | `backup_db_before_upgrade.py:34` | `shutil.copyfile` on a live SQLite file — no sqlite backup API, no WAL checkpoint, `-wal` ignored — can capture a torn database. One full copy is kept per distinct `APP_VERSION` in `/data` with no pruning, so it grows without bound; a copy failure raises `CommandError` and `set -e` aborts startup | Use `connection.ops.backup` / `sqlite3.Connection.backup()` and keep the last N | ~8 |
+| REV-32 | Medium | `wg_generate_config.py:23`, `wg_restart.py:18`, `db_init_db_on_start.py:53,71,205`, `clear_cache.py:17` | `"Error:" + traceback.format_exception(e)` concatenates `str` with a `list` on Python ≥3.10 → `TypeError`, which replaces the real traceback and hides the root cause of any startup failure. `backup_db_before_upgrade.py:46` already does it correctly with `"\n".join(...)` | Use `"\n".join(traceback.format_exception(e))`, or `traceback.format_exc()` | ~6 |
+| REV-33 | Medium | `settings.py:201` | `DJANGO_LOG_LEVEL` also drives the `django.db.backends` logger, so setting it to `DEBUG` logs full SQL **with parameters** — `mcp_token`, `private_key` and `email_host_password` land in container logs | Give `django.db.backends` its own env var defaulting to `WARN` | 1 |
+| REV-34 | Medium | `Dockerfile:62,93` | The images grant `%pi ALL=(ALL) NOPASSWD:ALL` (and `pi`/`node` NOPASSWD in the dev stage). The app shells out through `sudo`, so any request-handler compromise is unrestricted root in a `NET_ADMIN`/`SYS_MODULE` container | Replace the wildcard with a command allow-list: `wg-quick`, `iptables`, `conntrack`, `chmod` | 4 |
+| REV-35 | Medium | `.github/workflows/docker-image-ci.yml:103,119` | CI never runs the backend tests: both build steps use `target: live`, and the `dev` stage — the only one with `pytest-django` / `python3-pytest` (`Dockerfile:36-37,49-52`) — is never built, so test dependencies are unvalidated. arm64 needs a `self-hosted` runner, and if it is offline `build` fails and `create-multiarch-image` (`needs: build`) publishes nothing | Add an `ubuntu-latest` step that builds `target: dev`, or a job that runs `scripts/run-tests.sh` | ~12 |
+| REV-36 | Medium | `src/api_project/tests/` | The safety-critical paths have no tests: `grep` for `execute_process\|Popen\|subprocess\|.restart(` across `tests/*.py` returns nothing, `get_next_free_ip_address` is unreferenced, and the only `ServerConfiguration` payload assertion (`test_email_configuration.py:805-813`) checks email fields — so REV-03 would not fail any test. `/api/v1/control/wireguard_*` has no test at all | Three small tests, one commit each: (a) generation with a name containing `"` and `;` produces a quoted rule; (b) `restart()` with `execute_process` patched asserts the `wg-quick down`/`up` path and that a non-zero result is not `ok`; (c) anonymous POST to `wireguard_restart` is 401/403 with `assert_not_called()` | ~10 each |
+| REV-37 | Medium | `util.py:163-169` | `ip_address_pool[0] if for_server else ip_address_pool[1]` raises `IndexError` when the pool is empty or has one host left — reached from `Peer.save()` (`models.py:139`) and `ServerConfiguration.save()` (`:263`) → 500. It also always skips the lowest free address for peers | Raise a clear `ValueError` when the pool is too small; index defensively | ~8 |
+| REV-38 | Medium | `views.py:130-135` | `MCPConfigurationView.patch` writes `mcp_enabled` even when `WG_MCP_SERVER_ENABLED` governs it, so the write is silently ineffective — unlike the email PATCH (`views.py:264-270`), which rejects env-controlled fields. `MCPTokenService.rotate` (`mcp_configuration.py:47`) and the `mcp_enabled` save (`:92`) are two writes with no transaction | Reject the field under env override; wrap both writes in `transaction.atomic()` | ~6 |
+| REV-39 | Low | `email_service.py:17` | `from django.test.testcases import DatabaseOperationForbidden` pulls Django's test machinery into a production module that `settings.py` imports before `django.setup()` | Drop the import; catch `DatabaseError` | 2 |
+| REV-40 | Low | `email_service.py:127`, `:355,361` | Credentials are accepted with both `use_tls` and `use_ssl` false, so Django sends `AUTH LOGIN` in cleartext; separately, a server-side *generation* failure raises `EmailDeliveryError`, which maps to HTTP 502 although no SMTP exchange ever happened | Reject user+password when neither TLS nor SSL is enabled; raise `EmailConfigurationError` (→503) for generation failures | 4 + 2 |
+| REV-41 | Low | `mcp_tools.py:60-74` | `_safe_peer` returns `email_address` for every peer to any token holder, while `get_hierarchy` (`:401-413`) deliberately omits email addresses | Drop `email_address` from `_safe_peer` | 1 |
+| REV-42 | Low | `mcp_tools.py:171,183` | `get_peer_configuration` builds a `PeerWithQrSerializer` (so it also renders a QR PNG), and `serializers.py:69` does `ServerConfiguration.objects.all()[0]` unguarded → a raw protocol error instead of `MCPToolError` when no config row exists | Wrap the serializer calls in `try/except` → `MCPToolError` | 4 |
+| REV-43 | Low | `util.py:90` | `mask_ok = 0 <= mask < 32` rejects a valid `/32` | Change to `0 <= mask <= 32` | 1 |
+| REV-44 | Low | `wireguard_helper.py:473` | The generated `post-down` script has no `#!/bin/bash` line, while `post-up` has one (`:206-207`) | Add the shebang | 1 |
+| REV-45 | Low | `wireguard_helper.py:669` | `glob.glob("/config/wireguard/**/*")` is hardcoded although the path is a configurable model field, so a custom `wireguard_config_path` makes the "needs regeneration" check always wrong; `os.path.getmtime` can also raise if a file disappears between glob and stat | Derive the directory from `server_configuration.wireguard_config_path`; skip unreadable paths | ~6 |
+| REV-46 | Low | `server_helper.py:61`, `:69` | `"Updates check diabled."` typo; and `requests.get(APP_URL)` has no timeout, so on an appliance with no outbound internet — the normal case — the call hangs and pins a Django worker on every application-details request | Fix the spelling; pass `timeout=5` | 1 + 1 |
+| REV-47 | Low | `scripts/run-tests.sh:3`, `.gitignore` | `--cov=com` is a stale coverage target (the code is `src/api_project/api_app`), so coverage output is always empty — AGENTS.md documents this but nothing fixes it. `--cov-report=html/xml` write `htmlcov/` and `coverage.xml`, and neither is in `.gitignore`, so the documented run leaves committable junk | Change to `--cov=api_app`; add `htmlcov/` and `coverage.xml` to `.gitignore` | 3 |
+| REV-48 | Low | `src/test_sample-tests.py:3`, `src/api_project/tests/run_tests.sh` | `assert True` placeholder that sits **outside** the pytest rootdir (`src/api_project/pytest.ini`), so the documented `cd /app/api_project && ../scripts/run-tests.sh` never collects it, while AGENTS.md:124 lists it as a checked-in backend test. There is also an undocumented duplicate runner at `src/api_project/tests/run_tests.sh` | Delete the placeholder (or move it under `tests/` with a real assertion) and correct AGENTS.md / note the runner | ~5 |
+
+## Not findings — checked and clean
+
+`mcp_authentication.py` uses `secrets.compare_digest` for the token; token entropy is `secrets.token_urlsafe(48)`. The SMTP password is never returned (`email_service.py:268-280`) and the `"*****"` sentinel is only ever compared, never stored or returned — it cannot be used to read the stored password. Email recipients, config text and QR payloads are always built server-side from the DB; `PeerEmailRequestSerializer` accepts only `peer_id`, so no caller-supplied recipient or payload path exists. stdlib header sanitisation makes Subject/From/To header injection via `peer.name` impossible. `generate_keys()` only runs when a key is missing (`models.py:127`, `:233`), so existing keys are never overwritten. The `@logged` decorator (`common.py:34-45`) logs function names, not arguments, so it does not leak keys. The `FORWARD` chain is flushed before rules are appended (`wireguard_helper.py:220`), so regeneration does not duplicate rules. `USE_TZ=True` makes the mtime-vs-`last_changed_datetime` comparison at `:682-685` valid. `admin.py` exposes no secret-bearing field. No test spawns a subprocess, writes `/data` or `/config`, needs the network, or depends on `DEBUG=True`. The MCP mutating tools (`create/update/delete_peer`, `_peer_group`, `_target`, `update_server_configuration`, `generate_wireguard_configuration_files`, `restart_wireguard`) are gated by `ConditionalMCPView.dispatch` `is_enabled()` + `MCPTokenAuthentication` + `IsAuthenticated` (`api_project/urls.py:30-37`) — one gate for all tools, no per-tool authorization and no audit trail, which is a design property rather than a defect to fix in a small commit.
+
+## Known-noted, deliberately excluded (each needs a decision, not a diff)
+
+`get_chain_name` (`wireguard_helper.py:192-194`) and the `chain_name` tuple element are dead — removal touches ~40 unpacking lines. `get_connected_peers` regex (`:560-573`) matches IPv4 endpoints only, so IPv6 peers are silently omitted — *not verified against live `wg show dump`*, and the fix exceeds 25 lines. No `ServerConfiguration` singleton guard exists (`Meta`, pk pinning and `load()` are all absent), so `[0]` at `models.py:126` and `.first()` at `mcp_configuration.py:54` can disagree if a second row ever appears — REV-17 removes the way to create one. Peer-group/target IP allocation is not race-protected (`transaction.atomic()` + `select_for_update()` on the config row would be ~4 lines, but the semantics need your call). `PeerGroup.description` (`models.py:91`) and `Peer.description` / `email_address` (`:108-109`) are `null=True` without `blank=True`, so DRF requires the key and a POST with only `name` returns 400 — fixing it changes field deconstruction, hence REV-10 first. `__str__` renders `"… - None"` for a null description. `/test/` (`urls.py:17` → `views.py:307`) is an anonymous debug route. Dropping `shell=True` entirely — the structural fix #336 asks for — means converting `execute_process` to argv lists and splitting the `;`-chained `restart()`; correct, but larger than one small commit, so it is listed here rather than as a row.
+
+## Ticket text
+
+Titles carry no prefix and say what changes. Bodies are paste-ready; each names its `file:line` so the diff is unambiguous.
+
+#### REV-01 — Quote stored values before interpolating them into generated WireGuard scripts
+
+`Peer.name`, `PeerGroup.name`, `Target.name`, `Peer.ip_address` and the `ServerConfiguration` path fields are interpolated unquoted into the generated `post-up.sh`, which `wg-quick` runs as root through `PostUp`. A name containing `"` closes the `--comment "…"` early and `;` starts a new command; `$(...)` and backticks expand inside the existing quotes. The sink is `subprocess.Popen(..., shell=True)` at `api_app/wireguard_helper.py:541`. Affected emit sites: rule templates at `:387,393,397,420,424,458,462`, `chmod +x` at `:529,532`, `wg-quick down/up` at `:555`.
+
+Fix: add a small `shlex.quote` helper in `wireguard_helper.py` and wrap every interpolated value at those sites. No behaviour change for values that contain no shell metacharacters.
+
+Acceptance: a peer named `zz"; touch /tmp/canary; #` produces a rule line that does not execute anything when run; existing generation tests still pass. Related to #336.
+
+#### REV-02 — Reject CR/LF in values written into wg0.conf
+
+`PostUp`/`PostDown` (`wireguard_helper.py:44-45`) interpolate `script_path_post_up`, `script_path_post_down` and `host_name_external`, none of which have a validator (`models.py:175,190-192`). A value containing `\nPostUp = <cmd>` adds a second `PostUp` key to `wg0.conf`, and `wg-quick` runs `PostUp` through a shell. Shell-quoting the iptables script (REV-01) does not close this.
+
+Fix: in the server-configuration renderer, reject any value containing CR or LF before building the ini text.
+
+Acceptance: a path field containing a newline cannot reach the generated `wg0.conf`; the request is refused with a validation error.
+
+#### REV-03 — Stop returning WireGuard private keys in REST payloads
+
+`PeerSerializer` (`serializers.py:25`) and `PeerWithQrSerializer` (`:64`) use `fields = "__all__"`, so `Peer.private_key` (`models.py:114`) is included in the peer list and retrieve responses. `ServerConfigurationSerializer.Meta.exclude` (`serializers.py:172`) omits `mcp_token` and the email fields but not `private_key`/`public_key`, so `GET /api/v1/data/server_configuration/` returns the server private key and PATCH can overwrite it.
+
+Fix: exclude `private_key` from both peer serializers and add `private_key`, `public_key` to the server serializer's `exclude`. Peer configs are generated on demand, so no client needs the raw key in a list payload.
+
+Acceptance: `assertNotIn("private_key", payload)` for both endpoints; existing SPA flows (peer list, QR, config download) still work.
+
+#### REV-04 — Require authentication on the three open control endpoints
+
+`wireguard_get_connected_peers` (`views.py:341`), `wireguard_get_iptables_log` (`:349`) and `get_server_status` (`:445`) declare `@authentication_classes` but no `@permission_classes`. `REST_FRAMEWORK` (`settings.py:95-100`) sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's `AllowAny` applies and the routes are anonymous. The connected-peers route returns live per-peer state — names, allowed IPs, last-handshake times, byte counters.
+
+Fix: add `@permission_classes([IsAuthenticated])` to all three, matching the neighbouring routes at `:319` and `:327`.
+
+Acceptance: anonymous GET returns 401/403; the SPA, which is authenticated, is unaffected. Part of #328.
+
+#### REV-05 — Require authentication for target_hierarchy reads
+
+`TargetHierarchyViewSet` (`views.py:73`) is `IsAuthenticatedOrReadOnly`, so an anonymous `GET /api/v1/data/target_hierarchy/` returns the full topology: target names/IPs/ports plus every peer group's peer names and WireGuard IPs (`serializers.py:128-149`). Commit `96f1d09` closed the write half of #328; this read half is still open.
+
+Fix: change the permission class to `IsAuthenticated`.
+
+Acceptance: anonymous GET returns 401/403; the existing permission test is extended to assert it.
+
+#### REV-06 — Keep the server private key out of the MCP get_wireguard_configuration result
+
+The tool at `mcp_tools.py:330-341` returns the complete configuration set, including the server configuration (server private key) and every peer's client config with its private key. `docs/MCP.md:28-32` only warns that the token exposes "peer configuration or QR data", so the real exposure is undocumented.
+
+Fix: return only `peer_configurations`, and state the exposure in `docs/MCP.md`. If returning the server config is intended, record that decision on the ticket instead.
+
+Acceptance: the tool result contains no server private key; docs match behaviour.
+
+#### REV-07 — Make DEBUG environment-driven and default it to False
+
+`DEBUG = True` is hardcoded at `settings.py:131`, `ALLOWED_HOSTS = ["*"]` at `:135`, and `/admin/` is routed at `api_project/urls.py:40`. Any unhandled exception in a live container returns Django's technical 500 page with traceback and settings to the client.
+
+Fix: read `DEBUG` from the environment, default `False`.
+
+Acceptance: with the variable unset a 500 renders the plain error page; the dev workflow can still turn it on.
+
+#### REV-08 — Read SECRET_KEY from the environment
+
+`settings.py:24` hardcodes `SECRET_KEY` with Django's insecure default value, so every deployment built from this image shares one key — enough to forge sessions and signed cookies across installs.
+
+Fix: take `SECRET_KEY` from the environment, keeping the current literal as the fallback so development needs no setup. Document the variable in README.
+
+Acceptance: setting the variable changes the effective key; unset still boots.
+
+#### REV-09 — Do not reset strict_allowed_ips_in_peer_config from an unset env var
+
+`db_init_db_on_start.py:136-140` computes the env value with `os.environ.get(..., '').lower() in TRUE_VALUES`, so an unset `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` yields `False`, the comparison is unequal, and a user's saved `True` is overwritten on every container start — which silently changes the AllowedIPs in generated peer configs. The `EMAIL_USE_TLS` sync fifteen lines below (`:178-186`) already implements the intended "sync only when present" behaviour.
+
+Fix: only sync when the variable is present.
+
+Acceptance: a DB value of `True` survives a restart with the variable unset; an explicit `false` still overrides.
+
+#### REV-10 — Stop running makemigrations at container start
+
+`scripts/run-app.sh:7` runs `makemigrations` on every boot. It writes migration files into the running image, fails under `set -e` on a read-only rootfs, and after a rollback or drift can leave `django_migrations` rows whose parent file no longer exists, which puts `migrate` into a boot loop. The repeated `0008_/0010_/0012_alter_…_last_changed_datetime` migrations are consistent with this churn. Not executed during this review — `wg-ui-dev-shell` was not running — so the current drift state is unconfirmed.
+
+Fix: replace with `makemigrations --check --dry-run`, or drop the line and rely on checked-in migrations.
+
+Acceptance: startup performs no writes to the source tree; a fresh volume still migrates.
+
+#### REV-11 — Truncate the iptables rule comment so long names cannot blackhole a peer
+
+Each rule uses `--comment "{peer} => {group} => {target}"` and each of those fields allows 255 characters (`models.py:90,107,149`), so the string can exceed the iptables comment limit of 256 bytes. iptables then rejects the rule, the generated script runs without `set -e`, and the catch-all `DROP` at `wireguard_helper.py:466` installs anyway — the peer's traffic stops with nothing reported in the UI.
+
+Fix: build the comment through one small helper that truncates to about 200 characters, used by all seven rule templates.
+
+Acceptance: three 255-character names produce a script whose rules all load; traffic flows.
+
+#### REV-12 — Strip the port from EveryOne target IPs before building AllowedIPs
+
+At `wireguard_helper.py:84-88` the EveryOne target list is used raw, while the two lists below it (`:91-102`) strip a `:port` suffix. With `strict_allowed_ips_in_peer_config` enabled and an EveryOne target such as `10.0.0.5:443`, `is_network_address()` returns `(False, None, None)`, so `allowed_ips.sort()` at `:133-135` compares `None` with an `IPv4Network` and raises `TypeError`. Config generation and every peer config download then fail with a 500.
+
+Fix: strip the port for the Everyone list the same way, and drop `None` results with a logged error before sorting.
+
+Acceptance: an EveryOne target with `:port` generates config successfully; existing generation tests pass.
+
+#### REV-13 — Report subprocess failures instead of always returning ok
+
+`execute_process` (`wireguard_helper.py:538-550`) never inspects `proc.returncode`, and on `TimeoutExpired` it only calls `proc.kill()` and returns an empty string. Callers at `:534` and `:557` build `{"status": "ok"}` from that regardless, so a failed `chmod`, a failed `wg-quick up`, or a 60-second hang is all shown to the user as success.
+
+Fix: include the return code in the result, treat non-zero as failure, and re-`communicate()` after `kill()` so the pipes are drained.
+
+Acceptance: forcing a non-zero exit makes `restart()` and config generation report failure; a timeout is reported as a failure, not an empty success.
+
+#### REV-14 — Validate name and address fields at the model edge
+
+`PeerGroup.name` (`models.py:90`), `Peer.name` (`:107`), `Peer.ip_address` (`:111`), `Target.name` (`:149`), `host_name_external` (`:175`) and the three script path fields (`:190-192`) have no validators. `Target.ip_address` (`:152-157`) is the existing pattern to follow. Today `POST /api/v1/data/peer/ {"name":"a$(reboot)","ip_address":"999.1.1.1"}` is stored. This is the edge-validation layer of #336.
+
+Fix: add a `RegexValidator` permitting letters, digits, space, `._@-` on the name fields and an IP-format check on `Peer.ip_address`. Validators take part in field deconstruction, so `makemigrations` will emit one `AlterField` — review and commit it (do this after REV-10).
+
+Acceptance: the payloads above are rejected with 400; existing rows and the SPA are unaffected.
+
+#### REV-15 — network_address is validated by a function that can never fail
+
+`models.py:173` declares `validators=[is_network_address]`, but that is the `util.py` helper which returns a `(bool, ip, network)` tuple and swallows exceptions — as a Django validator it never raises, so `network_address` is effectively unvalidated and bad values reach `get_next_free_ip_address` and config generation. `validator_is_network_address` is defined at `models.py:15` and referenced nowhere; the other three `validators=` uses (`:156`, `:182`, `:188`) all reference validators that raise.
+
+Fix: change the reference to `validator_is_network_address`. One identifier, plus the `AlterField` migration that results.
+
+Acceptance: `network_address = "192.168.2.5/32"` is refused on save through the API.
+
+#### REV-16 — Pass **kwargs through the save() overrides so update_fields works
+
+Both overrides are declared `save(self, force_insert=False, force_update=False, **kwargs)` but call `super().save(force_insert=..., force_update=...)` (`models.py:145`, `:275`), dropping `update_fields`. `mcp_configuration.py:47,92`, `mcp_enable.py:19` and `mcp_disable.py:16` all call `save(update_fields=[...])` expecting a narrow update, and today get a full-row write of the snapshot they loaded — overwriting any concurrent edit to other columns.
+
+Fix: forward `**kwargs` in both `save()` methods.
+
+Acceptance: an `update_fields` save touches only the named columns; a concurrent change to another column survives.
+
+#### REV-17 — Make server_configuration list/retrieve/update only, and save once per PATCH
+
+`ServerConfigurationViewSet` (`views.py:104`) is a full `ModelViewSet`, so `DELETE /api/v1/data/server_configuration/1/` removes the only configuration row and every later `ServerConfiguration.objects.all()[0]` (`views.py:328,344`, `models.py:126`, `shared_functions.py`) raises `IndexError` — the whole app 500s until the row is restored by hand. `POST` can create a second row that `.first()` (`mcp_configuration.py:54`) resolves unpredictably. `perform_update` also calls `serializer.save()` and then `super().perform_update(serializer)`, so each PATCH runs the save side effects (including peer IP reallocation) twice.
+
+Fix: build the viewset from the list/retrieve/update mixins and remove the redundant `serializer.save()`.
+
+Acceptance: DELETE and POST return 405; PATCH performs one save.
+
+#### REV-18 — Move config regeneration and VPN restart from GET to POST
+
+`wireguard_generate_configuration_files` (`views.py:316-320`) and `wireguard_restart` (`views.py:324-329`) mutate state on GET. CSRF protection only applies to unsafe methods, so a cross-site top-level navigation (`<form method=get>`) from a logged-in admin — whose session cookie is still sent under `SameSite=Lax` — regenerates the configuration files or bounces the VPN.
+
+Fix: change both to `@api_view(["POST"])` and update the two Angular call sites.
+
+Acceptance: GET no longer performs the action; the SPA buttons still work; a cross-site GET cannot.
+
+#### REV-19 — Give the SMTP send path a timeout
+
+`_send_email` (`email_service.py:317-326`) constructs `EmailBackend` without `timeout`, and no `EMAIL_TIMEOUT` is set in settings, so `smtplib.SMTP` runs with no timeout. An SMTP host that accepts the TCP connection but never sends the `220` banner — or stalls at `RCPT`/`DATA` — pins the Django request thread indefinitely. Reachable via `POST /api/v1/control/send_test_email` and the MCP send tool. The connectivity check at `:402` already uses `CONNECTIVITY_TIMEOUT_SECONDS`; the send path should too.
+
+Fix: pass `timeout=` to `EmailBackend` from a module constant.
+
+Acceptance: a black-holed SMTP host produces a classified connection error within the timeout instead of a hung request.
+
+#### REV-20 — Return 401 for a non-ASCII MCP token
+
+`authenticate_credentials` (`mcp_authentication.py:39`) calls `secrets.compare_digest(key, configuration.mcp_token)` with two `str`, and `compare_digest` raises `TypeError` when a string is not ASCII. A header like `Authorization: Bearer nai…` — a smart quote pasted from a document — passes the decode guard at `:33` and escapes as an unhandled 500 with a traceback instead of a clean 401.
+
+Fix: compare UTF-8 encoded bytes, or catch `TypeError` and raise `AuthenticationFailed`.
+
+Acceptance: a non-ASCII token returns 401; a valid token still authenticates.
+
+### Smaller items — titles and one-paragraph bodies
+
+- **REV-21 — Return 400 instead of 500 when the login body is incomplete.** `auth_login` (`views.py:374-376`) reads `cred["username"]` and `cred["password"]` directly, so `POST /api/v1/auth/login` with `{}` or a non-dict body raises `KeyError`/`TypeError` and returns a 500 (which, until REV-07 is done, carries the traceback). Read both with `.get()` and return 400 when either is missing.
+- **REV-22 — Report password-change failures as errors and keep the session valid.** `auth_change_password` (`views.py:400-441`) returns 200 for "Current password invalid.", for a mismatch, and as a silent no-op when `new_password` is blank; it never applies the `password_validation` rules already configured at `settings.py:84-93`, and it calls `auth.login()` before `set_password()` without `update_session_auth_hash`, so the user's session dies on the next request while the response says `is_logged_in: true`. Return 400, validate the new password, and refresh the session auth hash after the save.
+- **REV-23 — Use .first() for the Everyone group lookup.** `serializers.py:34` does `PeerGroup.objects.filter(name=PEER_GROUP_EVERYONE_NAME)[0]`, which raises `IndexError` when the group is missing (so the `if peer_group_everyone:` on the next line is dead code), and runs once per row. Use `.first()` and hoist the lookup out of the method.
+- **REV-24 — Degrade MCP instead of killing boot when pydantic moves.** `mcp_compat.py:13` imports `mcp.server.fastmcp` internals and rebuilds `Settings` at settings-import time (`settings.py:20`); `pydantic` is not pinned anywhere in the Dockerfile and only arrives transitively from `mcp==1.9.4`. A future pydantic release that moves `Settings` would raise at import time and break every Django command and the app itself even with MCP disabled. Wrap the import and rebuild in `try/except Exception` with a warning, and pin `pydantic==` on both pip lines (`Dockerfile:52,83`) at a version verified in the dev shell.
+- **REV-25 — Clear stale DNS DNAT rules before inserting the new one.** `wireguard_helper.py:230-237` deletes DNAT rules matching the *current* `upstream_dns_ip_address`, so after the value is changed the previously inserted `PREROUTING` rule stays ahead of the new one and client DNS keeps going to the old server. Delete all DNAT rules for the interface before inserting.
+- **REV-26 — Write wg0.conf and the generated scripts 0600.** `wireguard_helper.py:509,524,526` write with `open(..., "w")`, so `wg0.conf` — which holds the server private key — and the post-up/post-down scripts land at 0644 on the `/config` bind mount. `os.chmod(path, 0o600)` after each write.
+- **REV-27 — Chain wg-quick down and up with && and drop the duplicate conntrack flush.** `wireguard_helper.py:554-555` joins the commands with `;`, so a failed `wg-quick down` is followed by `up` anyway and the combined output is returned as `ok`; `conntrack -F` appears three times identically. Use `&&` between down and up and keep one flush.
+- **REV-28 — Do not let a VPN error stop the web UI from starting.** `scripts/run-app.sh` has `set -e` at line 2 and `sudo wg-quick up` at line 16, so any VPN failure (bad config, no default route → the generated script's own `exit 1` at `wireguard_helper.py:215`) aborts startup before `runserver`. Append `|| echo "wg-quick up failed"`.
+- **REV-29 — Compare port env vars as integers.** `db_init_db_on_start.py:127-135` compares the `str` from the environment with the `int` model fields, so they are always unequal: a spurious dirty-save and `last_changed_datetime` bump on every boot when `WG_PORT_EXTERNAL` is set (which feeds the stale-config detection in `server_helper.py:26`), and a non-numeric value raises in `IntegerField.get_prep_value`, aborting boot under `set -e`. Convert to `int` in a `try` before comparing.
+- **REV-30 — Seed sample peers only on first initialisation.** `db_init_db_on_start.py:263-268` decides based on "no peers exist", so a user who deletes every peer and restarts gets "Mobile phone" and "Laptop" back with fresh keys, re-added to EveryOne. Seed them only in the run that first creates the `ServerConfiguration` row.
+- **REV-31 — Back up SQLite with the backup API and prune old copies.** `backup_db_before_upgrade.py:34` uses `shutil.copyfile` on a live database with no WAL checkpoint and `-wal` ignored, which can capture a torn state; it keeps one full copy per distinct `APP_VERSION` under `/data` forever, and a copy failure raises `CommandError` and aborts startup under `set -e`. Use `connection.ops.backup` / `sqlite3.Connection.backup()` and keep the last N.
+- **REV-32 — Stop crashing the error path with traceback.format_exception(e).** `"Error:" + traceback.format_exception(e)` concatenates `str` with a `list` on Python ≥ 3.10, so the handler itself raises `TypeError` and hides the original failure: `wg_generate_config.py:23`, `wg_restart.py:18`, `db_init_db_on_start.py:53,71,205`, `clear_cache.py:17`. `backup_db_before_upgrade.py:46` already does it correctly with `"\n".join(...)`.
+- **REV-33 — Give the SQL logger its own level.** `settings.py:201` drives `django.db.backends` from `DJANGO_LOG_LEVEL`, so setting the documented logging knob to `DEBUG` logs full SQL with parameters — `mcp_token`, `private_key` and `email_host_password` then end up in container logs. Give that logger its own variable defaulting to `WARN`.
+- **REV-34 — Narrow the container's sudo grant.** `Dockerfile:93` adds `%pi ALL=(ALL) NOPASSWD:ALL` (and `:62` does the same for `pi` and `node` in the dev stage). The application shells out through `sudo`, so any request-handler compromise is unrestricted root in a container with `NET_ADMIN`/`SYS_MODULE`. Replace the wildcard with an allow-list of `wg-quick`, `iptables`, `conntrack`, `chmod`.
+- **REV-35 — Run the backend tests in CI.** `.github/workflows/docker-image-ci.yml:103,119` build only `target: live`, and the `dev` stage is the only one with `pytest-django`/`python3-pytest` (`Dockerfile:36-37,49-52`), so no pipeline step ever runs pytest and the test dependencies are unvalidated. Add an `ubuntu-latest` step that builds `target: dev`, or a job that runs `scripts/run-tests.sh`. Note also that arm64 requires a `self-hosted` runner and, when it is offline, `build` fails and `create-multiarch-image` (`needs: build`) publishes nothing.
+- **REV-36 — Add three focused tests for the paths that currently have none.** Grep for `execute_process|Popen|subprocess|.restart(` across `src/api_project/tests/` returns nothing; `get_next_free_ip_address` is unreferenced; the only `ServerConfiguration` payload assertion (`test_email_configuration.py:805-813`) checks email fields, so REV-03 would not fail any test; `/api/v1/control/wireguard_*` has no test. Add one commit each for: generation with a name containing `"` and `;` producing a quoted rule; `restart()` with `execute_process` patched asserting the `wg-quick` path and that a non-zero result is not `ok`; anonymous POST to `wireguard_restart` returning 401/403 with `assert_not_called()`.
+- **REV-37 — Fail clearly when the peer address pool is exhausted.** `util.py:163-169` returns `ip_address_pool[0] if for_server else ip_address_pool[1]`, so with an empty pool — or one remaining host for a peer — it raises `IndexError` from `Peer.save()` (`models.py:139`) and `ServerConfiguration.save()` (`:263`), producing a 500. Raise a clear `ValueError` instead, and index defensively.
+- **REV-38 — Reject env-governed fields in the MCP configuration PATCH and make the write atomic.** `views.py:130-135` writes `mcp_enabled` even when `WG_MCP_SERVER_ENABLED` governs it, so the save appears to succeed and does nothing — unlike the email PATCH (`views.py:264-270`), which rejects env-controlled fields. `MCPTokenService.rotate` (`mcp_configuration.py:47`) and the `mcp_enabled` save (`:92`) are also two separate writes. Reject the field under env override and wrap both writes in `transaction.atomic()`.
+- **REV-39 — Drop the Django test import from email_service.** `email_service.py:17` imports `DatabaseOperationForbidden` from `django.test.testcases` in a production module that `settings.py` imports before `django.setup()`. Catch `DatabaseError` instead and remove the import.
+- **REV-40 — Refuse cleartext SMTP credentials and use the right error class.** `email_service.py:127` accepts a username and password with both `use_tls` and `use_ssl` false, so Django sends `AUTH LOGIN` in cleartext. Separately, a server-side *generation* failure at `:355,361` raises `EmailDeliveryError`, which `views.py:470` maps to 502 even though no SMTP exchange happened. Reject credentials without TLS/SSL, and raise `EmailConfigurationError` (→503) for generation failures.
+- **REV-41 — Stop returning peer email addresses from the MCP list tool.** `_safe_peer` (`mcp_tools.py:60-74`) includes `email_address` for every peer, while `get_hierarchy` (`:401-413`) deliberately omits email addresses. Drop the field from `_safe_peer`.
+- **REV-42 — Convert serializer failures in MCP tools into MCPToolError.** `get_peer_configuration` (`mcp_tools.py:171,183`) builds a `PeerWithQrSerializer`, which also renders a QR PNG, and `serializers.py:69` does `ServerConfiguration.objects.all()[0]` unguarded, so a missing config row surfaces as a raw protocol error rather than an `MCPToolError`. Wrap the serializer calls.
+- **REV-43 — Accept a /32 mask.** `util.py:90` uses `mask_ok = 0 <= mask < 32`, which rejects a valid `/32`. Change the bound to `<= 32`.
+- **REV-44 — Add the missing shebang to the generated post-down script.** `wireguard_helper.py:473` starts `post_down` with variable assignments; `post_up` starts with `#!/bin/bash` (`:206-207`). Add the shebang.
+- **REV-45 — Derive the regeneration check's directory from the configured path.** `wireguard_helper.py:669` globs the hardcoded `/config/wireguard/**/*` although the path is a model field, so a custom `wireguard_config_path` makes the "needs regeneration" answer permanently wrong; `os.path.getmtime` can also raise if a file disappears between the glob and the stat. Derive the directory from `server_configuration.wireguard_config_path` and skip unreadable paths.
+- **REV-46 — Fix the "diabled" typo and add a timeout to the version check.** `server_helper.py:61` has `"Updates check diabled."`; `server_helper.py:69` calls `requests.get(APP_URL)` with no timeout, so on an appliance with no outbound internet — the usual case — the call hangs and pins a Django worker on every application-details request. Fix the spelling and pass `timeout=5`.
+- **REV-47 — Fix the coverage target and ignore coverage output.** `scripts/run-tests.sh:3` passes `--cov=com`, which is not a real target (the code is `src/api_project/api_app`), so coverage output is always empty; AGENTS.md documents the staleness but nothing corrects it. `--cov-report=html/xml` write `htmlcov/` and `coverage.xml`, neither of which is in `.gitignore`. Change to `--cov=api_app` and add both paths to `.gitignore`.
+- **REV-48 — Remove the placeholder test and document the second runner.** `src/test_sample-tests.py:3` is `assert True`, and it sits outside the pytest rootdir set by `src/api_project/pytest.ini`, so the documented `cd /app/api_project && ../scripts/run-tests.sh` never collects it — while AGENTS.md:124 lists it as one of the checked-in backend tests. There is also an undocumented duplicate runner at `src/api_project/tests/run_tests.sh`. Delete the placeholder (or move it under `tests/` with a real assertion) and correct AGENTS.md.
+
+## Suggested order if you work down the list
+
+REV-01 and REV-02 (injection, #336) → REV-03/04/05/06 (exposure) → REV-07/08 (settings) → REV-09/10 (startup behaviour) → REV-11/12/13 (generation correctness) → REV-14/15/16/17 (model and viewset edges) → REV-18/19/20 → the smaller table, where each row is independent. Do REV-10 before REV-14/15 so the `AlterField` migrations they require are generated deliberately rather than at container start.
