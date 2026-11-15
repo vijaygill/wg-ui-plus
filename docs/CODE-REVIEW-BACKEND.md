@@ -13,6 +13,12 @@ Method: five focused review passes plus independent re-reading of every cited li
 
 One commit = one row. ≤ 25 changed lines (most are ≤ 10). Same file, same function where possible. No new modules, no new dependencies, no new helper classes, no reformatting, no import reshuffles, no docstring essays, no type-annotation sweeps, no comment noise. Match the surrounding naming and quoting style. If a row says a migration is expected, review the generated file — never hand-write one.
 
+## Decision (15 Nov 2026): anonymous monitoring reads stay
+
+Anonymous users are **intended** to see connected peers, the iptables log and the target hierarchy. REV-04 and REV-05 were written against issue #328 before this was settled; they are rescoped below and must not be implemented as "require authentication". The remaining concern in those two rows is that the access is anonymous *by omission* — no `permission_classes` and no `DEFAULT_PERMISSION_CLASSES` — rather than declared, so the next control endpoint added inherits a public route by accident.
+
+The intended lever for changing this later is a **server configuration option plus an environment variable**, not a code change at each view. Anything proposed against these four endpoints should keep that as the shape of the eventual fix.
+
 ## Main items — one row, one ticket
 
 | ID | Sev | Where | What is wrong | Minimal fix | ~Diff | Ref |
@@ -20,8 +26,8 @@ One commit = one row. ≤ 25 changed lines (most are ≤ 10). Same file, same fu
 | REV-01 | Critical | `wireguard_helper.py:387,393,397,420,424,458,462` + `529,532,555` via `538` | Stored DB values are interpolated unquoted into the generated `post-up.sh`, which `wg-quick` runs as root. A peer/group/target name containing `"` or `$(...)` breaks out of `--comment "…"` and runs commands; the same applies to `Peer.ip_address` and to the `chmod +x {path}` / `wg-quick down/up {path}` lines. Payload persists in the DB and re-executes on every container start | Quote every interpolated value at the emit sites with a `shlex.quote` helper, in this one file. Keep `shell=True` for now (removing it is REV-01b, see smaller items) | ~30 | #336 |
 | REV-02 | Critical | `wireguard_helper.py:44-45`, `models.py:175,190-192` | `PostUp`/`PostDown` and `host_name_external` are written into `wg0.conf` with no CR/LF check, so a value containing `\nPostUp = <cmd>` adds a second `PostUp` key, which `wg-quick` runs through a shell. Shell-quoting the iptables script (REV-01) does **not** close this sink | Reject values containing CR or LF before rendering the ini block (one guard at the top of the server-config renderer) | ~10 | #336 (not covered by it) |
 | REV-03 | High | `serializers.py:25`, `serializers.py:64`, `serializers.py:172` | WireGuard private keys are returned by the REST API. `PeerSerializer` / `PeerWithQrSerializer` use `fields = "__all__"` so `Peer.private_key` (`models.py:114`) is in the peer list and retrieve payloads; `ServerConfigurationSerializer.Meta.exclude` omits `mcp_token` and the email fields but **not** `private_key`/`public_key`, so `GET /api/v1/data/server_configuration/` returns the server private key and PATCH can overwrite it | Exclude `private_key` on the two peer serializers and add `private_key`, `public_key` to the server serializer's `exclude`. Peer config is already generated on demand, so nothing needs the raw key in a list payload | 4 | — |
-| REV-04 | High | `views.py:341,349,445` | `wireguard_get_connected_peers`, `wireguard_get_iptables_log` and `get_server_status` set `@authentication_classes` but **no** `@permission_classes`, and `settings.py:95-100` sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's default `AllowAny` applies. Anonymous `GET /api/v1/control/wireguard_get_connected_peers` returns live per-peer state — peer names, allowed IPs, last-handshake times, byte counters | Add `@permission_classes([IsAuthenticated])` to the three views | 3 | #328 |
-| REV-05 | High | `views.py:73` | `TargetHierarchyViewSet` is `IsAuthenticatedOrReadOnly`, so anonymous `GET /api/v1/data/target_hierarchy/` still discloses the whole VPN topology: every target name/IP/port plus each peer group's peer names and WireGuard IPs (`serializers.py:128-149`). The write half of #328 is closed; this read half is not | Change to `IsAuthenticated` | 1 | #328 |
+| REV-04 | Medium | `views.py:341,349,445` | `wireguard_get_connected_peers`, `wireguard_get_iptables_log` and `get_server_status` set `@authentication_classes` but **no** `@permission_classes`, and `settings.py:95-100` sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's default `AllowAny` applies. Anonymous reads of these three are **intended** (see the decision above), so the defect is that they are public *by omission*: nothing declares it, unlike the deliberate comment at `views.py:68`, and a new control endpoint is public until someone remembers | Set `DEFAULT_PERMISSION_CLASSES` to `IsAuthenticated`, then declare the public ones explicitly `AllowAny`: these three plus `auth_login` (`:357`) and `auth_logout` (`:389`) | ~6 | #328 |
+| REV-05 | Won't fix — by decision | `views.py:73` | `TargetHierarchyViewSet` is `IsAuthenticatedOrReadOnly`, so an anonymous `GET /api/v1/data/target_hierarchy/` discloses the whole VPN topology: every target name/IP/port plus each peer group's peer names and WireGuard IPs (`serializers.py:128-149`). The write half of #328 is closed by `96f1d09`; the maintainer has decided anonymous users keep this read for now | No code change. Record the decision in [ACCESS_CONTROL.md](./ACCESS_CONTROL.md) next to the `views.py:68` comment so it is not re-filed as a vulnerability, and leave the server-configuration + environment-variable option as the planned lever | 0 + docs | #328 |
 | REV-06 | High | `mcp_tools.py:330-341`, `docs/MCP.md:28-32` | The MCP tool `get_wireguard_configuration` returns the full server configuration — which contains the server private key — plus every peer's client config with its private key, in one tool result. `docs/MCP.md` only warns that the token exposes "peer configuration or QR data", so the actual exposure is undocumented | Drop the `server_configuration` entry from what the tool returns (peer configs stay), and state the exposure in `docs/MCP.md`. If the server config is genuinely wanted, that is a deliberate policy call — say so in the ticket thread | 3 | — |
 | REV-07 | High | `settings.py:131`, `135`, `urls.py:40` | `DEBUG = True` is hardcoded, `ALLOWED_HOSTS = ["*"]`, and `/admin/` is routed. Any 500 in a live container returns Django's technical page with traceback and settings to any client | Derive `DEBUG` from an env var, default `False` | 2 | — |
 | REV-08 | High | `settings.py:24` | `SECRET_KEY` is hardcoded in a public repo with no env override, so every install shares one key — session and signed-cookie forgery across deployments | Read `SECRET_KEY` from the environment, keeping the current value as the dev fallback | 2 | — |
@@ -37,6 +43,7 @@ One commit = one row. ≤ 25 changed lines (most are ≤ 10). Same file, same fu
 | REV-18 | Medium | `views.py:316-329`, `urls.py:24,29` | `wireguard_generate_configuration_files` and `wireguard_restart` mutate state on **GET**. CSRF only guards unsafe methods, so a cross-site top-level `<form method=get>` navigation — session cookie is still sent under `SameSite=Lax` — makes a logged-in admin regenerate configs and bounce the VPN | Switch both to `@api_view(["POST"])` and update the two Angular call sites | 4 + 2 | — |
 | REV-19 | Medium | `email_service.py:317-326` | `EmailBackend` is constructed with no `timeout`, and settings define no `EMAIL_TIMEOUT`, so `smtplib.SMTP(timeout=None)`. An SMTP host that accepts TCP but never sends `220` (drop firewall rule) pins the Django request thread indefinitely. Trigger: `POST /api/v1/control/send_test_email`. The connectivity check at `:402` already uses `CONNECTIVITY_TIMEOUT_SECONDS` — the send path does not | Pass `timeout=` to `EmailBackend` from a module-level constant | 4 | — |
 | REV-20 | Medium | `mcp_authentication.py:39` | `secrets.compare_digest(key, configuration.mcp_token)` is given two `str`; `compare_digest` raises `TypeError` for non-ASCII strings. A header such as `Authorization: Bearer nai…` (a smart quote pasted from a document) passes the `UnicodeError` guard at `:33` and escapes as an unhandled 500 with traceback instead of a 401 | Compare UTF-8 encoded bytes, or catch `TypeError` and raise `AuthenticationFailed` | 2 | — |
+| REV-49 | Critical | `views.py:310-313` | `wireguard_get_configuration` has **no** `@permission_classes` and not even the `@authentication_classes` its neighbours carry, so `GET /api/v1/control/wireguard_get_configuration` (`urls.py:33-36`) is fully anonymous. It returns `shared_functions.get_wireguard_configuration()` (`shared_functions.py:7-14`), whose server template is `PrivateKey = {{serverConfiguration.private_key}}` (`wireguard_helper.py:43`), plus every peer's public key, allowed IP and client-side config. An unauthenticated request reads the server's long-lived WireGuard private key — categorically different from the monitoring reads kept public by the decision above, since it defeats the entire peer → group → target model. Nothing in the SPA depends on it: its only reference is a wrong-prefixed URL with no caller (FE-16) | Add `@permission_classes([IsAuthenticated])`, or delete the view, its URL entry and the dead SPA method together | 1, or ~12 to delete | REV-03, REV-06, FE-16 |
 
 ## Smaller items — same format, optional backlog
 
@@ -107,21 +114,25 @@ Fix: exclude `private_key` from both peer serializers and add `private_key`, `pu
 
 Acceptance: `assertNotIn("private_key", payload)` for both endpoints; existing SPA flows (peer list, QR, config download) still work.
 
-#### REV-04 — Require authentication on the three open control endpoints
+#### REV-04 — Declare the public control endpoints instead of inheriting them
 
-`wireguard_get_connected_peers` (`views.py:341`), `wireguard_get_iptables_log` (`:349`) and `get_server_status` (`:445`) declare `@authentication_classes` but no `@permission_classes`. `REST_FRAMEWORK` (`settings.py:95-100`) sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's `AllowAny` applies and the routes are anonymous. The connected-peers route returns live per-peer state — names, allowed IPs, last-handshake times, byte counters.
+`wireguard_get_connected_peers` (`views.py:341`), `wireguard_get_iptables_log` (`:349`) and `get_server_status` (`:445`) declare `@authentication_classes` but no `@permission_classes`, and `REST_FRAMEWORK` (`settings.py:95-100`) sets no `DEFAULT_PERMISSION_CLASSES`, so DRF's `AllowAny` applies.
 
-Fix: add `@permission_classes([IsAuthenticated])` to all three, matching the neighbouring routes at `:319` and `:327`.
+These three **should** stay anonymous — logged-out users are meant to see connected peers, the iptables log and the topology (decision above), and `get_server_status` in particular must stay public because the root component polls it before anyone signs in. The problem is that no line of code says so: `views.py:68` comments its deliberate anonymous read, these three do not, and `auth_login` (`:357`) and `auth_logout` (`:389`) are public by the same omission. Every new control endpoint is therefore public until someone notices.
 
-Acceptance: anonymous GET returns 401/403; the SPA, which is authenticated, is unaffected. Part of #328.
+Fix: set `DEFAULT_PERMISSION_CLASSES` to `IsAuthenticated` in `settings.py`, then add an explicit `@permission_classes([AllowAny])` to the five endpoints that are meant to be public.
 
-#### REV-05 — Require authentication for target_hierarchy reads
+Acceptance: anonymous GETs on the three monitoring routes and on login/logout still succeed exactly as today; a control endpoint with no permission decorator denies by default; an anonymous unauthenticated write to any data route still fails. Part of #328, which stays open only for the declaration work.
 
-`TargetHierarchyViewSet` (`views.py:73`) is `IsAuthenticatedOrReadOnly`, so an anonymous `GET /api/v1/data/target_hierarchy/` returns the full topology: target names/IPs/ports plus every peer group's peer names and WireGuard IPs (`serializers.py:128-149`). Commit `96f1d09` closed the write half of #328; this read half is still open.
+#### REV-05 — Record that anonymous target_hierarchy reads are intended
 
-Fix: change the permission class to `IsAuthenticated`.
+`TargetHierarchyViewSet` (`views.py:73`) is `IsAuthenticatedOrReadOnly` on a `ReadOnlyModelViewSet`, so an anonymous `GET /api/v1/data/target_hierarchy/` returns the full topology: target names/IPs/ports plus every peer group's peer names and WireGuard IPs (`serializers.py:128-149`). Commit `96f1d09` closed the write half of #328.
 
-Acceptance: anonymous GET returns 401/403; the existing permission test is extended to assert it.
+The maintainer has decided (15 Nov 2026) that anonymous users keep this view for now, alongside connected peers and the iptables log. **No permission change.** What is worth doing is writing the decision down where it can be found: the inline comment at `views.py:68` says "anonymous read allowed" but nothing outside the source explains that this is a product choice or how it would change.
+
+Fix: state the decision in `docs/ACCESS_CONTROL.md` (which today covers only the peer → group → target model and never mentions what an unauthenticated visitor may see), and note that the planned lever is a server-configuration option plus an environment variable.
+
+Acceptance: a reader of #328 can see why the read half is closed as designed rather than unfixed.
 
 #### REV-06 — Keep the server private key out of the MCP get_wireguard_configuration result
 
@@ -243,6 +254,20 @@ Fix: compare UTF-8 encoded bytes, or catch `TypeError` and raise `Authentication
 
 Acceptance: a non-ASCII token returns 401; a valid token still authenticates.
 
+#### REV-49 — Stop the anonymous WireGuard configuration endpoint leaking the server private key
+
+Found after the first pass was committed, while checking whether any *other* control endpoint is public, and it is the most serious item in this file.
+
+`wireguard_get_configuration` (`views.py:310-313`) carries no `@permission_classes` and not even the `@authentication_classes` that its neighbours at `:317` and `:325` have, so `GET /api/v1/control/wireguard_get_configuration` (`urls.py:33-36`) is anonymous. It returns `shared_functions.get_wireguard_configuration()` (`shared_functions.py:7-14`), which builds `WireGuardHelper.get_wireguard_configuration` (`wireguard_helper.py:169`) — and the server template there is `PrivateKey = {{serverConfiguration.private_key}}` (`wireguard_helper.py:43`), followed by every peer's public key, allowed IP and client-side config.
+
+An unauthenticated request therefore reads the server's long-lived WireGuard private key together with the full peer list. That is not a monitoring read of the kind deliberately left public (see the decision at the top of this file): holding the server private key lets an outsider decrypt traffic and impersonate the gateway, which voids the peer → group → target model documented in [ACCESS_CONTROL.md](./ACCESS_CONTROL.md). It is also the same secret REV-03 and REV-06 work to remove from other payloads, so leaving this route open would undo them.
+
+Nothing in the SPA depends on the route: its single reference is `urlGetWireguardConfiguration` at `webapi.service.ts:19`, which points at a wrong `/api/v1/data/control/…` path and has no caller (FE-16).
+
+Fix, either of: add `@permission_classes([IsAuthenticated])` to the view (one line, matching the neighbours); or delete the view, its URL entry, and the dead SPA method, constant and `WireguardConfiguration` entity together, since no client can currently reach it.
+
+Acceptance: an anonymous `GET` on that path returns 401/403 (or the path 404s), and an authenticated one still returns the configuration. Verify from `wg-ui-dev-shell` — no request was made during the review, so the response shape is read from source and is `not verified`.
+
 ### Smaller items — titles and one-paragraph bodies
 
 - **REV-21 — Return 400 instead of 500 when the login body is incomplete.** `auth_login` (`views.py:374-376`) reads `cred["username"]` and `cred["password"]` directly, so `POST /api/v1/auth/login` with `{}` or a non-dict body raises `KeyError`/`TypeError` and returns a 500 (which, until REV-07 is done, carries the traceback). Read both with `.get()` and return 400 when either is missing.
@@ -274,6 +299,17 @@ Acceptance: a non-ASCII token returns 401; a valid token still authenticates.
 - **REV-47 — Fix the coverage target and ignore coverage output.** `scripts/run-tests.sh:3` passes `--cov=com`, which is not a real target (the code is `src/api_project/api_app`), so coverage output is always empty; AGENTS.md documents the staleness but nothing corrects it. `--cov-report=html/xml` write `htmlcov/` and `coverage.xml`, neither of which is in `.gitignore`. Change to `--cov=api_app` and add both paths to `.gitignore`.
 - **REV-48 — Remove the placeholder test and document the second runner.** `src/test_sample-tests.py:3` is `assert True`, and it sits outside the pytest rootdir set by `src/api_project/pytest.ini`, so the documented `cd /app/api_project && ../scripts/run-tests.sh` never collects it — while AGENTS.md:124 lists it as one of the checked-in backend tests. There is also an undocumented duplicate runner at `src/api_project/tests/run_tests.sh`. Delete the placeholder (or move it under `tests/` with a real assertion) and correct AGENTS.md.
 
+## Cross-report ordering
+
+These are the points where a fix here and a fix in [CODE-REVIEW-FRONTEND.md](./CODE-REVIEW-FRONTEND.md) touch the same behaviour. The order is not interchangeable:
+
+1. **REV-13 before FE-04.** `execute_process` never inspects `returncode`, so `restart()` returns `{"status": "ok"}` unconditionally. FE-04's "report a failed restart as a failure" cannot be true until the backend reports failures at all; implemented first it would be a check that always passes.
+2. **REV-03 before FE-18.** Confirmed safe to reorder nothing here: grepping `src/clientapp/src` outside `webapi.entities.ts` for `private_key` returns zero reads, so dropping the fields from the SPA interfaces after the backend stops sending them breaks nothing.
+3. **Verify the CSRF mechanism before REV-18.** No Python under `src/api_project` calls `get_token` or `ensure_csrf_cookie`, yet `app.config.ts` configures `csrftoken`/`X-CSRFToken` and browser POST/PATCH demonstrably work today. Turning two GETs into POST creates new mutating browser calls that have to inherit whatever mechanism is actually supplying the token. `not verified` — check from the dev shell before implementing.
+4. **REV-14/REV-15 against how the SPA writes.** Two traps. `manage-peers-editor.component.html:30` renders the IP field only `@if (editItem.ip_address)` — new peers are created without one and the backend assigns it in `Peer.save()`, so the new `ip_address` validator must tolerate an absent value. And both `savePeer` and `saveServerConfiguration` PUT the whole loaded object, so a legacy row whose `name` fails a new pattern fails on its next unrelated edit. Count the rows that would not match before landing either validator.
+5. **REV-17 before removing POST.** `webapi.service.ts:157-159` posts when `item.id` is falsy, so confirm the "no `ServerConfiguration` row" state is unreachable through the UI before the viewset stops accepting POST.
+6. **REV-04/REV-05 and the monitoring pages are settled by the decision above.** Anonymous reads stay, so FE-13's `<app-authorized-view>` wrapping and FE-20's nav removal are cancelled; only FE-13's error-handling half survives. The root poll at `app.component.ts:69` keeps working signed out — which is what makes FE-36 (no error callback on `checkServerStatus()`) worth fixing rather than removing.
+
 ## Suggested order if you work down the list
 
-REV-01 and REV-02 (injection, #336) → REV-03/04/05/06 (exposure) → REV-07/08 (settings) → REV-09/10 (startup behaviour) → REV-11/12/13 (generation correctness) → REV-14/15/16/17 (model and viewset edges) → REV-18/19/20 → the smaller table, where each row is independent. Do REV-10 before REV-14/15 so the `AlterField` migrations they require are generated deliberately rather than at container start.
+REV-49 (anonymous private key — one line, worst exposure in the file) → REV-01 and REV-02 (injection, #336) → REV-03/06 (exposure) → REV-04 (declare the public endpoints; REV-05 is documentation only) → REV-07/08 (settings) → REV-09/10 (startup behaviour) → REV-11/12/13 (generation correctness) → REV-14/15/16/17 (model and viewset edges) → REV-18/19/20 → the smaller table, where each row is independent. Do REV-10 before REV-14/15 so the `AlterField` migrations they require are generated deliberately rather than at container start.
