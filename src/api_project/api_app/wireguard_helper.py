@@ -73,15 +73,21 @@ PostDown = {{post_down}}
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
-# {{peer.name}}
+# {{peer_name}}
 [Peer]
 PublicKey = {{peer.public_key}}
-AllowedIPs = {{peer.ip_address}}/32
+AllowedIPs = {{peer_ip_address}}/32
 PersistentKeepalive = 25
 #PresharedKey = <this is optional>
 
 """
-        context = Context({"peer": peer})
+        context = Context(
+            {
+                "peer": peer,
+                "peer_name": single_line(peer.name),
+                "peer_ip_address": single_line(peer.ip_address),
+            }
+        )
         peer_config_server_side = self.render_template(template, context)
 
         peer_group_everyone = [
@@ -155,7 +161,7 @@ PersistentKeepalive = 25
         template = """
 # Settings for this client.
 [Interface]
-Address = {{peer.ip_address}}
+Address = {{peer_ip_address}}
 ListenPort = {{peer_port}}
 PrivateKey = {{peer.private_key}}
 DNS = {{serverConfiguration.upstream_dns_ip_address}}
@@ -172,6 +178,7 @@ AllowedIPs = {{allowed_ips}}
                 "serverConfiguration": server_configuration,
                 "peer": peer,
                 "peer_port": peer_port,
+                "peer_ip_address": single_line(peer.ip_address),
                 "allowed_ips": allowed_ips,
                 "host_name_external": single_line(
                     server_configuration.host_name_external

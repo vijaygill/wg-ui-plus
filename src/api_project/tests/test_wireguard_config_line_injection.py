@@ -59,6 +59,20 @@ class WireGuardConfigLineInjectionTests(SimpleTestCase):
         )
         return client_side
 
+    def get_peer_configs(self, **peer_overrides):
+        """Render both peer fragments for a peer with the given field values."""
+        return self.helper.get_wireguard_configurations_for_peer(
+            make_server_configuration(), [], make_peer(**peer_overrides)
+        )
+
+    def directives(self, generated):
+        """Lines that wg-quick would treat as a PostUp/PostDown directive."""
+        return [
+            line
+            for line in generated.splitlines()
+            if line.strip().startswith(("PostUp", "PostDown"))
+        ]
+
     def test_post_up_value_cannot_add_a_second_post_up_line(self):
         payload = "\nPostUp = id"
         generated = self.get_server_config(
@@ -106,3 +120,67 @@ class WireGuardConfigLineInjectionTests(SimpleTestCase):
         self.assertIn("PostUp = /config/post-up.sh", server_config.splitlines())
         self.assertIn("PostDown = /config/post-down.sh", server_config.splitlines())
         self.assertIn("Endpoint = vpn.example.com:51820", client_config.splitlines())
+
+    def test_peer_ip_address_cannot_add_a_line_to_client_config(self):
+        payload = "\nPostUp = touch /tmp/should-not-run"
+        benign = self.get_client_config()
+        _, injected = self.get_peer_configs(ip_address="192.168.3.9" + payload)
+
+        address_lines = [
+            line for line in injected.splitlines() if line.startswith("Address")
+        ]
+        self.assertEqual(len(address_lines), 1)
+        self.assertEqual(self.directives(injected), [])
+        self.assertEqual(len(injected.splitlines()), len(benign.splitlines()))
+
+    def test_peer_name_cannot_add_a_line_to_server_side_config(self):
+        payload = "\nPostUp = touch /tmp/should-not-run"
+        server_side, _ = self.get_peer_configs(name="laptop" + payload)
+
+        self.assertEqual(self.directives(server_side), [])
+        self.assertEqual(
+            len([line for line in server_side.splitlines() if line == "[Peer]"]), 1
+        )
+
+    def test_peer_fragments_are_emitted_unchanged(self):
+        server_side, client_side = self.get_peer_configs()
+
+        self.assertEqual(
+            server_side,
+            """
+# Server-side settings for the client.
+# peer1
+[Peer]
+PublicKey = PEER_PUBLIC_KEY
+AllowedIPs = 192.168.3.2/32
+PersistentKeepalive = 25
+#PresharedKey = <this is optional>
+
+""",
+        )
+        self.assertEqual(
+            client_side,
+            """
+# Settings for this client.
+[Interface]
+Address = 192.168.3.2
+ListenPort = 51820
+PrivateKey = PEER_PRIVATE_KEY
+DNS = 192.168.0.5
+
+# Settings for the peer on the server side.
+[Peer]
+PublicKey = SERVER_PUBLIC_KEY
+Endpoint = vpn.example.com:51820
+AllowedIPs = 0.0.0.0/0
+""",
+        )
+
+    def test_injected_directive_never_starts_a_line_in_either_fragment(self):
+        payload = "\nPostUp = touch /tmp/should-not-run"
+        server_side, client_side = self.get_peer_configs(
+            name="laptop" + payload, ip_address="192.168.3.9" + payload
+        )
+
+        for generated in (server_side, client_side):
+            self.assertEqual(self.directives(generated), [])
