@@ -20,8 +20,7 @@ ENV_VAR = "WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG"
 class DbInitStrictAllowedIpsTests(TestCase):
     def _seed(self):
         """Run the command once with the variable absent to seed the database."""
-        with patch.dict(os.environ, {}, clear=False):
-            os.environ.pop(ENV_VAR, None)
+        with patch.dict(os.environ, {}, clear=True):
             call_command("db_init_db_on_start")
 
     def test_absent_variable_preserves_saved_true(self):
@@ -45,7 +44,7 @@ class DbInitStrictAllowedIpsTests(TestCase):
         sc.strict_allowed_ips_in_peer_config = True
         sc.save()
 
-        with patch.dict(os.environ, {ENV_VAR: "false"}, clear=False):
+        with patch.dict(os.environ, {ENV_VAR: "false"}, clear=True):
             call_command("db_init_db_on_start")
 
         sc.refresh_from_db()
@@ -60,7 +59,7 @@ class DbInitStrictAllowedIpsTests(TestCase):
         sc.strict_allowed_ips_in_peer_config = False
         sc.save()
 
-        with patch.dict(os.environ, {ENV_VAR: "true"}, clear=False):
+        with patch.dict(os.environ, {ENV_VAR: "true"}, clear=True):
             call_command("db_init_db_on_start")
 
         sc.refresh_from_db()
@@ -75,7 +74,7 @@ class DbInitStrictAllowedIpsTests(TestCase):
         sc.strict_allowed_ips_in_peer_config = True
         sc.save()
 
-        with patch.dict(os.environ, {ENV_VAR: "maybe"}, clear=False):
+        with patch.dict(os.environ, {ENV_VAR: "maybe"}, clear=True):
             call_command("db_init_db_on_start")
 
         sc.refresh_from_db()

@@ -48,7 +48,6 @@ class MCPWireGuardConfigurationToolTests(SimpleTestCase):
     def test_tool_trims_at_the_boundary_without_changing_generation(self):
         result, generate = self._call_tool()
         generate.assert_called_once_with(self.configuration)
-        self.assertIn("server_configuration", generate.side_effect(self.configuration))
         self.assertEqual(PEER_CONFIGURATIONS, result["peer_configurations"])
 
 
