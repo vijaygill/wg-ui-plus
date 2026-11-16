@@ -7,6 +7,7 @@ import subprocess
 import re
 import socket
 import platform
+import shlex
 
 from django.template import Template, Context
 from django.utils import timezone
@@ -23,6 +24,10 @@ from .util import (
     get_target_ip_address_parts,
     is_network_address,
 )
+
+
+def shell_quote(value):
+    return shlex.quote(str(value))
 
 
 class WireGuardHelper(object):
@@ -383,18 +388,21 @@ AllowedIPs = {{allowed_ips}}
                     # as all packets have to go via server anyway
                     continue
                 if peer_disabled:
+                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
                 if target_port:
                     for port in target_port:
+                        comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                         post_up.append(
-                            f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                            f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -p tcp --dport {shell_quote(port)} -j ACCEPT -m comment --comment {comment}'
                         )
                 else:
+                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -j ACCEPT -m comment --comment {comment}'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -416,12 +424,14 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
+                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}',
                     )
                     continue
+                comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                 post_up.append(
-                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
 
         local_networks = []
@@ -454,12 +464,14 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
+                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
+                comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
                 post_up.append(
-                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
 
         post_up.append(
@@ -526,10 +538,10 @@ AllowedIPs = {{allowed_ips}}
         with open(server_configuration.script_path_post_down, "w") as f:
             f.write(f"{iptables_scripts_post_down}\n")
         output1 = self.execute_process(
-            f"sudo chmod +x {server_configuration.script_path_post_up}"
+            f"sudo chmod +x {shell_quote(server_configuration.script_path_post_up)}"
         )
         output2 = self.execute_process(
-            f"sudo chmod +x {server_configuration.script_path_post_down}"
+            f"sudo chmod +x {shell_quote(server_configuration.script_path_post_down)}"
         )
         res = {"status": "ok", "output": output1 + "\n" + output2}
         return res
@@ -552,7 +564,7 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def restart(self, server_configuration):
         sc = server_configuration
-        command = f"sudo wg-quick down {sc.wireguard_config_path};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {sc.wireguard_config_path};"
+        command = f"sudo wg-quick down {shell_quote(sc.wireguard_config_path)};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {shell_quote(sc.wireguard_config_path)};"
         output = self.execute_process(command)
         res = {"status": "ok", "output": output}
         return res
