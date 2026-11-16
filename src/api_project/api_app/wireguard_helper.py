@@ -26,8 +26,17 @@ from .util import (
 )
 
 
+MAX_RULE_COMMENT_BYTES = 200
+
+
 def shell_quote(value):
     return shlex.quote(str(value))
+
+
+def rule_comment(*parts):
+    text = " => ".join(str(part) for part in parts)
+    trimmed = text.encode("utf-8")[:MAX_RULE_COMMENT_BYTES].decode("utf-8", "ignore")
+    return shell_quote(trimmed)
 
 
 def single_line(value):
@@ -408,19 +417,19 @@ AllowedIPs = {{allowed_ips}}
                     # as all packets have to go via server anyway
                     continue
                 if peer_disabled:
-                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
                         f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
                 if target_port:
                     for port in target_port:
-                        comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                        comment = rule_comment(peer_name, peer_group_name, target_name)
                         post_up.append(
                             f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -p tcp --dport {shell_quote(port)} -j ACCEPT -m comment --comment {comment}'
                         )
                 else:
-                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
                         f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -j ACCEPT -m comment --comment {comment}'
                     )
@@ -444,12 +453,12 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
-                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
                         f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}',
                     )
                     continue
-                comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                comment = rule_comment(peer_name, peer_group_name, target_name)
                 post_up.append(
                     f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
@@ -484,12 +493,12 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
-                    comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
                         f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
-                comment = shell_quote(f"{peer_name} => {peer_group_name} => {target_name}")
+                comment = rule_comment(peer_name, peer_group_name, target_name)
                 post_up.append(
                     f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
