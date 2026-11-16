@@ -10,18 +10,49 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
+
+from django.core.management.utils import get_random_secret_key
 
 from api_app.mcp_compat import rebuild_fastmcp_settings
 from api_app.email_service import parse_smtp_configuration
 
 
+logger = logging.getLogger(__name__)
+
 rebuild_fastmcp_settings()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-$g$nz5fz@x7%jky18-#i7)2i3zb)*dw6-65t#(*)+^#514p7%j"
+
+def _load_secret_key(key_file):
+    try:
+        with open(key_file) as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        logger.warning(f"Cannot read {key_file}, using a temporary secret key")
+        return get_random_secret_key()
+    key = get_random_secret_key()
+    try:
+        fd = os.open(key_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(key)
+    except FileExistsError:
+        try:
+            with open(key_file) as f:
+                return f.read().strip()
+        except OSError:
+            logger.warning(f"Cannot read {key_file}, using a temporary secret key")
+    except OSError:
+        logger.warning(f"Cannot write {key_file}, using a temporary secret key")
+    return key
+
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or _load_secret_key("/data/secret_key")
 
 INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",

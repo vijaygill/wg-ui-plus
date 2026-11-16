@@ -89,6 +89,7 @@ The most relevant settings are:
 | `WG_ALLOW_CHECK_UPDATES` | Boolean update-check setting. When supplied, it overrides the **Allow Check Updates** database setting; invalid values are rejected. |
 | `TZ` | Application time zone; default `UTC`. |
 | `DJANGO_LOG_LEVEL` | Log level; default `WARN`. |
+| `DJANGO_SECRET_KEY` | Django secret key for sessions, cookies and signing. Set it to a long random value of your own. When unset, the application reads `/data/secret_key` and creates it with mode `0600` on first start, so keep the `/data` volume to preserve logins and signed data across restarts. If neither is available, a temporary key is generated for that process only and a warning is logged. |
 | `DJANGO_DEBUG` | Django debug mode. Set to `true`, `1`, `yes` or `y` to enable; disabled by default, and the development launch script enables it. Leave unset in production: with it enabled, a failing request returns a traceback and the effective settings to the client. |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins. Prefer this to allow-all CORS. |
 | `CORS_ALLOW_ALL_ORIGINS` | Allows requests from any origin when set to a recognized true value; avoid it for exposed deployments. |
