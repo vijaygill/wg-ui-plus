@@ -30,25 +30,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 def _load_secret_key(key_file):
     try:
         with open(key_file) as f:
-            return f.read().strip()
+            key = f.read().strip()
+        if key:
+            return key
     except FileNotFoundError:
         pass
     except OSError:
         logger.warning(f"Cannot read {key_file}, using a temporary secret key")
         return get_random_secret_key()
+
     key = get_random_secret_key()
+    tmp_file = f"{key_file}.{os.getpid()}.tmp"
     try:
-        fd = os.open(key_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        fd = os.open(tmp_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, "w") as f:
             f.write(key)
-    except FileExistsError:
-        try:
-            with open(key_file) as f:
-                return f.read().strip()
-        except OSError:
-            logger.warning(f"Cannot read {key_file}, using a temporary secret key")
+        os.replace(tmp_file, key_file)
     except OSError:
         logger.warning(f"Cannot write {key_file}, using a temporary secret key")
+        try:
+            os.remove(tmp_file)
+        except OSError:
+            pass
     return key
 
 

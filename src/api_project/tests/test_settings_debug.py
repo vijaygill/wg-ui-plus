@@ -21,6 +21,10 @@ PROJECT_DIR = str(Path(sys.modules["api_app"].__file__).resolve().parent.parent)
 def _run_settings_import(extra_env=None):
     env = {**os.environ, "DJANGO_SETTINGS_MODULE": "api_project.settings"}
     env.pop("DJANGO_DEBUG", None)
+    # A sentinel key makes the SECRET_KEY expression short-circuit here, so
+    # importing settings in this subprocess never reads or creates the real
+    # /data/secret_key file. These tests assert only on DEBUG.
+    env["DJANGO_SECRET_KEY"] = "test-sentinel-value-not-a-real-key"
     if extra_env:
         env.update(extra_env)
     return subprocess.run(

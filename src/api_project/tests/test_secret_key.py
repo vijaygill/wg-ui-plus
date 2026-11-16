@@ -117,3 +117,75 @@ class LoadSecretKeyFileTests(SimpleTestCase):
             with open(key_file, "w") as handle:
                 handle.write("key\n")
             self.assertEqual(_load_secret_key(key_file), "key")
+
+    def test_empty_file_is_repaired_not_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            open(key_file, "w").close()
+            key = _load_secret_key(key_file)
+            self.assertTrue(
+                key,
+                "expected an empty key file to be repaired instead of "
+                "accepted as the secret key",
+            )
+            with open(key_file) as handle:
+                self.assertEqual(
+                    handle.read(),
+                    key,
+                    "expected the repaired key to be persisted for the next "
+                    "start",
+                )
+
+    def test_whitespace_only_file_is_repaired_not_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            with open(key_file, "w") as handle:
+                handle.write("\n  \n")
+            key = _load_secret_key(key_file)
+            self.assertTrue(
+                key,
+                "expected a whitespace-only key file to be repaired instead "
+                "of accepted as the secret key",
+            )
+            with open(key_file) as handle:
+                self.assertEqual(handle.read(), key)
+
+    def test_private_mode_preserved_on_repair(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            with open(key_file, "w") as handle:
+                handle.write("")
+            os.chmod(key_file, 0o600)
+            _load_secret_key(key_file)
+            self.assertEqual(
+                stat.S_IMODE(os.stat(key_file).st_mode),
+                0o600,
+                "expected a repaired key file to stay readable only by its "
+                "owner",
+            )
+
+    def test_no_temporary_file_left_on_success(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            _load_secret_key(key_file)
+            self.assertEqual(
+                os.listdir(tmp_dir),
+                ["secret_key"],
+                "expected the atomic write to leave no temporary file "
+                "behind",
+            )
+
+    def test_unwritable_path_leaves_no_litter_and_never_raises(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "missing-dir", "secret_key")
+            try:
+                key = _load_secret_key(key_file)
+            except OSError as exc:
+                self.fail(f"expected no exception, got {exc!r}")
+            self.assertTrue(
+                key,
+                "expected a temporary key when the key file cannot be "
+                "written",
+            )
+            self.assertFalse(os.path.exists(key_file))
+            self.assertEqual(os.listdir(tmp_dir), [])
