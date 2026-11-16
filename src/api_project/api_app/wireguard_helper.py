@@ -67,7 +67,7 @@ PostDown = {{post_down}}
         context = Context(
             {
                 "serverConfiguration": server_configuration,
-                "server_ip_address": server_configuration.ip_address,
+                "server_ip_address": single_line(server_configuration.ip_address),
                 "post_up": single_line(server_configuration.script_path_post_up),
                 "post_down": single_line(server_configuration.script_path_post_down),
             }
