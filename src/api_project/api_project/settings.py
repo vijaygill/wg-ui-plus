@@ -128,7 +128,12 @@ CSRF_TRUSTED_ORIGINS = (
 
 SECURE_REFERRER_POLICY = os.environ.get("SECURE_REFERRER_POLICY", "same-origin")
 
-DEBUG = True
+DEBUG = (
+    True
+    if os.environ.get("DJANGO_DEBUG", "False").lower()
+    in ("true", "1", "yes", "y")
+    else False
+)
 
 WSGI_APPLICATION = "api_project.wsgi.application"
 
