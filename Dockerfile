@@ -64,7 +64,7 @@ RUN groupadd -g $GID -o $UNAME \
 # ---------------------------------------------------------------------------
 # Stage 2: base-live  (Alpine + Python)
 # ---------------------------------------------------------------------------
-FROM python:alpine AS base-live
+FROM python:3.13-alpine AS base-live
 
 ARG UNAME
 ARG UID
