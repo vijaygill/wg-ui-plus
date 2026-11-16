@@ -550,36 +550,42 @@ AllowedIPs = {{allowed_ips}}
             f.write(f"{iptables_scripts_post_up}\n")
         with open(server_configuration.script_path_post_down, "w") as f:
             f.write(f"{iptables_scripts_post_down}\n")
-        output1 = self.execute_process(
+        code1, output1 = self.execute_process(
             f"sudo chmod +x {shell_quote(server_configuration.script_path_post_up)}"
         )
-        output2 = self.execute_process(
+        code2, output2 = self.execute_process(
             f"sudo chmod +x {shell_quote(server_configuration.script_path_post_down)}"
         )
-        res = {"status": "ok", "output": output1 + "\n" + output2}
+        status = "ok" if code1 == 0 and code2 == 0 else "error"
+        res = {"status": status, "output": output1 + "\n" + output2}
         return res
 
     @logged
     def execute_process(self, command):
         output = ""
+        returncode = 0
         proc = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
         try:
             outs, errs = proc.communicate(timeout=60)
             output = outs.decode("utf-8") + errs.decode("utf-8")
+            returncode = proc.returncode
         except subprocess.TimeoutExpired:
             proc.kill()
-        res = output
+            outs, errs = proc.communicate()
+            output = outs.decode("utf-8") + errs.decode("utf-8")
+            output += "command timed out"
+            returncode = -1
         logger.debug(output)
-        return res
+        return returncode, output
 
     @logged
     def restart(self, server_configuration):
         sc = server_configuration
         command = f"sudo wg-quick down {shell_quote(sc.wireguard_config_path)};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {shell_quote(sc.wireguard_config_path)};"
-        output = self.execute_process(command)
-        res = {"status": "ok", "output": output}
+        code, output = self.execute_process(command)
+        res = {"status": "ok" if code == 0 else "error", "output": output}
         return res
 
     @logged
@@ -596,7 +602,7 @@ AllowedIPs = {{allowed_ips}}
                         (?P<transfer_tx> \d+) \s+
                         (?P<persistent_keepalive> \d+) \s+
             """
-        output = self.execute_process("sudo wg show all dump;")
+        _, output = self.execute_process("sudo wg show all dump;")
         matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
         dt = datetime.datetime.now().astimezone()
         res = {}
@@ -672,7 +678,7 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def get_iptables_log(self):
         command = "sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
-        output = self.execute_process(command)
+        _, output = self.execute_process(command)
         dt = datetime.datetime.now().astimezone()
         res = {}
         res["status"] = "ok"
