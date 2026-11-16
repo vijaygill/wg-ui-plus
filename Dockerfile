@@ -49,7 +49,7 @@ RUN npm update -g npm \
 RUN pip install --break-system-packages --no-cache-dir --upgrade \
         qrcode[pil] colorlog pytest-django "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields requests cryptography \
-        django-mcp-server==0.5.6 mcp==1.9.4
+        django-mcp-server==0.5.6 mcp==1.9.4 "pydantic==2.11.7"
 
 ENV APP_VERSION=${APP_VERSION}
 ENV IMAGE_STAGE=base-dev
@@ -80,7 +80,7 @@ RUN apk update \
     && pip install --no-cache-dir --break-system-packages --upgrade \
         qrcode[pil] colorlog "Django>=5.1,<5.2" "djangorestframework>=3.15,<3.17" django-cors-headers \
         django-spa drf-standardized-errors django-dirtyfields cryptography requests \
-        django-mcp-server==0.5.6 mcp==1.9.4 \
+        django-mcp-server==0.5.6 mcp==1.9.4 "pydantic==2.11.7" \
     && apk del gcc libressl-dev musl-dev libffi-dev \
     && rm -rf /var/cache/apk/*
 
