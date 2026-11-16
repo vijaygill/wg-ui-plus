@@ -19,6 +19,28 @@ Anonymous users are **intended** to see connected peers, the iptables log and th
 
 The intended lever for changing this later is a **server configuration option plus an environment variable**, not a code change at each view. Anything proposed against these four endpoints should keep that as the shape of the eventual fix.
 
+## Implementation status (16 Nov 2026) — branch `bugfix/backend-review-fixes`
+
+Landed on that branch, off `develop`, one commit per row, nothing pushed yet. Where an implemented fix differs from the "Minimal fix" wording in the row, the difference is stated here and **this section wins** — so the table below is what to paste into a ticket, not the older prose above it.
+
+| Row | Commit | Note, or how it differs from the original wording |
+| --- | --- | --- |
+| — | `0395cd4` | `pydantic==2.11.7` pinned in both Dockerfile stages. Without it `mcp==1.9.4` fails at import (`cannot import name 'eval_type_backport'`), which made `manage.py check` and pytest unusable. Reproduced evidence for REV-24. |
+| REV-49 | `c78bbea` | **Withdrawn — false positive.** The endpoint has carried `@permission_classes([IsAuthenticated])` since `1f304cd0` (2024-06-03); an anonymous request returns 403. The retraction is recorded in full in the REV-49 entry below. |
+| REV-49 | `62d9178` | Regression test for those monitoring reads, so the permission posture is now pinned by a test rather than by review. |
+| REV-01 | `8ba59c6` | As worded. `shell_quote` added beside the other module helpers; all seven rule sites plus both `chmod +x` paths and both `wg-quick` paths quoted. Comments are now emitted single-quoted rather than double-quoted — identical to the shell, different bytes. |
+| REV-02 | `e57d1e1` | **Differs.** The row said *reject* CR/LF with a validation error; the fix **strips** CR and LF where the ini text is built. Rejection was rejected: generation also runs at container start from `scripts/run-app.sh` under `set -e`, and rows stored before the change may already contain such characters, so refusing to generate would break boot. `PostUp`, `PostDown` and the peer `Endpoint` host are covered. |
+| REV-12 | `edb168a` | As worded, plus: the Everyone list now drops the `:port` suffix exactly as the two relationship lists already did, and entries that do not resolve are logged once and skipped instead of reaching `sort()` as `None`. |
+| REV-13 | `c94abb7` | As worded. `execute_process` returns `(returncode, output)` and drains the pipes after `proc.kill()`; the two status-building callers report `error` on a non-zero code, the two read-only callers discard the code. |
+| REV-03 | `69f0867` | As worded: `to_representation` on the two peer serializers, `private_key` and `public_key` added to the server serializer's `exclude`. Verified nothing consumes those fields — the backend reads keys off model instances, and the SPA declares them in `webapi.entities.ts` but never reads them. The peer's own ini and QR download still carry that peer's key. |
+| REV-06 | `7b5511f` | As worded. Trimmed **only** at the MCP boundary: `shared_functions.get_wireguard_configuration` keeps both entries because `wireguard_get_configuration` (`views.py:334-338`) still serves the server side to the UI. `docs/MCP.md` now states that peer configs carry each client's private key. **Contract change** for any existing MCP client reading `server_configuration`. |
+| REV-07 | `f6704ea` | As worded. `DJANGO_DEBUG`, read the way `CORS_ALLOW_ALL_ORIGINS` is read in the same file. `run-app-dev.sh` passes `DJANGO_DEBUG=true` so local `runserver` keeps the traceback page; deliberately not in `set-script-vars.sh`, which every launcher shares. `ALLOWED_HOSTS = ["*"]` untouched — out of this row's scope. |
+| REV-08 | `c578228` | **Stronger than the row.** The row suggested keeping the committed literal as a dev fallback. Instead: `DJANGO_SECRET_KEY`, else read `/data/secret_key`, else create it with `O_EXCL` and mode `0600` so concurrent workers settle on one key and restarts keep issued logins. Never raises — no usable store means a temporary key plus a logged warning, because `manage.py check` and pytest import settings too. **Existing sessions drop once**, on the first boot after the change. |
+
+Not yet implemented from the main table: REV-09 and REV-10 are in progress. Everything else is open, including the whole Medium/Minor backlog and every item marked as needing a decision.
+
+**Deliberately not quoted, on purpose:** `wireguard_helper.py:444` interpolates `{target}` from `server_configuration.local_networks` into a `DROP` rule with no `shell_quote`, unlike every other site in that function. That is not an oversight: `local_networks` is the only one of these fields that already carries a working validator — `validator_are_network_addresses` (`models.py:37`), which rejects any comma-separated part that is not a network address. The unvalidated fields were the exploitable ones (REV-01, REV-14). Closing `:444` as defence in depth belongs with REV-14, which is where the field-level edge validation lands.
+
 ## Main items — one row, one ticket
 
 | ID | Sev | Where | What is wrong | Minimal fix | ~Diff | Ref |
