@@ -209,7 +209,7 @@ Where a fix here and a fix in [CODE-REVIEW-BACKEND.md](./CODE-REVIEW-BACKEND.md)
 
 1. **REV-13 before FE-04.** `execute_process` never checks `returncode` and `restart()` returns `{"status": "ok"}` unconditionally, so FE-04's `status !== 'ok'` check would always pass if written first.
 2. **REV-03 before FE-18.** Safe and confirmed: `private_key` is read nowhere in `src/clientapp/src` outside the two `webapi.entities.ts` declarations, so removing the fields after the backend stops sending them breaks nothing.
-3. **REV-49 has no frontend dependency.** The SPA's only reference to that endpoint is the wrong-prefixed, uncalled `urlGetWireguardConfiguration` (`webapi.service.ts:19`), which FE-16 already proposes to fix or delete; the two can land in either order.
+3. **REV-49 was retracted.** The configuration endpoint already has `@permission_classes([IsAuthenticated])`; the backend report records how that finding went wrong. FE-16's own claim is untouched: the SPA's `urlGetWireguardConfiguration` points at a wrong `/api/v1/data/control/…` prefix and has no caller.
 4. **FE-24 before any button-state fix.** It is a choice between per-button `[disabled]` and one interceptor-driven in-flight counter; doing both would double up on the same buttons.
 5. **CSRF before REV-18,** and therefore before any frontend change that follows it: the mechanism that currently makes browser POST/PATCH work is unidentified, and REV-18 turns two GETs into POST. Verify from the dev shell first — `not verified`.
 6. **Anonymous monitoring reads stay** (decision at the top). FE-13 keeps only its error-handling half, FE-20 is withdrawn, and the root poll at `app.component.ts:69` continues to work signed out — which is why FE-36 is worth fixing rather than deleting.
