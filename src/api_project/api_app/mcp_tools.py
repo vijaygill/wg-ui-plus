@@ -327,17 +327,19 @@ class WireGuardMCPToolset(MCPToolset):
         return data
 
     def get_wireguard_configuration(self):
-        """Generate the complete in-memory WireGuard configuration set.
+        """Generate the in-memory peer WireGuard configurations.
 
-        Returns ``{"server_configuration": str, "peer_configurations": list[str]}``.
-        The server configuration contains private server material and peer entries;
-        each peer configuration can contain client private-key credentials. Treat
-        the result as highly sensitive and share it only with an authorized user.
+        Returns ``{"peer_configurations": list[str]}``. The server configuration,
+        which contains the private server key, is deliberately omitted here. Each
+        peer configuration can contain client private-key credentials. Treat the
+        result as highly sensitive and share it only with an authorized user.
         This reads the database and performs template generation only; it does not
         write files, alter firewall rules, or restart WireGuard.
         """
         configuration = self._configuration()
-        return get_wireguard_configuration(configuration)
+        result = get_wireguard_configuration(configuration)
+        result.pop("server_configuration", None)
+        return result
 
     def generate_wireguard_configuration_files(self):
         """Generate and write WireGuard and iptables files from database state.

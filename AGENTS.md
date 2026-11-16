@@ -139,9 +139,15 @@ them.
   `base-live` (Alpine/Python runtime), `builder` (Angular production build),
   `dev`, and `live`. Python packages are installed in the images with pip
   using `--break-system-packages`; there is no requirements lock file or venv.
+  `base-live` pins `python:3.13-alpine` on purpose: `pydantic` is pinned to a
+  version whose `pydantic-core` ships prebuilt wheels only up to CPython 3.13,
+  so a floating base past 3.13 makes the build compile Rust and fail. Both
+  stages pin `pydantic` deliberately to keep `mcp==1.9.4` importable; do not
+  float it in isolation. `base-dev` still floats `node:latest`, whose Python is
+  likewise unpinned — same risk, known and currently accepted.
 - The live image copies Angular output to `/app/clientapp`, Django to
   `/app/api_project`, and starts `/app/scripts/run-app.sh` as a non-root user.
-- Startup backs up the SQLite database, runs `makemigrations` and `migrate`,
+- Startup backs up the SQLite database, runs `migrate`, and
   initializes application/MCP state, clears cache, generates WireGuard files,
   brings up `/config/wireguard/wg0.conf` when present, then runs Django's
   development server on `0.0.0.0:8000`. The database is

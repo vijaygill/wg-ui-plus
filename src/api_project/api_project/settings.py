@@ -10,18 +10,55 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
+
+from django.core.management.utils import get_random_secret_key
 
 from api_app.mcp_compat import rebuild_fastmcp_settings
 from api_app.email_service import parse_smtp_configuration
 
 
+logger = logging.getLogger(__name__)
+
 rebuild_fastmcp_settings()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-$g$nz5fz@x7%jky18-#i7)2i3zb)*dw6-65t#(*)+^#514p7%j"
+
+def _load_secret_key(key_file):
+    try:
+        with open(key_file) as f:
+            key = f.read().strip()
+        if key:
+            return key
+    except FileNotFoundError:
+        pass
+    except UnicodeDecodeError:
+        logger.warning(f"Cannot decode {key_file}, replacing it with a new secret key")
+    except OSError:
+        logger.warning(f"Cannot read {key_file}, using a temporary secret key")
+        return get_random_secret_key()
+
+    key = get_random_secret_key()
+    key_file = os.path.realpath(key_file)
+    tmp_file = f"{key_file}.{os.getpid()}.{os.urandom(4).hex()}.tmp"
+    try:
+        fd = os.open(tmp_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write(key)
+        os.replace(tmp_file, key_file)
+    except OSError:
+        logger.warning(f"Cannot write {key_file}, using a temporary secret key")
+        try:
+            os.remove(tmp_file)
+        except OSError:
+            pass
+    return key
+
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or _load_secret_key("/data/secret_key")
 
 INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
@@ -128,7 +165,12 @@ CSRF_TRUSTED_ORIGINS = (
 
 SECURE_REFERRER_POLICY = os.environ.get("SECURE_REFERRER_POLICY", "same-origin")
 
-DEBUG = True
+DEBUG = (
+    True
+    if os.environ.get("DJANGO_DEBUG", "False").lower()
+    in ("true", "1", "yes", "y")
+    else False
+)
 
 WSGI_APPLICATION = "api_project.wsgi.application"
 

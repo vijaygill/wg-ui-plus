@@ -27,6 +27,8 @@ Authorization: Bearer <token>
 
 ## Security
 
-Treat the MCP token as a high-privilege credential. Anyone who possesses it
-can use the MCP endpoint, including operations that expose peer configuration
-or QR data. Protect the endpoint and never share or commit the token.
+Treat the MCP token as a high-privilege credential. Anyone who possesses it can
+use the MCP endpoint, which returns each peer's WireGuard configuration —
+including that peer's private key — and peer QR data, and can regenerate the
+WireGuard and iptables files and restart the interface. The server's own private
+key is not returned. Protect the endpoint and never share or commit the token.

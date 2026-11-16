@@ -7,6 +7,7 @@ import subprocess
 import re
 import socket
 import platform
+import shlex
 
 from django.template import Template, Context
 from django.utils import timezone
@@ -23,6 +24,23 @@ from .util import (
     get_target_ip_address_parts,
     is_network_address,
 )
+
+
+MAX_RULE_COMMENT_BYTES = 200
+
+
+def shell_quote(value):
+    return shlex.quote(str(value))
+
+
+def rule_comment(*parts):
+    text = " => ".join(str(part) for part in parts)
+    trimmed = text.encode("utf-8")[:MAX_RULE_COMMENT_BYTES].decode("utf-8", "ignore")
+    return shell_quote(trimmed)
+
+
+def single_line(value):
+    return str(value).replace("\r", "").replace("\n", "")
 
 
 class WireGuardHelper(object):
@@ -42,14 +60,16 @@ Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
-PostUp = {{serverConfiguration.script_path_post_up}}
-PostDown = {{serverConfiguration.script_path_post_down}}
+PostUp = {{post_up}}
+PostDown = {{post_down}}
 
 """
         context = Context(
             {
                 "serverConfiguration": server_configuration,
-                "server_ip_address": server_configuration.ip_address,
+                "server_ip_address": single_line(server_configuration.ip_address),
+                "post_up": single_line(server_configuration.script_path_post_up),
+                "post_down": single_line(server_configuration.script_path_post_down),
             }
         )
         res = self.render_template(template, context)
@@ -62,15 +82,21 @@ PostDown = {{serverConfiguration.script_path_post_down}}
         # returns tuple of server-side and client-side configurations
         template = """
 # Server-side settings for the client.
-# {{peer.name}}
+# {{peer_name}}
 [Peer]
 PublicKey = {{peer.public_key}}
-AllowedIPs = {{peer.ip_address}}/32
+AllowedIPs = {{peer_ip_address}}/32
 PersistentKeepalive = 25
 #PresharedKey = <this is optional>
 
 """
-        context = Context({"peer": peer})
+        context = Context(
+            {
+                "peer": peer,
+                "peer_name": single_line(peer.name),
+                "peer_ip_address": single_line(peer.ip_address),
+            }
+        )
         peer_config_server_side = self.render_template(template, context)
 
         peer_group_everyone = [
@@ -85,7 +111,8 @@ PersistentKeepalive = 25
             allowed_ips_everyone = []
             if peer_group_everyone:
                 allowed_ips_everyone = [
-                    x.ip_address for x in peer_group_everyone[0].targets.all()
+                    x.ip_address.split(":")[0]
+                    for x in peer_group_everyone[0].targets.all()
                 ]
 
             allowed_ips_by_peer_groups = [
@@ -122,16 +149,19 @@ PersistentKeepalive = 25
 
         allowed_ips = list(set(allowed_ips))
 
-        # if there is no allowedIPs, default to catch-all
-        if not allowed_ips:
-            allowed_ips = [IP_ADDRESS_INTERNET]
-
         logger.debug(
             f"serverConfiguration.strict_allowed_ips_in_peer_config: {server_configuration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
         )
 
-        allowed_ips = [is_network_address(x) for x in allowed_ips]
-        allowed_ips = [x[2] for x in allowed_ips]
+        resolved_ips = [is_network_address(x) for x in allowed_ips]
+        unusable = [x for x, r in zip(allowed_ips, resolved_ips) if r[2] is None]
+        if unusable:
+            logger.error(f"Skipping unusable allowed-ips entries: {unusable}")
+        allowed_ips = [r[2] for r in resolved_ips if r[2] is not None]
+
+        # if there is no allowedIPs, default to catch-all
+        if not allowed_ips:
+            allowed_ips = [is_network_address(IP_ADDRESS_INTERNET)[2]]
         allowed_ips.sort()
         allowed_ips = [str(x) for x in allowed_ips]
 
@@ -140,7 +170,7 @@ PersistentKeepalive = 25
         template = """
 # Settings for this client.
 [Interface]
-Address = {{peer.ip_address}}
+Address = {{peer_ip_address}}
 ListenPort = {{peer_port}}
 PrivateKey = {{peer.private_key}}
 DNS = {{serverConfiguration.upstream_dns_ip_address}}
@@ -148,7 +178,7 @@ DNS = {{serverConfiguration.upstream_dns_ip_address}}
 # Settings for the peer on the server side.
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
-Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
+Endpoint = {{host_name_external}}:{{serverConfiguration.port_external}}
 AllowedIPs = {{allowed_ips}}
 """
         peer_port = peer.port if peer.port else server_configuration.peer_default_port
@@ -157,7 +187,11 @@ AllowedIPs = {{allowed_ips}}
                 "serverConfiguration": server_configuration,
                 "peer": peer,
                 "peer_port": peer_port,
+                "peer_ip_address": single_line(peer.ip_address),
                 "allowed_ips": allowed_ips,
+                "host_name_external": single_line(
+                    server_configuration.host_name_external
+                ),
             }
         )
         peer_config_client_side = self.render_template(template, context)
@@ -383,18 +417,21 @@ AllowedIPs = {{allowed_ips}}
                     # as all packets have to go via server anyway
                     continue
                 if peer_disabled:
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
                 if target_port:
                     for port in target_port:
+                        comment = rule_comment(peer_name, peer_group_name, target_name)
                         post_up.append(
-                            f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -p tcp --dport {port} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                            f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -p tcp --dport {shell_quote(port)} -j ACCEPT -m comment --comment {comment}'
                         )
                 else:
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_ip_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_ip_address)} -j ACCEPT -m comment --comment {comment}'
                     )
 
         # add FORWARD and ACCEPT rules for each chain - networks only but NOT INTERNET!
@@ -416,12 +453,14 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"',
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}',
                     )
                     continue
+                comment = rule_comment(peer_name, peer_group_name, target_name)
                 post_up.append(
-                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
 
         local_networks = []
@@ -454,12 +493,14 @@ AllowedIPs = {{allowed_ips}}
                 continue
             for peer_name, peer_disabled, peer_ip_address in peer_infos:
                 if peer_disabled:
+                    comment = rule_comment(peer_name, peer_group_name, target_name)
                     post_up.append(
-                        f'iptables -w5 --append FORWARD --source {peer_ip_address} -j DROP -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                        f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} -j DROP -m comment --comment {comment}'
                     )
                     continue
+                comment = rule_comment(peer_name, peer_group_name, target_name)
                 post_up.append(
-                    f'iptables -w5 --append FORWARD --source {peer_ip_address} --dest {target_network_address} -j ACCEPT -m comment --comment "{peer_name} => {peer_group_name} => {target_name}"'
+                    f'iptables -w5 --append FORWARD --source {shell_quote(peer_ip_address)} --dest {shell_quote(target_network_address)} -j ACCEPT -m comment --comment {comment}'
                 )
 
         post_up.append(
@@ -525,36 +566,42 @@ AllowedIPs = {{allowed_ips}}
             f.write(f"{iptables_scripts_post_up}\n")
         with open(server_configuration.script_path_post_down, "w") as f:
             f.write(f"{iptables_scripts_post_down}\n")
-        output1 = self.execute_process(
-            f"sudo chmod +x {server_configuration.script_path_post_up}"
+        code1, output1 = self.execute_process(
+            f"sudo chmod +x {shell_quote(server_configuration.script_path_post_up)}"
         )
-        output2 = self.execute_process(
-            f"sudo chmod +x {server_configuration.script_path_post_down}"
+        code2, output2 = self.execute_process(
+            f"sudo chmod +x {shell_quote(server_configuration.script_path_post_down)}"
         )
-        res = {"status": "ok", "output": output1 + "\n" + output2}
+        status = "ok" if code1 == 0 and code2 == 0 else "error"
+        res = {"status": status, "output": output1 + "\n" + output2}
         return res
 
     @logged
     def execute_process(self, command):
         output = ""
+        returncode = 0
         proc = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
         try:
             outs, errs = proc.communicate(timeout=60)
             output = outs.decode("utf-8") + errs.decode("utf-8")
+            returncode = proc.returncode
         except subprocess.TimeoutExpired:
             proc.kill()
-        res = output
+            outs, errs = proc.communicate()
+            output = outs.decode("utf-8") + errs.decode("utf-8")
+            output += "command timed out"
+            returncode = -1
         logger.debug(output)
-        return res
+        return returncode, output
 
     @logged
     def restart(self, server_configuration):
         sc = server_configuration
-        command = f"sudo wg-quick down {sc.wireguard_config_path};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {sc.wireguard_config_path};"
-        output = self.execute_process(command)
-        res = {"status": "ok", "output": output}
+        command = f"sudo wg-quick down {shell_quote(sc.wireguard_config_path)};sudo conntrack -F; sudo conntrack -F; sudo conntrack -F; sudo wg-quick up {shell_quote(sc.wireguard_config_path)};"
+        code, output = self.execute_process(command)
+        res = {"status": "ok" if code == 0 else "error", "output": output}
         return res
 
     @logged
@@ -571,7 +618,7 @@ AllowedIPs = {{allowed_ips}}
                         (?P<transfer_tx> \d+) \s+
                         (?P<persistent_keepalive> \d+) \s+
             """
-        output = self.execute_process("sudo wg show all dump;")
+        _, output = self.execute_process("sudo wg show all dump;")
         matches = re.finditer(regex, output, re.MULTILINE | re.IGNORECASE | re.VERBOSE)
         dt = datetime.datetime.now().astimezone()
         res = {}
@@ -647,7 +694,7 @@ AllowedIPs = {{allowed_ips}}
     @logged
     def get_iptables_log(self):
         command = "sudo iptables -n -L -v --line-numbers;sudo iptables -t nat -n -L -v --line-numbers;"
-        output = self.execute_process(command)
+        _, output = self.execute_process(command)
         dt = datetime.datetime.now().astimezone()
         res = {}
         res["status"] = "ok"

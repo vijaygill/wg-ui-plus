@@ -89,6 +89,8 @@ The most relevant settings are:
 | `WG_ALLOW_CHECK_UPDATES` | Boolean update-check setting. When supplied, it overrides the **Allow Check Updates** database setting; invalid values are rejected. |
 | `TZ` | Application time zone; default `UTC`. |
 | `DJANGO_LOG_LEVEL` | Log level; default `WARN`. |
+| `DJANGO_SECRET_KEY` | Django secret key for sessions, cookies and signing. Set it to a long random value of your own. When unset, the application reads `/data/secret_key` and creates it with mode `0600` on first start, so keep the `/data` volume to preserve logins and signed data across restarts. If neither is available, a temporary key is generated for that process only and a warning is logged. |
+| `DJANGO_DEBUG` | Django debug mode. Set to `true`, `1`, `yes` or `y` to enable; disabled by default, and the development launch script enables it. Leave unset in production: with it enabled, a failing request returns a traceback and the effective settings to the client. |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins. Prefer this to allow-all CORS. |
 | `CORS_ALLOW_ALL_ORIGINS` | Allows requests from any origin when set to a recognized true value; avoid it for exposed deployments. |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated trusted origins for CSRF protection. |
@@ -105,12 +107,10 @@ changing environment variables; a plain restart does not update a container's
 stored environment.
 
 Values supplied through the environment can override corresponding UI settings
-at startup. Explicit `WG_ALLOW_CHECK_UPDATES` and `WG_MCP_SERVER_ENABLED` values
-take precedence over their database settings; when either variable is absent,
-the corresponding database setting is used. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG`
-is special: startup evaluates it every time, and when it is absent the value is
-treated as false, which can reset a database/UI value. Set it explicitly when
-that setting must persist in an unattended deployment. Never put SMTP passwords
+at startup. Explicit `WG_ALLOW_CHECK_UPDATES`, `WG_MCP_SERVER_ENABLED` and
+`WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` values take precedence over their
+database settings; when a variable is absent, the corresponding database
+setting is used and left untouched. Never put SMTP passwords
 or MCP tokens in public files or source control.
 
 ## Initial configuration
