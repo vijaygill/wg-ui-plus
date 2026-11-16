@@ -42,6 +42,11 @@ class PeerSerializer(serializers.ModelSerializer):
         res = ", ".join(res)
         return res
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.pop("private_key", None)
+        return data
+
 
 class PeerWithQrSerializer(serializers.ModelSerializer):
     peer_group_ids = serializers.PrimaryKeyRelatedField(
@@ -90,6 +95,11 @@ class PeerWithQrSerializer(serializers.ModelSerializer):
         bytes_stream.seek(0)
         res = base64.b64encode(bytes_stream.getvalue())
         return res
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.pop("private_key", None)
+        return data
 
 
 class PeerGroupSerializer(serializers.ModelSerializer):
@@ -178,6 +188,8 @@ class ServerConfigurationSerializer(serializers.ModelSerializer):
             "email_default_from_email",
             "email_use_tls",
             "email_use_ssl",
+            "private_key",
+            "public_key",
         )
         depth = 1
 
