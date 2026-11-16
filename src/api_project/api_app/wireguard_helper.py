@@ -30,6 +30,10 @@ def shell_quote(value):
     return shlex.quote(str(value))
 
 
+def single_line(value):
+    return str(value).replace("\r", "").replace("\n", "")
+
+
 class WireGuardHelper(object):
 
     @logged
@@ -47,14 +51,16 @@ Address = {{server_ip_address}}
 ListenPort = {{serverConfiguration.port_internal}}
 PrivateKey = {{serverConfiguration.private_key}}
 
-PostUp = {{serverConfiguration.script_path_post_up}}
-PostDown = {{serverConfiguration.script_path_post_down}}
+PostUp = {{post_up}}
+PostDown = {{post_down}}
 
 """
         context = Context(
             {
                 "serverConfiguration": server_configuration,
                 "server_ip_address": server_configuration.ip_address,
+                "post_up": single_line(server_configuration.script_path_post_up),
+                "post_down": single_line(server_configuration.script_path_post_down),
             }
         )
         res = self.render_template(template, context)
@@ -153,7 +159,7 @@ DNS = {{serverConfiguration.upstream_dns_ip_address}}
 # Settings for the peer on the server side.
 [Peer]
 PublicKey = {{serverConfiguration.public_key}}
-Endpoint = {{serverConfiguration.host_name_external}}:{{serverConfiguration.port_external}}
+Endpoint = {{host_name_external}}:{{serverConfiguration.port_external}}
 AllowedIPs = {{allowed_ips}}
 """
         peer_port = peer.port if peer.port else server_configuration.peer_default_port
@@ -163,6 +169,9 @@ AllowedIPs = {{allowed_ips}}
                 "peer": peer,
                 "peer_port": peer_port,
                 "allowed_ips": allowed_ips,
+                "host_name_external": single_line(
+                    server_configuration.host_name_external
+                ),
             }
         )
         peer_config_client_side = self.render_template(template, context)
