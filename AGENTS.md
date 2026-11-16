@@ -141,7 +141,7 @@ them.
   using `--break-system-packages`; there is no requirements lock file or venv.
 - The live image copies Angular output to `/app/clientapp`, Django to
   `/app/api_project`, and starts `/app/scripts/run-app.sh` as a non-root user.
-- Startup backs up the SQLite database, runs `makemigrations` and `migrate`,
+- Startup backs up the SQLite database, runs `migrate`, and
   initializes application/MCP state, clears cache, generates WireGuard files,
   brings up `/config/wireguard/wg0.conf` when present, then runs Django's
   development server on `0.0.0.0:8000`. The database is
