@@ -116,6 +116,48 @@ class AllowedIpsGenerationTests(SimpleTestCase):
             "192.168.3.7/32",
         )
 
+    def test_all_entries_unusable_falls_back_to_catch_all(self):
+        # When every entry fails to resolve, the filtered list must fall back
+        # to the catch-all instead of emitting an empty AllowedIPs value.
+        server_configuration = make_server_configuration(
+            upstream_dns_ip_address="",
+            network_address="",
+            ip_address="",
+        )
+        everyone = make_peer_group(
+            PEER_GROUP_EVERYONE_NAME, targets=[make_target("nonsense")]
+        )
+
+        client = self.client_config([everyone], make_peer(), server_configuration)
+
+        self.assertEqual(allowed_ips_value(client), "0.0.0.0/0")
+
+    def test_nothing_to_route_falls_back_to_catch_all(self):
+        server_configuration = make_server_configuration(
+            upstream_dns_ip_address="",
+            network_address="",
+            ip_address="",
+        )
+
+        client = self.client_config([], make_peer(), server_configuration)
+
+        self.assertEqual(allowed_ips_value(client), "0.0.0.0/0")
+
+    def test_partial_loss_narrows_routes_without_adding_catch_all(self):
+        # One unusable entry among valid ones must drop only the bad entry:
+        # the catch-all belongs to the all-unusable case, not this one.
+        everyone = make_peer_group(
+            PEER_GROUP_EVERYONE_NAME,
+            targets=[make_target("nonsense"), make_target("10.0.0.5")],
+        )
+
+        client = self.client_config([everyone], make_peer())
+
+        allowed = allowed_ips_value(client)
+        self.assertIn("10.0.0.5/32", allowed.split(","))
+        self.assertNotIn("nonsense", allowed)
+        self.assertNotIn("0.0.0.0/0", allowed.split(","))
+
     def test_strict_mode_off_keeps_catch_all_fallback(self):
         everyone = make_peer_group(
             PEER_GROUP_EVERYONE_NAME, targets=[make_target("10.0.0.5:443")]

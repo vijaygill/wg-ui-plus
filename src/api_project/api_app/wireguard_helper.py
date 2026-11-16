@@ -140,10 +140,6 @@ PersistentKeepalive = 25
 
         allowed_ips = list(set(allowed_ips))
 
-        # if there is no allowedIPs, default to catch-all
-        if not allowed_ips:
-            allowed_ips = [IP_ADDRESS_INTERNET]
-
         logger.debug(
             f"serverConfiguration.strict_allowed_ips_in_peer_config: {server_configuration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
         )
@@ -153,6 +149,10 @@ PersistentKeepalive = 25
         if unusable:
             logger.error(f"Skipping unusable allowed-ips entries: {unusable}")
         allowed_ips = [r[2] for r in resolved_ips if r[2] is not None]
+
+        # if there is no allowedIPs, default to catch-all
+        if not allowed_ips:
+            allowed_ips = [is_network_address(IP_ADDRESS_INTERNET)[2]]
         allowed_ips.sort()
         allowed_ips = [str(x) for x in allowed_ips]
 
