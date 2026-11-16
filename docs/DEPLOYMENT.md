@@ -107,12 +107,10 @@ changing environment variables; a plain restart does not update a container's
 stored environment.
 
 Values supplied through the environment can override corresponding UI settings
-at startup. Explicit `WG_ALLOW_CHECK_UPDATES` and `WG_MCP_SERVER_ENABLED` values
-take precedence over their database settings; when either variable is absent,
-the corresponding database setting is used. `WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG`
-is special: startup evaluates it every time, and when it is absent the value is
-treated as false, which can reset a database/UI value. Set it explicitly when
-that setting must persist in an unattended deployment. Never put SMTP passwords
+at startup. Explicit `WG_ALLOW_CHECK_UPDATES`, `WG_MCP_SERVER_ENABLED` and
+`WG_STRICT_ALLOWED_IPS_IN_PEER_CONFIG` values take precedence over their
+database settings; when a variable is absent, the corresponding database
+setting is used and left untouched. Never put SMTP passwords
 or MCP tokens in public files or source control.
 
 ## Initial configuration
