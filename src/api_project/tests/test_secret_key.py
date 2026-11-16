@@ -1,10 +1,14 @@
 """Tests for the environment-or-generated SECRET_KEY handling (REV-08).
 
 The file logic is exercised by calling the settings helper with paths inside a
-temporary directory, so no test reads or writes the real ``/data/secret_key``
-file. The environment-variable case is asserted in a child process because the
-runner has already evaluated Django's in-process settings by the time tests
-run, which would make an in-process assertion vacuous.
+temporary directory. No test asserts on or modifies the real
+``/data/secret_key``; the file logic runs only against temporary-directory
+paths. Importing settings -- which pytest-django does before collection --
+still creates ``/data/secret_key`` on a machine that has none unless
+``DJANGO_SECRET_KEY`` is set; the subprocess tests set a sentinel key so they
+never take that path. The environment-variable case is asserted in a child
+process because the runner has already evaluated Django's in-process settings
+by the time tests run, which would make an in-process assertion vacuous.
 """
 
 import os
@@ -189,3 +193,82 @@ class LoadSecretKeyFileTests(SimpleTestCase):
             )
             self.assertFalse(os.path.exists(key_file))
             self.assertEqual(os.listdir(tmp_dir), [])
+
+    def test_undecodable_file_is_repaired_not_fatal(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            with open(key_file, "wb") as handle:
+                handle.write(b"\xff\xfe\x00broken")
+            try:
+                key = _load_secret_key(key_file)
+            except Exception as exc:
+                self.fail(f"expected no exception, got {exc!r}")
+            self.assertTrue(
+                key,
+                "expected an undecodable key file to be repaired with a "
+                "generated key instead of raising",
+            )
+            with open(key_file) as handle:
+                self.assertEqual(
+                    handle.read(),
+                    key,
+                    "expected the repaired key to be persisted for the next "
+                    "start",
+                )
+            self.assertEqual(
+                stat.S_IMODE(os.stat(key_file).st_mode),
+                0o600,
+                "expected the repaired key file to be readable only by its "
+                "owner",
+            )
+
+    def test_foreign_temp_file_survives_repair(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            key_file = os.path.join(tmp_dir, "secret_key")
+            decoy = f"{key_file}.{os.getpid()}.tmp"
+            with open(decoy, "w") as handle:
+                handle.write("someone-else-s-data")
+            key = _load_secret_key(key_file)
+            self.assertTrue(
+                os.path.exists(decoy),
+                "expected a pre-existing temp-named file to be left alone",
+            )
+            with open(decoy) as handle:
+                self.assertEqual(
+                    handle.read(),
+                    "someone-else-s-data",
+                    "expected the foreign temp file to keep its content",
+                )
+            self.assertTrue(
+                os.path.exists(key_file),
+                "expected the key file to be created despite the decoy",
+            )
+            self.assertTrue(key)
+            with open(key_file) as handle:
+                self.assertEqual(handle.read(), key)
+
+    def test_symlink_is_preserved_and_repaired_through(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            target = os.path.join(tmp_dir, "mounted-secret")
+            key_file = os.path.join(tmp_dir, "secret_key")
+            open(target, "w").close()
+            os.symlink(target, key_file)
+            key = _load_secret_key(key_file)
+            self.assertTrue(key)
+            self.assertTrue(
+                os.path.islink(key_file),
+                "expected the repair to keep the symlink in place",
+            )
+            with open(target) as handle:
+                self.assertEqual(
+                    handle.read(),
+                    key,
+                    "expected the repaired key to be written through the "
+                    "symlink to its target",
+                )
+            self.assertEqual(
+                stat.S_IMODE(os.stat(key_file).st_mode),
+                0o600,
+                "expected the repaired key to stay readable only by its "
+                "owner",
+            )

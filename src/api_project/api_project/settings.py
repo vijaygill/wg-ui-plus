@@ -35,12 +35,15 @@ def _load_secret_key(key_file):
             return key
     except FileNotFoundError:
         pass
+    except UnicodeDecodeError:
+        logger.warning(f"Cannot decode {key_file}, replacing it with a new secret key")
     except OSError:
         logger.warning(f"Cannot read {key_file}, using a temporary secret key")
         return get_random_secret_key()
 
     key = get_random_secret_key()
-    tmp_file = f"{key_file}.{os.getpid()}.tmp"
+    key_file = os.path.realpath(key_file)
+    tmp_file = f"{key_file}.{os.getpid()}.{os.urandom(4).hex()}.tmp"
     try:
         fd = os.open(tmp_file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, "w") as f:
