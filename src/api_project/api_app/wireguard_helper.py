@@ -96,7 +96,8 @@ PersistentKeepalive = 25
             allowed_ips_everyone = []
             if peer_group_everyone:
                 allowed_ips_everyone = [
-                    x.ip_address for x in peer_group_everyone[0].targets.all()
+                    x.ip_address.split(":")[0]
+                    for x in peer_group_everyone[0].targets.all()
                 ]
 
             allowed_ips_by_peer_groups = [
@@ -141,8 +142,11 @@ PersistentKeepalive = 25
             f"serverConfiguration.strict_allowed_ips_in_peer_config: {server_configuration.strict_allowed_ips_in_peer_config} => allowed_ips: {allowed_ips}"
         )
 
-        allowed_ips = [is_network_address(x) for x in allowed_ips]
-        allowed_ips = [x[2] for x in allowed_ips]
+        resolved_ips = [is_network_address(x) for x in allowed_ips]
+        unusable = [x for x, r in zip(allowed_ips, resolved_ips) if r[2] is None]
+        if unusable:
+            logger.error(f"Skipping unusable allowed-ips entries: {unusable}")
+        allowed_ips = [r[2] for r in resolved_ips if r[2] is not None]
         allowed_ips.sort()
         allowed_ips = [str(x) for x in allowed_ips]
 
